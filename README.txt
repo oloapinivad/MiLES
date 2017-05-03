@@ -19,7 +19,8 @@ It supports analysis for the 4 standard seasons.
 
 Current version include:
 1. 	2D Instantaneous Blocking: based on Davini et al (2012)
-	It is a 2D version of Tibaldi and Molteni (1990) for Northern Hemisphere blocking at 500hPa.
+	It is a 2D version of Tibaldi and Molteni (1990) for Northern Hemisphere
+	atmospheric blocking index evaluating meridional gradient reversal at 500hPa.
 	Includes also Meridional Gradient Index and Blocking Intensity index.
 	Full data are saved in R format and climatologies are provided also in NetCDF format
 
@@ -88,6 +89,7 @@ v0.2 - May 2017
 -automated script for R package installing
 -adaptation to geopotential/geopotential height data
 -climatological blocking data are stored in NetCDF
+-Now on GitHUB
 
 v0.11 - Mar 2015
 
