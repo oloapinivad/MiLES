@@ -1,0 +1,98 @@
+#!/bin/bash
+
+################################################
+#--MidLatitude Evaluation System for Ec-Earth--#
+#------------------MiLES v0.2------------------#
+#----------May 2017, P. Davini, ISAC-CNR-------#
+#
+#
+#
+#
+################################################
+#- ------user configurations variables---------#
+################################################
+
+# exp identificator: it is important for the folder structure.
+# if you have more than on runs or experiments of the same model use
+# this variable to distinguish them
+exp="CMCC-CMS"
+
+# data folder: all the geopotential height data should be here
+INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500
+#INDIR=/home/paolo/work/DATA/$exp/day/Z500
+
+#years and seasons to analyze
+year1=1950
+year2=2005
+
+#please specify one or more of the 4 standard seasons using 3 characters
+#seasons="DJF MAM JJA SON"
+seasons="DJF JJA"
+
+#select NAO/AO
+teles="NAO AO"
+
+#config name: create your own config file for your machine.
+config=sansone
+
+################################################
+. config/config_${config}.sh
+################################################
+
+
+################################################
+#-------------Z500 extraction------------------#
+################################################
+
+#call program for Z500 files: this program takes all the files
+#into the $INDIR folder and prepare them in the single month files needed by MiLES
+#since it is thought to be universal it is pretty much inefficient: it may be worth
+#to personalize the script to obtain significant speedup
+. $PROGDIR/script/z500_prepare.sh $exp $year1 $year2
+
+################################################
+#-------EOFs computation and figures-----------#
+################################################
+
+#call to program for EOFs index/pattern. CDO-based, fast and efficient
+#NAO is the only one implemented for now
+#figures are done using linear regressions of PCs on monthly anomalies
+#against standard period for Reanalysis.
+
+. $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
+for tele in $teles ; do
+	for season in $seasons ; do
+		echo $season $tele
+	        $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
+	done
+done
+
+################################################
+#------Blocking Computation and Figures--------#
+################################################
+
+for season in $seasons ; do
+        $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season
+	$Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $season
+done
+
+################################################
+# cleaning 
+rm -f $TEMPDIR/*.nc
+rm -r $TEMPDIR
+
+################################################
+#------pdf2png conversion ---------------------#
+################################################
+
+#converting from pdf to png
+#files2convert=$( ls $FIGDIR/*/*.pdf )
+#for filepdf in $files2convert ; do
+#        filepng=$( echo $filepdf | sed  "s/pdf/png/")
+#        echo $filepng
+#        $convert -density 216 +antialias  $filepdf -resize 33% $filepng
+#done
+#wait
+#rm $files2convert
+
+
