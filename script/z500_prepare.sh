@@ -20,7 +20,7 @@ echo $sanityvalue
 #sanity check
 if [[ $sanityvalue -gt 10000 ]] ; then 
 	echo "Values too high: considering as geopotential, dividing by g"
-	$cdonc divc,9.8065 $TEMPDIR/smallfile.nc $TEMPDIR/smallfile2.nc
+	$cdonc divc,9.80665 $TEMPDIR/smallfile.nc $TEMPDIR/smallfile2.nc
 	mv $TEMPDIR/smallfile2.nc $TEMPDIR/smallfile.nc
 else
 	echo "Geopotential height identified."
