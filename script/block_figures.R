@@ -163,7 +163,7 @@ for (var in varlist)
 }
 
 namelist=paste("var",varlist,sep="")
-nclist<-lapply(namelist,get)
+nclist<-mget(namelist)
 ncfile <- nc_create(namefile,nclist)
 for (var in varlist)
 {
