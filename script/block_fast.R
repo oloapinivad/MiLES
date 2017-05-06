@@ -33,7 +33,7 @@ outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
 #loading first file to prepare the matricies
 nomefile=paste(ZDIR,"Z500_",exp,"_",year1,"01.nc",sep="")
 field=ncdf.opener(nomefile,"zg","lon","lat")
-if (min(field)<10000) {gravity=1} else {gravity=9.8065}
+if (min(field)<10000) {gravity=1} else {gravity=9.80665}
 
 ndays=0
 
