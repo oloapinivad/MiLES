@@ -16,7 +16,7 @@ convert=/usr/bin/convert
 
 
 #program folder
-export PROGDIR=/home/paolo/Rscript/newMiles
+export PROGDIR=$(pwd)
 #data folder
 export DATADIR=/work/users/paolo/scratch/miles
 
