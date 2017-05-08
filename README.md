@@ -1,5 +1,5 @@
-#MiLES v0.2
-##Mid-Latitude Evaluation System
+# MiLES v0.3
+## Mid-Latitude Evaluation System
 
 by P. Davini - ISAC-CNR
 May 2017
@@ -8,9 +8,9 @@ p.davini@isac.cnr.it
 
 ------------------------------
 
-##WHAT IS MiLES?
+## WHAT IS MiLES?
 
-MiLES is a tool for estimating properties of mid-latitude climate originally thought
+*MiLES* is a tool for estimating properties of mid-latitude climate originally thought
 for EC-Earth output and then extended to any model data.
 It works on daily 500hPa geopotential height data and it produces climatological figures 
 for the chosen time period. Data are interpolated on a common 2.5x2.5 grid.  
@@ -18,7 +18,7 @@ Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard peri
 It supports analysis for the 4 standard seasons.
 
 Current version include:
-1. 	2D Atmospheric blocking: based on Davini et al (2012)
+1. 	*2D Atmospheric blocking*: based on Davini et al (2012)
 	It is a 2D version of Tibaldi and Molteni (1990) for Northern Hemisphere
 	atmospheric blocking evaluating meridional gradient reversal at 500hPa.
 	Includes also Meridional Gradient Index and Blocking Intensity index
@@ -34,7 +34,7 @@ Current version include:
 
 ----------------
 
-	##MAIN NOTES
+## MAIN NOTES
 
 Please be aware that this is free tool in continous development, then it may not be 
 free of bugs. Please report any issue at p.davini@isac.cnr.it
@@ -49,7 +49,7 @@ in case you  use the blocking index in any publication.
 
 ----------------
 
-SOFTWARE REQUIREMENTS
+## SOFTWARE REQUIREMENTS
 
 a. R version >3.0
 b. CDO version > 1.6.5, compiled with netCDF4
@@ -68,7 +68,7 @@ http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on
 
 -----------------
 
-HOW TO
+## HOW TO
 
 Before running MiLES R packages should installed (see above)
 Also, config_$MACHINE.sh should be set accordingly to your local configuration.
@@ -90,7 +90,7 @@ tool based on covert in the last lines of the "wrapper_miles.sh"
 
 ------------
 
-HISTORY
+## HISTORY
 
 v0.3 - May 2017
 - Blocking Events definition by Davini et al. (2012) now avaiable
