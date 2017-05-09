@@ -18,22 +18,22 @@
 exp="ERAINTERIM"
 
 # data folder: all the geopotential height data should be here
-INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500
-#INDIR=/home/paolo/work/DATA/$exp/day/Z500
+#INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500
+INDIR=/home/paolo/work/DATA/$exp/day/Z500
 
 #years and seasons to analyze
 year1=1979
-year2=1980
+year2=2014
 
 #please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM JJA SON"
-seasons="DJF"
+seasons="DJF MAM"
 
 #select NAO/AO
 teles="NAO"
 
 #output file type for figures (pdf, png, eps)
-output_file_type="png"
+output_file_type="pdf"
 
 #config name: create your own config file for your machine.
 config=sansone
@@ -62,11 +62,11 @@ config=sansone
 #figures are done using linear regressions of PCs on monthly anomalies
 #against standard period for Reanalysis.
 
-#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
+time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
-#		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
+		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
 	done
 done
 
@@ -75,7 +75,7 @@ done
 ################################################
 
 for season in $seasons ; do
-	#time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season
+	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season
 	time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $season
 done
 

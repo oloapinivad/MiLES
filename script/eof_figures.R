@@ -6,8 +6,8 @@
 
 #get environmental variables
 PROGDIR<-Sys.getenv(c("PROGDIR"))
-EOFDIR<-Sys.getenv(c("EOFDIR"))
-FIGDIR<-Sys.getenv(c("FIGDIREOFS"))
+EOFDIR0<-Sys.getenv(c("EOFDIR"))
+FIGDIR0<-Sys.getenv(c("FIGDIREOFS"))
 
 #read command line
 args <- commandArgs(TRUE)
@@ -18,8 +18,8 @@ season=args[4]
 tele=args[5]
 
 #correct folder to experiment dependent
-FIGDIR=paste(FIGDIR,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
-EOFDIR=paste(EOFDIR,"/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
+FIGDIR=paste(FIGDIR0,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
+EOFDIR=paste(EOFDIR0,"/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines
@@ -44,7 +44,10 @@ year2_ref=2010
 
 #loading anomalies and variance of reference
 info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
-refdir=paste(PROGDIR,"/clim/EOFs/",tele,"/",season,"/",sep="")
+
+if (dataset_ref=="ERAINTERIM" & year1_ref=="1989" & year2_ref=="2010")
+	{refdir=paste(PROGDIR,"/clim/EOFs/",tele,"/",season,"/",sep="")} else {refdir=paste0(gsub(exp,dataset_ref,EOFDIR0),"/",tele,"/",year1_ref,"_",year2_ref,"/",season,"/")}
+
 nomefile=paste(refdir,"Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc",sep="")
 anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
 nomefile=paste(refdir,tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc",sep="")
@@ -52,7 +55,7 @@ variance=ncdf.opener(nomefile,"zg")
 variance_ref=round(variance[neofs]/sum(variance)*100,1)
 
 #loop on number of EOFs
-for (neof in neofs)
+for (neof in 1:neofs)
 	{
 
 	#loading PCs of experiment and normalize

@@ -46,7 +46,11 @@ year2_ref=2014
 #open reference field
 for (field in fieldlist)
                 {
-                nomefile=paste(PROGDIR,"/clim/Block/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc",sep="")
+		if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
+			{
+			nomefile=paste0(PROGDIR,"/clim/Block/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")} else {
+			nomefile=paste0(gsub(exp,dataset_ref,BLOCKDIR),"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+			}
                 field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
                 assign(paste(field,"_ref",sep=""),field_ref)
                 }

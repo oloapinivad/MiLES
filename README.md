@@ -20,7 +20,7 @@ Data are interpolated on a common 2.5x2.5 grid using CDO.
 Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014).
 It supports analysis for the 4 standard seasons.
 
-Current version include:
+Current version includes:
 1. 	**2D Atmospheric blocking**: based on *Davini et al. (2012)*
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
 	atmospheric blocking evaluating meridional gradient reversal at 500hPa.
@@ -71,14 +71,14 @@ http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on
 
 ## HOW TO
 
-Before running **MiLES** R packages should installed (see above)
+Before running **MiLES** R packages should installed (see above).
 Also, config_$MACHINE.sh should be set accordingly to your local configuration.
 It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
 
 **MiLES** is simply run executing in bash environment the "wrapper_miles.sh". 
 Options as seasons and file format can be specified at this stage.
 
-**MiLES** is based on a pre-processing of data, performed by "z500_prepare.sh"
+**MiLES** is based on a pre-processing of data, performed by "z500_prepare.sh".
 This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid,
 it selects the NH only and it organizes their structure and their features in order to make them handable by MiLES.
 You can use both geopotential or geopotential height data, the former will be automatically converted. 
@@ -87,8 +87,7 @@ After that, blocking analysis is performed by two different R script ("blocking_
 
 EOFs are produced with CDO via the "eof_fast.sh" script and plots are produced by the "eof_figure.R" script
 
-Figures are extremely basic: they are provided in pdf but they can be converted in png or any other format with the
-tool based on covert in the last lines of the "wrapper_miles.sh"
+Figures are extremely basic: they can be produced in pdf, png and eps format.
 
 ------------
 
@@ -100,7 +99,7 @@ tool based on covert in the last lines of the "wrapper_miles.sh"
 - Support for figures format in png, pdf or eps - by J. von Hardenberg
 - Removed dependencies on R-files saving blocking data (using now NetCDF)
 - Blocking timeseries available in NetCDF
-- NetCDF4 Zip for blockin output files
+- NetCDF4 Zip for blocking output files
 - Support for different model calendar: 30-day, Gregorian and No-Leap-Year
 - ~36x faster linear regression for EOFs (.fit.lm function)
 - Improved speed in blocking for long timeseries: ~2.5x faster for 30years (predeclaration of arrays)
