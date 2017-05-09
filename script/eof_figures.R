@@ -52,7 +52,7 @@ nomefile=paste(refdir,"Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",ye
 anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
 nomefile=paste(refdir,tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc",sep="")
 variance=ncdf.opener(nomefile,"zg")
-variance_ref=round(variance[neofs]/sum(variance)*100,1)
+variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
 
 #loop on number of EOFs
 for (neof in 1:neofs)
@@ -111,12 +111,12 @@ for (neof in 1:neofs)
 
 	filled.contour3(ics,ipsilon,linear_exp,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_exp),levels=lev_field,color.palette=palette0,ylim=lat_lim)
 	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-	text(140,80,paste("Variance Explained: ",variance_exp[neof],"%",sep=""),cex=1.4)
+	text(120,85,paste("Variance Explained: ",variance_exp[neof],"%",sep=""),cex=2)
 
 	filled.contour3(ics,ipsilon,linear_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_ref),levels=lev_field,color.palette=palette0,ylim=lat_lim)
 	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
 	image.scale3(volcano,levels=lev_field,color.palette=palette0,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=3)
-	text(140,80,paste("Variance Explained: ",variance_ref[neof],"%",sep=""),cex=1.4)
+	text(120,85 ,paste("Variance Explained: ",variance_ref[neof],"%",sep=""),cex=2)
 
 	#delta field plot
 	filled.contour3(ics,ipsilon,linear_exp-linear_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,"Difference"),levels=lev_diff,color.palette=palette2,ylim=lat_lim)
