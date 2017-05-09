@@ -194,8 +194,8 @@ CN=apply(totrwb,c(1,2),function(x) sum(x[x==(-10)],na.rm=T))/(ndays)*(-10)
 ACN=apply(totrwb,c(1,2),function(x) sum(x[x==(10)],na.rm=T))/(ndays)*(10)
 
 #saving
-print("Saving Instantaneous Blocking...")
-save(ics,ipsilon,totblocked,frequency,Z500,Z500mean,totmeridional,totBI,totrwb,ACN,CN,MGI,BI,file=outname)
+#print("Saving Instantaneous Blocking...")
+#save(ics,ipsilon,totblocked,frequency,Z500,Z500mean,totmeridional,totBI,totrwb,ACN,CN,MGI,BI,file=outname)
 
 t1=proc.time()-t0
 print(t1)
@@ -216,8 +216,89 @@ large=largescale.extension2(ics,ipsilon,spatial)
 block=blocking.persistence(large,persistence=5,time.array=etime)
 
 #saving
-print("Saving Blocking Events...")
-save(ics,ipsilon,block,file=outname2)
+#print("Saving Blocking Events...")
+#save(ics,ipsilon,block,file=outname2)
 
 tf=proc.time()-t1
 print(tf)
+
+
+##########################################################
+#------------------------Save to NetCDF------------------#
+##########################################################
+
+#saving output to netcdf files
+print("saving NetCDF climatologies...")
+savefile1=paste(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+savefile2=paste(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+
+#which fieds to plot/save
+fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
+full_fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents")
+
+for (var in fieldlist)
+{
+        #name of the var
+        if (var=="InstBlock")
+                {longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
+        if (var=="Z500")
+                {longvar="Geopotential Height"; unit="m"; field=Z500mean; full_field=Z500}
+        if (var=="BI")
+                {longvar="BI index"; unit=""; field=BI; full_field=totBI}
+        if (var=="MGI")
+                {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
+        if (var=="ACN")
+                {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
+        if (var=="CN")
+                {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
+        if (var=="BlockEvents")
+                {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
+        if (var=="DurationEvents")
+                {longvar="Blocking Events duration"; unit="days"; field=block$duration}
+        if (var=="NumberEvents")
+                {longvar="Blocking Events number"; unit=""; field=block$nevents}
+
+
+        # dimensions definition
+        TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+        LEVEL=50000
+	fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+        x <- ncdim_def( "Lon", "degrees", ics)
+        y <- ncdim_def( "Lat", "degrees", ipsilon)
+        z <- ncdim_def( "Lev", "Pa", LEVEL)
+        t1 <- ncdim_def( "Time", TIME, 1,unlim=T)
+	t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T)
+	
+
+        #variable definitions
+        var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t1),-999,longname=longvar,prec="single",compression=1)
+	full_var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t2),-999,longname=longvar,prec="single",compression=1)
+	
+        assign(paste("var",var,sep=""),var_ncdf)
+	assign(paste("full_var",var,sep=""),full_var_ncdf)
+        assign(paste("field",var,sep=""),field)
+	assign(paste("full_field",var,sep=""),full_field)
+}
+
+#Climatologies 
+namelist1=paste("var",fieldlist,sep="")
+nclist1 <- mget(namelist1)
+ncfile1 <- nc_create(savefile1,nclist1)
+for (var in fieldlist)
+{
+        # create ncdf file
+        ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste("field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+}
+nc_close(ncfile1)
+
+#Fullfield
+namelist2=paste("full_var",full_fieldlist,sep="")
+nclist2 <- mget(namelist2)
+ncfile2 <- nc_create(savefile2,nclist2)
+for (var in full_fieldlist)
+{
+        # create ncdf file
+        ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste("full_field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+}
+nc_close(ncfile2)
+

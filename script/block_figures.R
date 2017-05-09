@@ -16,8 +16,8 @@ year2=args[3]
 season=args[4]
 
 #correct folder to year and season dependence
-BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,"/",sep="")
-FIGDIR=paste(FIGDIR,"/Block/",year1,"_",year2,"/",season,"/",sep="")
+BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,sep="")
+FIGDIR=paste(FIGDIR,"/Block/",year1,"_",year2,"/",season,sep="")
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines
@@ -26,73 +26,17 @@ source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 #which fieds to plot/save
 fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
 
-#loading Blocking file
-outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
-load(outname)
-outname2=paste(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season,sep="")
-load(outname2)
-
 ##########################################################
-#------------------------Save to NetCDF------------------#
+#-----------------Loading datasets-----------------------#
 ##########################################################
 
-#saving output to netcdf files
-print("saving NetCDF climatologies...")
-namefile=paste(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
-
-
-for (var in fieldlist)
-{
-        #name of the var
-        if (var=="InstBlock")
-                {longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency}
-        if (var=="Z500")
-                {longvar="Geopotential Height"; unit="m"; field=Z500mean}
-        if (var=="BI")
-                {longvar="BI index"; unit=""; field=BI}
-        if (var=="MGI")
-                {longvar="MGI index"; unit=""; field=MGI}
-        if (var=="ACN")
-                {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN}
-	if (var=="CN")
-                {longvar="Cyclonic RWB frequency"; unit="%"; field=CN}
-	if (var=="BlockEvents")
-                {longvar="Blocking Events frequency"; unit="%"; field=block$percentage}
-	if (var=="DurationEvents")
-                {longvar="Blocking Events duration"; unit="days"; field=block$duration}
-	if (var=="NumberEvents")
-                {longvar="Blocking Events number"; unit=""; field=block$nevents}
-
-
-        # dimensions definition
-        TIME=paste("days since ","1900","-","01","-01 00:00:00",sep="")
-        LEVEL=50000
-        x <- ncdim_def( "Lon", "degrees", ics)
-        y <- ncdim_def( "Lat", "degrees", ipsilon)
-        z <- ncdim_def( "Lev", "Pa", LEVEL)
-        t <- ncdim_def( "Time", TIME, 1,unlim=T)
-
-        #variable definitions
-        var_ncdf=ncvar_def(var,unit,list(x,y,z,t),-999,longname=longvar,prec="single")
-        assign(paste("var",var,sep=""),var_ncdf)
-        assign(paste("field",var,sep=""),field)
-}
-
-namelist=paste("var",fieldlist,sep="")
-nclist<-lapply(namelist,get)
-ncfile <- nc_create(namefile,nclist)
-for (var in fieldlist)
-{
-        # create ncdf file
-        ncvar_put(ncfile, fieldlist[which(var==fieldlist)], get(paste("field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-}
-
-nc_close(ncfile)
-
-
-##########################################################
-#-----------------Produce figures------------------------#
-##########################################################
+#open reference field
+for (field in fieldlist)
+                {
+                nomefile=paste(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+                field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
+                assign(paste(field,"_exp",sep=""),field_exp)
+                }
 
 #set reference field
 dataset_ref="ERAINTERIM"
@@ -107,6 +51,10 @@ for (field in fieldlist)
                 assign(paste(field,"_ref",sep=""),field_ref)
                 }
 
+##########################################################
+#-----------------Produce figures------------------------#
+##########################################################
+
 #loop on fields
 for (field in fieldlist)
 
@@ -114,7 +62,6 @@ for (field in fieldlist)
 	#define field-dependent properties
 	if (field=="InstBlock")
 	{
-		field_exp=frequency; 
 		color_field=palette1; color_diff=palette2
 		lev_field=seq(0,35,3); lev_diff=seq(-10.5,10.5,1)
 		legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:"; legend_distance=3
@@ -122,7 +69,6 @@ for (field in fieldlist)
 
 	if (field=="BlockEvents")
 	{
-		field_exp=block$percentage
                 color_field=palette1; color_diff=palette2
                 lev_field=seq(0,25,3); lev_diff=seq(-10.5,10.5,1)
                 legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:"; legend_distance=3
@@ -130,7 +76,6 @@ for (field in fieldlist)
 	
 	if (field=="DurationEvents")
         {
-                field_exp=block$duration
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2)
                 legend_unit="Duration (days)"; title_name="Duration of Blocking Events:"; legend_distance=3
@@ -138,16 +83,13 @@ for (field in fieldlist)
 	
 	if (field=="NumberEvents")
         {
-                field_exp=block$nevents
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5)
                 legend_unit=""; title_name="Number of Blocking Events:"; legend_distance=3
         }
 
-
 	if (field=="Z500")
         {
-                field_exp=Z500mean;
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(4800,6000,50); lev_diff=seq(-310,310,20)
                 legend_unit="Geopotential Height (m)"; title_name="Z500:" ; legend_distance=4
@@ -155,7 +97,6 @@ for (field in fieldlist)
 
 	if (field=="BI")
         {
-                field_exp=BI;
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(1,6,0.25); lev_diff=seq(-2.1,2.1,.2)
                 legend_unit="BI index"; title_name="Blocking Intensity (BI):" ; legend_distance=3
@@ -163,7 +104,6 @@ for (field in fieldlist)
 
 	if (field=="MGI")
         {
-                field_exp=MGI;
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(0,15,1); lev_diff=seq(-5.25,5.25,.5)
                 legend_unit="MGI Index"; title_name="Meridional Gradient Inversion (MGI):" ; legend_distance=3
@@ -171,15 +111,15 @@ for (field in fieldlist)
 
 	if (field=="ACN" | field=="CN")
         {
-                if (field=="ACN") {field_exp=ACN; title_name="Anticyclonic Rossby wave breaking frequency:"}
-		if (field=="CN") {field_exp=CN; title_name="Cycclonic Rossby wave breaking frequency:"}
+                if (field=="ACN") {title_name="Anticyclonic Rossby wave breaking frequency:"}
+		if (field=="CN") {title_name="Cyclonic Rossby wave breaking frequency:"}
                 color_field=palette1; color_diff=palette2
                 lev_field=seq(0,20,2); lev_diff=seq(-5.25,5.25,.5)
                 legend_unit="RWB frequency (%)"; legend_distance=3
         }
 
-
 	field_ref=get(paste(field,"_ref",sep=""))
+	field_exp=get(paste(field,"_exp",sep=""))
 	
 	
 	#secondary plot properties
@@ -190,9 +130,20 @@ for (field in fieldlist)
 	info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
 
 	#final plot production
-	name=paste(FIGDIR,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".pdf",sep="")
-	print(name)
-	pdf(file=name,width=12,height=12,onefile=T)
+	figname=paste(FIGDIR,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+	print(figname)
+	
+	# Chose output format for figure - by JvH
+        if (tolower(output_file_type) == "png") {
+           png(filename = figname, width=png_width, height=png_height)
+        } else if (tolower(output_file_type) == "pdf") {
+            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
+        } else if (tolower(output_file_type) == "eps") {
+            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
+            postscript(figname)
+        }
+
+	#panels option
 	par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
 
 	#main experiment plot

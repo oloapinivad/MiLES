@@ -89,9 +89,20 @@ for (neof in neofs)
 	info_exp=paste(exp,year1,"-",year2,season)
 
 	#final plot production
-	name=paste(FIGDIR,"EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".pdf",sep="")
-	print(name)
-	pdf(file=name,width=12,height=12,onefile=T)
+	figname=paste(FIGDIR,"EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+	print(figname)
+
+	# Chose output format for figure - by JvH
+        if (tolower(output_file_type) == "png") {
+           png(filename = figname, width=png_width, height=png_height)
+        } else if (tolower(output_file_type) == "pdf") {
+            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
+        } else if (tolower(output_file_type) == "eps") {
+            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
+            postscript(figname)
+        }
+
+	#plot properties
 	par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
 	print(quantile(linear_exp))
 

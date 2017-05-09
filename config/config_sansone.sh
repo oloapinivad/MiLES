@@ -36,6 +36,9 @@ export EOFDIR=$DATADIR/files/EOFs/$exp
 export FIGDIRBLOCK=$DATADIR/figures/Block/$exp
 export FIGDIREOFS=$DATADIR/figures/EOFs/$exp
 
+export output_file_type
+echo $output_file_type
+
 #creating folders
 mkdir -p $ZDIR $FIGDIRBLOCK $FIGDIREOFS $BLOCKDIR $EOFDIR $TEMPDIR
 echo $TEMPDIR

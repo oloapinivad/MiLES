@@ -23,7 +23,7 @@ INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500
 
 #years and seasons to analyze
 year1=1979
-year2=2014
+year2=1980
 
 #please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM JJA SON"
@@ -31,6 +31,9 @@ seasons="DJF"
 
 #select NAO/AO
 teles="NAO"
+
+#output file type for figures (pdf, png, eps)
+output_file_type="png"
 
 #config name: create your own config file for your machine.
 config=sansone
@@ -72,27 +75,13 @@ done
 ################################################
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season
-	#time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $season
+	#time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season
+	time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $season
 done
 
 ################################################
 # cleaning 
 rm -f $TEMPDIR/*.nc
 rm -r $TEMPDIR
-
-################################################
-#------pdf2png conversion ---------------------#
-################################################
-
-#converting from pdf to png
-#files2convert=$( ls $FIGDIR/*/*.pdf )
-#for filepdf in $files2convert ; do
-#        filepng=$( echo $filepdf | sed  "s/pdf/png/")
-#        echo $filepng
-#        $convert -density 216 +antialias  $filepdf -resize 33% $filepng
-#done
-#wait
-#rm $files2convert
 
 
