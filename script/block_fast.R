@@ -1,5 +1,5 @@
 ######################################################
-#-----Blocking routines computation for ECE3---------#
+#-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
@@ -8,8 +8,9 @@ INDIR<-Sys.getenv(c("INDIR"))
 PROGDIR<-Sys.getenv(c("PROGDIR"))
 ZDIR<-Sys.getenv(c("ZDIR"))
 BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
-#R_LIBLOC<-Sys.getenv(c("R_LIBLOC"))
-R_LIBLOC=.libPaths()[1]
+
+#t0
+t0<-proc.time()
 
 #read command line
 args <- commandArgs(TRUE)
@@ -18,49 +19,73 @@ year1=args[2]
 year2=args[3]
 season=args[4]
 
-#loadin packages
-library("ncdf4",lib.loc=R_LIBLOC)
-
 #setting up main variables
-years=year1:year2
 source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
-timeseason=season2timeseason(season)
 ZDIR=paste(ZDIR,"/",sep="")
 BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(BLOCKDIR,recursive=T)
 outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
+outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season,sep="")
 
 #loading first file to prepare the matricies
 nomefile=paste(ZDIR,"Z500_",exp,"_",year1,"01.nc",sep="")
 field=ncdf.opener(nomefile,"zg","lon","lat")
-if (min(field)<10000) {gravity=1} else {gravity=9.80665}
 
+#setting up time domain
+years=year1:year2
+timeseason=season2timeseason(season)
+
+#define model calendar: Gregorian, No-leap-year or 30-day?
+leap_noleap=is.leapyear(years)
+first_leap=years[which(leap_noleap)[1]]
+
+#loading February leap year to check calendar in use
+nomefile=paste(ZDIR,"Z500_",exp,"_",first_leap,"02.nc",sep="")
+field=ncdf.opener(nomefile,"zg","lon","lat")
+
+#define the calendar
+feb.len=length(field[1,1,])
+if (feb.len==29) {kalendar="gregorian"}
+if (feb.len==28) {kalendar="noleap"}
+if (feb.len==30) {kalendar="30day"}
+print(paste("IMPORTANT: Using",kalendar,"calendar for the time filtering"))
+
+#setting time calendar
+if (kalendar=="gregorian") {etime=power.date(season,year1,year2)}
+if (kalendar=="noleap") {etime=power.date.no.leap(season,year1,year2)}
+if (kalendar=="30day") {etime=power.date.30day(season,year1,year2)}
+
+#setting up time length
 ndays=0
+totdays=length(etime$season)
 
-# decleare main variables to be computed
-totrwb=totmeridional=totBI=Z500=totblocked=array(NA,dim=c(length(ics),length(ipsilon)))
+# decleare main variables to be computed (considerable speed up!)
+totrwb=totmeridional=totBI=Z500=totblocked=array(NA,dim=c(length(ics),length(ipsilon),totdays))
 
 # parameters to be set for blocking detection
 fi0=30    			#lowest latitude to be analyzed
 jump=15				#distance on which compute gradients
-step0=round(jump/(ipsilon[2]-ipsilon[1]))   #number of grid points to be used
+step0=round(jump/diff(ipsilon)[1])   #number of grid points to be used
 central=which.min(abs(ipsilon-fi0)) 		#lowest starting latitude
 north=central+step0				#lowest north latitude
 south=central-step0					#lowest sourth latitude
 maxsouth=central-2*step0
 fiN=ipsilon[north]
 fiS=ipsilon[south]	
-range=round((90-fi0-jump)/(ipsilon[20]-ipsilon[19]))  #escursion to the north for computing blocking
+range=round((90-fi0-jump)/diff(ipsilon)[1])  #escursion to the north for computing blocking
 
 print("--------------------------------------------------")
-print(c("distance for gradients:",step0*2.5))
-print(paste("range of latitudes ",fi0,"-",90-step0*2.5," N",sep=""))
+print(c("distance for gradients:",step0*diff(ics)[1]))
+print(paste("range of latitudes ",fi0,"-",90-step0*diff(ics)[1]," N",sep=""))
 
 print("--------------------------------------------------")
 
+##########################################################
+#--------------Istantaneous Blocking---------------------#
+##########################################################
 
 # main cycles on years and months
-for (yy in years)
+for (yy in year1:year2)
 {
 for (mm in timeseason)
 		{
@@ -72,7 +97,7 @@ for (mm in timeseason)
 		if (file.exists(nomefile)==FALSE)    # if files do not exist add empty array for all fields
 		{
 		print("last file does not exist")
-		print("File missing: future procedure of tracking aborted")
+		print("File missing: aborted")
 		break
 		}
 		 
@@ -91,9 +116,7 @@ for (mm in timeseason)
 		for (t in 1:(length(field[1,1,])))
 		{
 		
-		field[,,t]=field[,,t]/gravity
-		
-		 #multidim extension
+		#multidim extension
                 new_field=rbind(field[,,t],field[,,t],field[,,t])
 
                 for (delta in 0:range)  # computing blocking for different latitudes
@@ -111,7 +134,7 @@ for (mm in timeseason)
 
                 # 2-PART ON COMPUTATION OF ROSSBY WAVEBREAKING
                 r=check1+length(ics)
-                rwb_jump=7.5
+                rwb_jump=jump/2
                 steprwb=round(rwb_jump/(ics[20]-ics[19]))
                 rwb_west=new_field[(r-steprwb),south+delta+steprwb]
                 rwb_east=new_field[(r+steprwb),south+delta+steprwb]
@@ -139,40 +162,144 @@ for (mm in timeseason)
 
                 }}}}
 
-		# concatenate matrix
-		totblocked=c(totblocked,blocked)
-		Z500=c(Z500,field)
-		totBI=c(totBI,BI)
-		totmeridional=c(totmeridional,meridional)
-		totrwb=c(totrwb,rwb)	
-		
+		# prepare data for arrays
+		daystowrite=(ndays+1):(ndays+days)
 		ndays=ndays+days
+	
+		# update arrays
+		totblocked[,,daystowrite]=blocked
+		Z500[,,daystowrite]=field
+		totBI[,,daystowrite]=BI
+		totrwb[,,daystowrite]=rwb
+		totmeridional[,,daystowrite]=meridional
+		
                 print(paste("Total # of days:",ndays))
                 print("-------------------------")
 
 }}
 
+##########################################################
+#--------------------Mean Values-------------------------#
+##########################################################
 
-#reconstruct the matrix in 3D form (lon,lat,time)
 
-totblocked=array(totblocked,dim=c(length(ics),length(ipsilon),length(totblocked)/(length(ics)*length(ipsilon))))
-totmeridional=array(totmeridional,dim=c(length(ics),length(ipsilon),length(totmeridional)/(length(ics)*length(ipsilon))))
-Z500=array(Z500,dim=c(length(ics),length(ipsilon),length(Z500)/(length(ics)*length(ipsilon))))
-totBI=array(totBI,dim=c(length(ics),length(ipsilon),length(totBI)/(length(ics)*length(ipsilon))))
-totrwb=array(totrwb,dim=c(length(ics),length(ipsilon),length(totrwb)/(length(ics)*length(ipsilon))))
-
-#compute mean values
-frequency=apply(totblocked,c(1,2),mean,na.rm=T)*100       #frequency of Instantaneous Blocking days
+#compute mean values (use rowMeans that is faster when there are no NA values)
+frequency=rowMeans(totblocked,dims=2)*100               #frequency of Instantaneous Blocking days
+Z500mean=rowMeans(Z500,dims=2)                          #Z500 mean value
 BI=apply(totBI,c(1,2),mean,na.rm=T)                     #Blocking Intensity Index as Wiedenmann et al. (2002)
-MGI=apply(totmeridional,c(1,2),mean,na.rm=T)    #Value of meridional gradient inversion
-RWB=apply(totrwb,c(1,2),mean,na.rm=T)           #Rossby Wave Breaking parameters
-Z500mean=apply(Z500,c(1,2),mean,na.rm=T)          #Z500 mean value
+MGI=apply(totmeridional,c(1,2),mean,na.rm=T)   		 #Value of meridional gradient inversion
 
-#anticyclonic and cyclonic averages
+#anticyclonic and cyclonic averages RWB
 CN=apply(totrwb,c(1,2),function(x) sum(x[x==(-10)],na.rm=T))/(ndays)*(-10)
 ACN=apply(totrwb,c(1,2),function(x) sum(x[x==(10)],na.rm=T))/(ndays)*(10)
 
-print("Saving...")
-save(ics,ipsilon,totblocked,frequency,Z500,Z500mean,totmeridional,totBI,totrwb,ACN,CN,MGI,BI,file=outname)
+#saving
+#print("Saving Instantaneous Blocking...")
+#save(ics,ipsilon,totblocked,frequency,Z500,Z500mean,totmeridional,totBI,totrwb,ACN,CN,MGI,BI,file=outname)
 
+t1=proc.time()-t0
+print(t1)
+
+##########################################################
+#--------------------Time filtering----------------------#
+##########################################################
+
+#spatial filtering on fixed longitude distance
+spatial=longitude.filter(ics,ipsilon,totblocked)
+#CUT=apply(spatial,c(1,2),sum,na.rm=T)/ndays*100
+
+#large scale extension on 10x5 box
+large=largescale.extension.if(ics,ipsilon,spatial)
+#large=largescale.extension2(ics,ipsilon,spatial)
+#LARGE=apply(large,c(1,2),sum,na.rm=T)/ndays*100
+
+#5 days persistence filter
+block=blocking.persistence(large,persistence=5,time.array=etime)
+
+#saving
+#print("Saving Blocking Events...")
+#save(ics,ipsilon,block,file=outname2)
+
+tf=proc.time()-t1
+print(tf)
+
+
+##########################################################
+#------------------------Save to NetCDF------------------#
+##########################################################
+
+#saving output to netcdf files
+print("saving NetCDF climatologies...")
+savefile1=paste(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+savefile2=paste(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+
+#which fieds to plot/save
+fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
+full_fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents")
+
+for (var in fieldlist)
+{
+        #name of the var
+        if (var=="InstBlock")
+                {longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
+        if (var=="Z500")
+                {longvar="Geopotential Height"; unit="m"; field=Z500mean; full_field=Z500}
+        if (var=="BI")
+                {longvar="BI index"; unit=""; field=BI; full_field=totBI}
+        if (var=="MGI")
+                {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
+        if (var=="ACN")
+                {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
+        if (var=="CN")
+                {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
+        if (var=="BlockEvents")
+                {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
+        if (var=="DurationEvents")
+                {longvar="Blocking Events duration"; unit="days"; field=block$duration}
+        if (var=="NumberEvents")
+                {longvar="Blocking Events number"; unit=""; field=block$nevents}
+
+
+        # dimensions definition
+        TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+        LEVEL=50000
+	fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+        x <- ncdim_def( "Lon", "degrees", ics)
+        y <- ncdim_def( "Lat", "degrees", ipsilon)
+        z <- ncdim_def( "Lev", "Pa", LEVEL)
+        t1 <- ncdim_def( "Time", TIME, 1,unlim=T)
+	t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T)
+	
+
+        #variable definitions
+        var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t1),-999,longname=longvar,prec="single",compression=1)
+	full_var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t2),-999,longname=longvar,prec="single",compression=1)
+	
+        assign(paste("var",var,sep=""),var_ncdf)
+	assign(paste("full_var",var,sep=""),full_var_ncdf)
+        assign(paste("field",var,sep=""),field)
+	assign(paste("full_field",var,sep=""),full_field)
+}
+
+#Climatologies 
+namelist1=paste("var",fieldlist,sep="")
+nclist1 <- mget(namelist1)
+ncfile1 <- nc_create(savefile1,nclist1)
+for (var in fieldlist)
+{
+        # create ncdf file
+        ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste("field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+}
+nc_close(ncfile1)
+
+#Fullfield
+namelist2=paste("full_var",full_fieldlist,sep="")
+nclist2 <- mget(namelist2)
+ncfile2 <- nc_create(savefile2,nclist2)
+for (var in full_fieldlist)
+{
+        # create ncdf file
+        ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste("full_field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+}
+nc_close(ncfile2)
 
