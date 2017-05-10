@@ -3,7 +3,7 @@
 ##########################################################
 
 # filetype
-output_file_type<-Sys.getenv(c("output_file_type"))
+output_file_type="png"
 print(paste("Writing output as",output_file_type))
 
 # Specific settings for PNG output

@@ -12,6 +12,12 @@
 #- ------user configurations variables---------#
 ################################################
 
+#config name: create your own config file for your machine.
+config=sansone
+################################################
+. config/config_${config}.sh
+################################################
+
 # exp identificator: it is important for the folder structure.
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
@@ -42,12 +48,7 @@ teles="NAO"
 #output file type for figures (pdf, png, eps)
 output_file_type="pdf"
 
-#config name: create your own config file for your machine.
-config=sansone
 
-################################################
-. config/config_${config}.sh
-################################################
 
 
 ################################################
@@ -82,8 +83,8 @@ done
 ################################################
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast_cmd.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
-	time $Rscript "$PROGDIR/script/block_figures_cmd.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT
+#	time $Rscript "$PROGDIR/script/block_fast_cmd.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
+        time $Rscript "$PROGDIR/script/block_figures_cmd.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 
 ################################################

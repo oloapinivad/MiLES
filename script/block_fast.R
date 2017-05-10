@@ -4,7 +4,6 @@
 ######################################################
 miles.blockfast<-function(exp,year1,year2,season,ZDIR,BLOCKDIR)
 {
-
 #get environmental variables
 #INDIR<-Sys.getenv(c("INDIR"))
 #PROGDIR<-Sys.getenv(c("PROGDIR"))

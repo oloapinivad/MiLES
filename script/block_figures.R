@@ -37,12 +37,11 @@ fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEven
 ##########################################################
 
 #open reference field
-for (field in fieldlist)
-                {
+for (field in fieldlist) {
                 nomefile=paste0(EXPDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
                 field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
                 assign(paste(field,"_exp",sep=""),field_exp)
-                }
+}
 
 #set reference field
 #dataset_ref="ERAINTERIM"
