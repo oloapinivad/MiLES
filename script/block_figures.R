@@ -3,7 +3,7 @@
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
-miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,EXPDIR,REFDIR,cfg)
+miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,BLOCKDIR,REFDIR,cfg)
 {
 source(cfg)
 #get environmental variables
@@ -19,8 +19,10 @@ source(cfg)
 #season=args[4]
 
 #correct folder to year and season dependence
-REFDIR=paste(REFDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
-EXPDIR=paste(EXPDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
+if (REFDIR=="") {
+REFDIR=paste(BLOCKDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
+}
+EXPDIR=paste(BLOCKDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
 FIGDIR=paste(FIGDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 

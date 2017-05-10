@@ -20,10 +20,17 @@ exp="ERAINTERIM"
 # data folder: all the geopotential height data should be here
 #INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500
 INDIR=/home/paolo/work/DATA/$exp/day/Z500
+CFGSCRIPT=$PROGDIR/config/config.R
 
 #years and seasons to analyze
 year1=1979
 year2=2014
+
+dataset_ref="ERAINTERIM"
+year1_ref=1979
+year2_ref=2014
+#REFDIR=""
+REFDIR=$PROGDIR"/clim/Block/"
 
 #please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM JJA SON"
@@ -75,8 +82,8 @@ done
 ################################################
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season
-	time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $season
+	time $Rscript "$PROGDIR/script/block_fast_cmd.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
+	time $Rscript "$PROGDIR/script/block_figures_cmd.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT
 done
 
 ################################################
