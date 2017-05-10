@@ -35,7 +35,7 @@ year2=2014
 dataset_ref="ERAINTERIM"
 year1_ref=1979
 year2_ref=2014
-#REFDIR=""
+#REFDIR=$BLOCKDIR
 REFDIR=$PROGDIR"/clim/Block/"
 
 #please specify one or more of the 4 standard seasons using 3 characters
@@ -47,8 +47,6 @@ teles="NAO"
 
 #output file type for figures (pdf, png, eps)
 output_file_type="pdf"
-
-
 
 
 ################################################
@@ -83,7 +81,7 @@ done
 ################################################
 
 for season in $seasons ; do
-#	time $Rscript "$PROGDIR/script/block_fast_cmd.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
+	time $Rscript "$PROGDIR/script/block_fast_cmd.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
         time $Rscript "$PROGDIR/script/block_figures_cmd.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 

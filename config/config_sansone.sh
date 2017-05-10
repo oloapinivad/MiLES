@@ -16,9 +16,9 @@ convert=/usr/bin/convert
 
 
 #program folder
-export PROGDIR=$(pwd)
+export PROGDIR=/work/users/jost/blocking/MiLES
 #data folder
-export DATADIR=/work/users/paolo/scratch/miles
+export DATADIR=/work/users/jost/blocking/miles_output
 
 ####################################
 #no need to change below this line #
@@ -29,11 +29,11 @@ export ZDIR=$DATADIR/Z500/$exp
 #TEMPDIR folder
 export TEMPDIR=$DATADIR/tempdir/${exp}_$RANDOM
 #Blocking files folder
-export BLOCKDIR=$DATADIR/files/Block/$exp
+export BLOCKDIR=$DATADIR/files/Block
 #NAO files folder
 export EOFDIR=$DATADIR/files/EOFs/$exp
 #figures folder
-export FIGDIRBLOCK=$DATADIR/figures/Block/$exp
+export FIGDIRBLOCK=$DATADIR/figures/Block
 export FIGDIREOFS=$DATADIR/figures/EOFs/$exp
 
 # file type
