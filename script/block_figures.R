@@ -3,25 +3,29 @@
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
+miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,EXPDIR,REFDIR,cfg)
+{
+source(cfg)
 #get environmental variables
-PROGDIR<-Sys.getenv(c("PROGDIR"))
-BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
-FIGDIR<-Sys.getenv(c("FIGDIRBLOCK"))
+#PROGDIR<-Sys.getenv(c("PROGDIR"))
+#BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
+#FIGDIR<-Sys.getenv(c("FIGDIRBLOCK"))
 
 #read command line
-args <- commandArgs(TRUE)
-exp=args[1]
-year1=args[2]
-year2=args[3]
-season=args[4]
+#args <- commandArgs(TRUE)
+#exp=args[1]
+#year1=args[2]
+#year2=args[3]
+#season=args[4]
 
 #correct folder to year and season dependence
-BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,sep="")
-FIGDIR=paste(FIGDIR,"/Block/",year1,"_",year2,"/",season,sep="")
+REFDIR=paste(REFDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
+EXPDIR=paste(EXPDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
+FIGDIR=paste(FIGDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines
-source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
+#source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 
 #which fieds to plot/save
 fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
@@ -33,36 +37,29 @@ fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEven
 #open reference field
 for (field in fieldlist)
                 {
-                nomefile=paste(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+                nomefile=paste0(EXPDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
                 field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
                 assign(paste(field,"_exp",sep=""),field_exp)
                 }
 
 #set reference field
-dataset_ref="ERAINTERIM"
-year1_ref=1979
-year2_ref=2014
+#dataset_ref="ERAINTERIM"
+#year1_ref=1979
+#year2_ref=2014
 
 #open reference field
-for (field in fieldlist)
-                {
-		if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
-			{
-			nomefile=paste0(PROGDIR,"/clim/Block/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")} else {
-			nomefile=paste0(gsub(exp,dataset_ref,BLOCKDIR),"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-			}
-                field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
-                assign(paste(field,"_ref",sep=""),field_ref)
-                }
+for (field in fieldlist) {
+     nomefile=paste0(REFDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
+     field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
+     assign(paste(field,"_ref",sep=""),field_ref)
+}
 
 ##########################################################
 #-----------------Produce figures------------------------#
 ##########################################################
 
 #loop on fields
-for (field in fieldlist)
-
-	{
+for (field in fieldlist) {
 	#define field-dependent properties
 	if (field=="InstBlock")
 	{
@@ -166,6 +163,4 @@ for (field in fieldlist)
 
 	dev.off()
 	}
-
-
-
+}
