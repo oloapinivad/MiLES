@@ -2,6 +2,17 @@
 R_LIBLOC=.libPaths()[1]
 
 ##########################################################
+#------------------------Packages------------------------#
+##########################################################
+
+#loadin packages
+library("maps",lib.loc=R_LIBLOC)
+library("ncdf4",lib.loc=R_LIBLOC)
+
+#check if fast linear fit is operative (after R 3.1): 3x faster than lm.fit, 36x faster than lm
+if (exists(".lm.fit")) {lin.fit=.lm.fit} else {lin.fit=lm.fit}
+
+##########################################################
 #-------------Plot configurations------------------------#
 ##########################################################
 
@@ -38,19 +49,44 @@ palette0=colorRampPalette(c("#00008F", "#00009F", "#0000AF", "#0000BF", "#0000CF
 palette1=colorRampPalette(c("white","orange","darkred"))
 palette2=colorRampPalette(c("blue","white","red"))
 
-
 ##########################################################
-#------------------------Packages------------------------#
+#-----------------Basic functions------------------------#
 ##########################################################
 
-#loadin packages
-#suppressMessages(library("spam",lib.loc=R_LIBLOC))
-library("maps",lib.loc=R_LIBLOC)
-#library("fields",lib.loc=R_LIBLOC)
-library("ncdf4",lib.loc=R_LIBLOC)
+#normalize a time series
+standardize<-function(timeseries)
+{
+out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
+return(out)
+}
 
-#check if fast linear fit is operative (after R 3.1): 3x faster than lm.fit, 36x faster than lm
-if (exists(".lm.fit")) {lin.fit=.lm.fit} else {lin.fit=lm.fit}
+
+#detect ics ipsilon lat-lon
+whicher<-function(axis,number)
+{
+out=which.min(abs(axis-number))
+return(out)
+}
+
+#produce a 2d matrix of area weight
+area.weight<-function(ics,ipsilon,root=T)
+{
+field=array(NA,dim=c(length(ics),length(ipsilon)))
+if (root==T)
+{
+        for (j in 1:length(ipsilon))
+        {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
+}
+
+if (root==F)
+{
+        for (j in 1:length(ipsilon))
+        {field[,j]=cos(pi/180*ipsilon[j])}
+}
+return(field)
+
+}
+
 
 
 ##########################################################
@@ -400,7 +436,7 @@ return(out)
 }
 
 
-#large scale extension
+#large scale extension with further implementation
 largescale.extension.if<-function(ics,ipsilon,field)
 {
 print("Large Scale Extension based on fixed angle")
@@ -513,4 +549,107 @@ return(field)
 }
 
 
+##########################################################
+#------------EOFs and regims functions-------------------#
+##########################################################
 
+eofs<-function(lon,lat,field,neof=4,xlim,ylim,method="SVD",do_standardize=F,do_regression=F)
+{
+# R tool for computing EOFs based on Singular Value Decomposition ("SVD", default)
+# or with the eigenvectors of the covariance matrix ("covariance", slower) 
+# If requested, computes linear regressions and standardizes the PCs
+# If you want to use the regressions, remember to standardize the PCs
+# Take as input a 3D anomaly field.
+# Requires "personal" functions area.weight, whicher and standardize
+
+#area weighting, based on the root of cosine
+print("Area Weighting...")
+ww=area.weight(lon,lat,root=T)
+wwfield=sweep(field,c(1,2),ww,"*")
+
+#selection of the box
+box=wwfield[whicher(lon,xlim[1]):whicher(lon,xlim[2]),whicher(lat,ylim[1]):whicher(lat,ylim[2]),]
+slon=lon[whicher(lon,xlim[1]):whicher(lon,xlim[2])]
+slat=lat[whicher(lat,ylim[1]):whicher(lat,ylim[2])]
+
+#transform 3D field in a matrix
+new_box=array(box,dim=c(dim(box)[1]*dim(box)[2],dim(box)[3]))
+
+#calling SVD
+if (method=="SVD")
+{       
+        print("Calling SVD...")
+        SVD=svd(new_box,nu=neof,nv=neof)
+        
+        #extracting EOFs (loading pattern), expansions coefficient and variance explained
+        pattern=array(SVD$u,dim=c(dim(box)[1],dim(box)[2],neof))
+        coefficient=SVD$v
+        variance=(SVD$d[1:neof])^2/sum((SVD$d)^2)
+        if (do_standardize)
+                { coefficient=apply(coefficient,c(2),standardize) }
+                else
+                { coefficient=sweep(coefficient,c(2),sqrt(variance),"*") }
+}
+
+#calling covariance matrix
+if (method=="covariance")
+{       
+        print("Calling eigenvectors of the covariance matrix...")
+        covma=cov(t(new_box))
+        eig=eigen(covma)
+        coef=(t(new_box)%*%eig$vector)[,1:neof]
+        pattern=array(eig$vectors,dim=c(dim(box)[1],dim(box)[2],dim(box)[3]))[,,1:neof]
+        variance=eig$values[1:neof]/sum(eig$values)
+           if (do_standardize)
+                { coefficient=apply(coef,c(2),standardize) }
+                else
+                { coefficient=coef }
+}
+
+#linear regressions on anomalies
+regression=NULL
+if (do_regression)
+{       
+        print("Linear Regressions (it can takes a while)... ")
+        regression=array(NA,dim=c(length(lon),length(lat),neof))
+        for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) coef(lm(x ~ coefficient[,i]))[2])}
+}
+
+#preparing output
+print("Finalize...")
+pattern=list(x=slon,y=slat,z=pattern)
+out=list(pattern=pattern,coeff=coefficient,variance=variance,regression=regression)
+return(out)
+}
+
+
+regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim)
+{
+# R tool to compute cluster analysis based on k-means.
+# Requires "personal" function eofs
+# Take as input a 3D anomaly field
+
+#Reduce the phase space with EOFs: use SVD and do not standardize PCs
+print("Launching EOFs...")
+reducedspace=eofs(lon,lat,field,neof=neof,xlim=xlim,ylim=ylim,method="SVD",do_regression=F,do_standardize=F)
+
+#extract the principal components
+PC=reducedspace$coeff
+
+#k-means computation repeat for ntime to find best solution. 
+print("Computing k-means...")
+regimes=kmeans(PC,ncluster,nstart=ntime,iter.max=100)
+
+#Extract regimes frequencyr and timeseries of occupation
+cluster=regimes$cluster
+frequencies=regimes$size/dim(field)[3]*100
+
+#Create composites...
+print("Creating Composites...")
+compose=aperm(apply(field,c(1,2),by,cluster,mean),c(2,3,1))
+
+#prepare output
+print("Finalize...")
+out=list(cluster=cluster,frequencies=frequencies,regimes=compose)
+return(out)
+}

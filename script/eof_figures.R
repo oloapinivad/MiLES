@@ -60,8 +60,9 @@ for (neof in 1:neofs)
 
 	#loading PCs of experiment and normalize
 	nomefile=paste(EOFDIR,"/",tele,"_monthly_timeseries_",exp,"_",year1,"_",year2,"_",season,"_0000",neof-1,".nc",sep="")
-	timeseries_exp=ncdf.opener(nomefile,"zg")
-	timeseries_exp=(timeseries_exp-mean(timeseries_exp))/sd(timeseries_exp)
+	timeseries_exp0=ncdf.opener(nomefile,"zg")
+	timeseries_exp=standardize(timeseries_exp0)
+	#timeseries_exp=(timeseries_exp-mean(timeseries_exp))/sd(timeseries_exp)
 
 
 	#linear regression on Z500 anomalies for experiment (faster function)
@@ -70,8 +71,9 @@ for (neof in 1:neofs)
 
 	#loading PC of reference and normalize
 	nomefile=paste(refdir,tele,"_monthly_timeseries_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
-	timeseries_ref=ncdf.opener(nomefile,"zg")
-	timeseries_ref=(timeseries_ref-mean(timeseries_ref))/sd(timeseries_ref)
+	timeseries_ref0=ncdf.opener(nomefile,"zg")
+	timeseres_ref=standardize(timeseries_ref0)
+	#timeseries_ref=(timeseries_ref-mean(timeseries_ref))/sd(timeseries_ref)
 
 	#linear regression on Z500 anomalies for reference (faster lm.fit function)
 	#linear_ref=apply(anomalies_ref,c(1,2),function(linreg) lm(linreg ~ timeseries_ref,na.action=na.exclude)$coef[2])

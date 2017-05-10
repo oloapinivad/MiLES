@@ -4,7 +4,6 @@
 ######################################################
 
 #get environmental variables
-INDIR<-Sys.getenv(c("INDIR"))
 PROGDIR<-Sys.getenv(c("PROGDIR"))
 ZDIR<-Sys.getenv(c("ZDIR"))
 BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
@@ -24,8 +23,8 @@ source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 ZDIR=paste(ZDIR,"/",sep="")
 BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(BLOCKDIR,recursive=T)
-outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
-outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season,sep="")
+#outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
+#outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season,sep="")
 
 #loading first file to prepare the matricies
 nomefile=paste(ZDIR,"Z500_",exp,"_",year1,"01.nc",sep="")
