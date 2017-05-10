@@ -27,7 +27,7 @@ year2=2014
 
 #please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM JJA SON"
-seasons="DJF MAM"
+seasons="DJF"
 
 #select NAO/AO
 teles="NAO"
@@ -62,11 +62,11 @@ config=sansone
 #figures are done using linear regressions of PCs on monthly anomalies
 #against standard period for Reanalysis.
 
-time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
+#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
-		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
+#		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
 	done
 done
 

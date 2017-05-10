@@ -102,6 +102,7 @@ Figures are extremely basic: they can be produced in pdf, png and eps format.
 - NetCDF4 Zip for blocking output files
 - Support for different model calendar: 30-day, Gregorian and No-Leap-Year
 - ~36x faster linear regression for EOFs (.fit.lm function)
+- new ~2x faster largescale.extension.if() function
 - Improved speed in blocking for long timeseries: ~2.5x faster for 30years (predeclaration of arrays)
 - Minor bugs in axis legends (removal of image.plot)
 - Readme in markdown format
