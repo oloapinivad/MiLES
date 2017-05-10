@@ -209,7 +209,8 @@ spatial=longitude.filter(ics,ipsilon,totblocked)
 #CUT=apply(spatial,c(1,2),sum,na.rm=T)/ndays*100
 
 #large scale extension on 10x5 box
-large=largescale.extension2(ics,ipsilon,spatial)
+large=largescale.extension.if(ics,ipsilon,spatial)
+#large=largescale.extension2(ics,ipsilon,spatial)
 #LARGE=apply(large,c(1,2),sum,na.rm=T)/ndays*100
 
 #5 days persistence filter

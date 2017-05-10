@@ -140,22 +140,6 @@ power.date.30day<-function(season,ANNO1,ANNO2)
 	return(dataline.30day)
 }
 
-#--deprecated!
-#simple.date<-function(season,ANNO1,ANNO2)
-#{
-##evalute the number of days that will analyze in order
-##to create arrays of the needed dimensions
-
-#timeseason=season2timeseason(season)
-#p1<-as.Date(paste0(ANNO1,"-01-01"))
-#p2<-as.Date(paste0(ANNO2,"-12-31"))
-#datas=seq(p1,p2,by="day")
-#month=as.numeric(format(datas,"%m"))
-#month2=month[month %in% timeseason]
-#fulldata=length(month2)
-#return(fulldata)
-#}
-
 ##########################################################
 #--------------NetCDF loading function-------------------#
 ##########################################################
@@ -382,11 +366,21 @@ pers<-function(timeseries,persistence,time.array)
         return(xx)
 }
 
+#function for persistence
+pers2<-function(timeseries,persistence,time.array)
+{     
+dd=min(time.array$season):max(time.array$season) 
+nn=sapply(dd, function(x) {time.persistence(timeseries[which(time.array$season==x)],persistence)})
+xx=c(unlist(nn))
+return(xx)
+}
+
 # check for etime
 if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
 
 print("Time filtering...")
-newfield=apply(field,c(1,2),function(x) pers(x,persistence=5,time.array))
+print(system.time(apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))))
+newfield=apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))
 newfield=aperm(newfield,c(2,3,1))
 print("Mean field...")
 meanfield=apply(newfield,c(1,2),mean,na.rm=T)*100
@@ -403,6 +397,53 @@ nevents=apply(events,c(1,2),function(x) length(x[!is.na(x)]))
 
 out=list(track=newfield,percentage=meanfield,duration=duration,events=events,nevents=nevents)
 return(out)
+}
+
+
+#large scale extension
+largescale.extension.if<-function(ics,ipsilon,field)
+{
+print("Large Scale Extension based on fixed angle")
+fimin=30 #southern latitude to be analyzed
+fimax=75 #northern latitude to be analyzed
+deltaics=diff(ics)[1]
+deltaips=diff(ipsilon)[1]
+passo=round(5/deltaics)  #horizontal movemenent
+vertical=round(2.5/deltaips) #vertical movement
+#time=1:length(field[1,1,]) #elements of the length of the dataset
+time=which(apply(spatial,3,max)!=0) #elements length of the dataset (removing no blocked days)
+
+print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+
+short<-function(ics,ipsilon,field,passo,vertical) {
+	control=field
+	range=which.min(abs(ipsilon-fimin)):which.min(abs(ipsilon-fimax)) #check range for latitude excursion
+	#range=range[(1+vertical):(length(range)-vertical)] #reduce range considering border effect
+	
+	new=rbind(field,field,field) #bind domain for cross-date line
+	for (i in 1:length(ics))
+		{
+		ii=i+length(ics)
+		if (!all(new[(ii-passo):(ii+passo),]==0)) #check to speed up
+			{
+			for (j in range)
+				{
+				control[i,j]=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
+				}
+			}
+		}
+	control[control>0]=1
+	return(control)
+}
+
+
+for (t in time)
+{
+	if (any(t==round(seq(0,length(field[1,1,]),,11))))
+        	{print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
+			{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
+}
+return(field)
 }
 
 #large scale extension
@@ -443,44 +484,6 @@ if (all(!is.na(field[,,t])))
 }
 return(field)
 }
-
-#DEPRECATED: slower large scale extension
-#largescale.extension<-function(ics,ipsilon,field)
-#{
-#print("Large Scale Extension based on fixed angle")
-#deltaics=(ics[20]-ics[19])
-#deltaips=(ipsilon[20]-ipsilon[19])
-#passo=round(5/(ics[20]-ics[19]))
-#vertical=round(2.5/(ipsilon[20]-ipsilon[19]))
-#
-#print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
-#
-#short<-function(ics,ipsilon,field,passo,vertical)
-#{
-#out=field
-#startipsilon=which.min(abs(ipsilon-30))
-#estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
-#new=rbind(field,field,field)
-#for (i in 1:length(ics))
-#{ii=i+length(ics)
-#for (j in startipsilon:(startipsilon+estension))
-#{
-#control=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
-#if (control>0)
-#{out[i,j]=1}
-#}
-#}
-#return(out)
-#}
-#
-#print("Computing... it may takes a while...")
-#final=apply(field,c(3),function(x) short(ics,ipsilon,x,passo,vertical))
-#
-#print("Rearranging the array...")
-#final=array(final,dim=c(length(ics),length(ipsilon),length(field[1,1,])))
-#return(final)
-#}
-#
 
 #Longitude filter for minimum extension
 longitude.filter<-function(ics,ipsilon,field)
