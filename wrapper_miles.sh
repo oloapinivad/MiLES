@@ -66,7 +66,11 @@ time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
+<<<<<<< HEAD
 		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
+=======
+		#time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
+>>>>>>> devel_v0.3
 	done
 done
 

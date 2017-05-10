@@ -259,6 +259,8 @@ for (var in fieldlist)
         if (var=="NumberEvents")
                 {longvar="Blocking Events number"; unit=""; field=block$nevents}
 
+	#fix eventual NaN	
+	field[is.nan(field)]=NA
 
         # dimensions definition
         TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
