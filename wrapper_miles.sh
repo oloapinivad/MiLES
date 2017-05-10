@@ -2,7 +2,7 @@
 
 ################################################
 #--MidLatitude Evaluation System for Ec-Earth--#
-#------------------MiLES v0.2------------------#
+#------------------MiLES v0.31-----------------#
 #----------May 2017, P. Davini, ISAC-CNR-------#
 #
 #
@@ -51,7 +51,7 @@ config=sansone
 #into the $INDIR folder and prepare them in the single month files needed by MiLES
 #since it is thought to be universal it is pretty much inefficient: it may be worth
 #to personalize the script to obtain significant speedup
-#. $PROGDIR/script/z500_prepare.sh $exp $year1 $year2
+time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2
 
 ################################################
 #-------EOFs computation and figures-----------#
@@ -62,11 +62,11 @@ config=sansone
 #figures are done using linear regressions of PCs on monthly anomalies
 #against standard period for Reanalysis.
 
-#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
+time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
-#		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
+		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
 	done
 done
 
@@ -82,6 +82,6 @@ done
 ################################################
 # cleaning 
 rm -f $TEMPDIR/*.nc
-rm -r $TEMPDIR
+rmdir $TEMPDIR
 
 

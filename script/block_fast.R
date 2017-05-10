@@ -6,7 +6,8 @@
 #get environmental variables
 PROGDIR<-Sys.getenv(c("PROGDIR"))
 ZDIR<-Sys.getenv(c("ZDIR"))
-BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
+FILESDIR<-Sys.getenv(c("FILESDIR"))
+
 
 #t0
 t0<-proc.time()
@@ -21,7 +22,7 @@ season=args[4]
 #setting up main variables
 source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 ZDIR=paste(ZDIR,"/",sep="")
-BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,"/",sep="")
+BLOCKDIR=paste(FILESDIR,"/Block/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(BLOCKDIR,recursive=T)
 #outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
 #outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season,sep="")

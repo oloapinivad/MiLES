@@ -12,16 +12,16 @@ Contributors: J. von Hardenberg - ISAC-CNR
 
 ## WHAT IS MiLES?
 
-**MiLES** is a tool for estimating properties of mid-latitude climate originally thought
-for EC-Earth output and then extended to any model data. It is based uniquely on R and CDO.
-It works on daily 500hPa geopotential height data and produces climatological figures 
-for the chosen time period in 3 different output format. 
+**MiLES** is a tool for estimating properties of mid-latitude climate in Global Climate Models
+and Reanalysis datasets. It has been originally thought for EC-Earth output and then
+it has been extended to any model data. It is based uniquely on R and CDO.
+It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
+for the chosen time period (overi the for standard 4 seasons) in 3 different output format. 
 Data are interpolated on a common 2.5x2.5 grid using CDO.  
 Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014).
-It supports analysis for the 4 standard seasons.
 
 Current version includes:
-1. 	**2D Atmospheric blocking**: based on *Davini et al. (2012)*
+1. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
 	atmospheric blocking evaluating meridional gradient reversal at 500hPa.
 	It includes also Meridional Gradient Index and Blocking Intensity index
@@ -92,6 +92,9 @@ Figures are extremely basic: they can be produced in pdf, png and eps format.
 ------------
 
 ## HISTORY
+
+*v0.31 - May 2017*
+- Change folder structure for saving data
 
 *v0.3 - May 2017*
 - Blocking Events definition by Davini et al. (2012) now avaiable

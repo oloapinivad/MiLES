@@ -1,12 +1,12 @@
 ######################################################
-#--Blocking routines plotting and saving for MiLES---#
+#--Blocking routines plotting for MiLES--------------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
 #get environmental variables
 PROGDIR<-Sys.getenv(c("PROGDIR"))
-BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
-FIGDIR<-Sys.getenv(c("FIGDIRBLOCK"))
+FILESDIR<-Sys.getenv(c("FILESDIR"))
+FIGDIR0<-Sys.getenv(c("FIGDIR"))
 
 #read command line
 args <- commandArgs(TRUE)
@@ -16,8 +16,8 @@ year2=args[3]
 season=args[4]
 
 #correct folder to year and season dependence
-BLOCKDIR=paste(BLOCKDIR,"/",year1,"_",year2,"/",season,sep="")
-FIGDIR=paste(FIGDIR,"/Block/",year1,"_",year2,"/",season,sep="")
+BLOCKDIR=paste0(FILESDIR,"/Block/",year1,"_",year2,"/",season)
+FIGDIR=paste0(FIGDIR0,"/Block/",year1,"_",year2,"/",season)
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines

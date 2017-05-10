@@ -6,8 +6,8 @@
 
 #get environmental variables
 PROGDIR<-Sys.getenv(c("PROGDIR"))
-EOFDIR0<-Sys.getenv(c("EOFDIR"))
-FIGDIR0<-Sys.getenv(c("FIGDIREOFS"))
+FILESDIR<-Sys.getenv(c("FILESDIR"))
+FIGDIR0<-Sys.getenv(c("FIGDIR"))
 
 #read command line
 args <- commandArgs(TRUE)
@@ -19,7 +19,7 @@ tele=args[5]
 
 #correct folder to experiment dependent
 FIGDIR=paste(FIGDIR0,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
-EOFDIR=paste(EOFDIR0,"/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
+EOFDIR=paste(FILESDIR,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines
@@ -72,7 +72,7 @@ for (neof in 1:neofs)
 	#loading PC of reference and normalize
 	nomefile=paste(refdir,tele,"_monthly_timeseries_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
 	timeseries_ref0=ncdf.opener(nomefile,"zg")
-	timeseres_ref=standardize(timeseries_ref0)
+	timeseries_ref=standardize(timeseries_ref0)
 	#timeseries_ref=(timeseries_ref-mean(timeseries_ref))/sd(timeseries_ref)
 
 	#linear regression on Z500 anomalies for reference (faster lm.fit function)
