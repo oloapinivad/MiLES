@@ -23,9 +23,9 @@ print(paste("Writing output as",output_file_type))
 # Specific settings for PNG output
 png_width=960
 png_height=960
-png_units="px"
-png_pointsize=12
-png_bg="white"
+#png_units="px"
+#png_pointsize=12
+#png_bg="white"
 
 # Specific settings for PDF and EPS output (in inches)
 pdf_width=12
@@ -56,16 +56,16 @@ palette2=colorRampPalette(c("blue","white","red"))
 #normalize a time series
 standardize<-function(timeseries)
 {
-out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
-return(out)
+	out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
+	return(out)
 }
 
 
 #detect ics ipsilon lat-lon
 whicher<-function(axis,number)
 {
-out=which.min(abs(axis-number))
-return(out)
+	out=which.min(abs(axis-number))
+	return(out)
 }
 
 #produce a 2d matrix of area weight
@@ -86,8 +86,6 @@ if (root==F)
 return(field)
 
 }
-
-
 
 ##########################################################
 #--------------Time Based functions----------------------#
@@ -415,7 +413,7 @@ return(xx)
 if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
 
 print("Time filtering...")
-print(system.time(apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))))
+#print(system.time(apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))))
 newfield=apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))
 newfield=aperm(newfield,c(2,3,1))
 print("Mean field...")
