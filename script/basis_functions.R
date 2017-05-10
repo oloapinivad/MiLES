@@ -447,7 +447,7 @@ deltaips=diff(ipsilon)[1]
 passo=round(5/deltaics)  #horizontal movemenent
 vertical=round(2.5/deltaips) #vertical movement
 #time=1:length(field[1,1,]) #elements of the length of the dataset
-time=which(apply(spatial,3,max)!=0) #elements length of the dataset (removing no blocked days)
+time=which(apply(field,3,max)!=0) #elements length of the dataset (removing no blocked days)
 
 print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
 
