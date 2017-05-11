@@ -2,33 +2,34 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-
+miles.blockfast<-function(exp,year1,year2,season,ZDIR,BLOCKDIR)
+{
 #get environmental variables
-PROGDIR<-Sys.getenv(c("PROGDIR"))
-ZDIR<-Sys.getenv(c("ZDIR"))
-FILESDIR<-Sys.getenv(c("FILESDIR"))
-
+#INDIR<-Sys.getenv(c("INDIR"))
+#PROGDIR<-Sys.getenv(c("PROGDIR"))
+#ZDIR<-Sys.getenv(c("ZDIR"))
+#BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
 
 #t0
 t0<-proc.time()
 
 #read command line
-args <- commandArgs(TRUE)
-exp=args[1]
-year1=args[2]
-year2=args[3]
-season=args[4]
+#args <- commandArgs(TRUE)
+#exp=args[1]
+#year1=args[2]
+#year2=args[3]
+#season=args[4]
 
 #setting up main variables
-source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
-ZDIR=paste(ZDIR,"/",sep="")
-BLOCKDIR=paste(FILESDIR,"/Block/",year1,"_",year2,"/",season,"/",sep="")
+#source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
+ZDIR=paste0(ZDIR,"/")
+BLOCKDIR=paste0(BLOCKDIR,"/",exp,"/",year1,"_",year2,"/",season,"/")
 dir.create(BLOCKDIR,recursive=T)
-#outname=paste(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season,sep="")
-#outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season,sep="")
+outname=paste0(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season)
+outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season)
 
 #loading first file to prepare the matricies
-nomefile=paste(ZDIR,"Z500_",exp,"_",year1,"01.nc",sep="")
+nomefile=paste0(ZDIR,"Z500_",exp,"_",year1,"01.nc")
 field=ncdf.opener(nomefile,"zg","lon","lat")
 
 #setting up time domain
@@ -305,3 +306,19 @@ for (var in full_fieldlist)
 }
 nc_close(ncfile2)
 
+}
+
+#read command line
+args <- commandArgs(TRUE)
+if (length(args)!=0) {
+exp=args[1]
+year1=args[2]
+year2=args[3]
+season=args[4]
+ZDIR=args[5]
+BLOCKDIR=args[6]
+PROGDIR=args[7]
+
+source(paste0(PROGDIR,"/script/basis_functions.R"))
+miles.blockfast(exp,year1,year2,season,ZDIR,BLOCKDIR)
+}
