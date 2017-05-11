@@ -376,7 +376,6 @@ return(xx)
 if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
 
 print("Time filtering...")
-#print(system.time(apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))))
 newfield=apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))
 newfield=aperm(newfield,c(2,3,1))
 print("Mean field...")

@@ -9,12 +9,14 @@ miles.block.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,se
 #figures configuration files
 source(cfg)
 
-if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
-        {REFDIR=REFDIR} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
+BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
+FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
+dir.create(FIGDIRBLOCK,recursive=T)
 
-BLOCKDIR=paste(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
-FIGDIR=paste(FIGDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
-dir.create(FIGDIR,recursive=T)
+
+if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
+        {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
+
 
 #which fieds to plot/save
 fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
@@ -24,17 +26,19 @@ fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEven
 ##########################################################
 
 #open reference field
-for (field in fieldlist) {
-                nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-                field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
-                assign(paste(field,"_exp",sep=""),field_exp)
+for (field in fieldlist) 
+	{
+        nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
+        field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
+        assign(paste(field,"_exp",sep=""),field_exp)
 }
 
 #open reference field
-for (field in fieldlist) {
-     nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-     field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
-     assign(paste(field,"_ref",sep=""),field_ref)
+for (field in fieldlist) 
+	{
+     	nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+     	field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
+     	assign(paste(field,"_ref",sep=""),field_ref)
 }
 
 ##########################################################
@@ -114,7 +118,7 @@ for (field in fieldlist) {
 	info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
 
 	#final plot production
-	figname=paste(FIGDIR,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+	figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
 	print(figname)
 	
 	# Chose output format for figure - by JvH

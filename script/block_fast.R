@@ -9,15 +9,10 @@ miles.block.fast<-function(exp,year1,year2,season,ZDIR,FILESDIR)
 t0<-proc.time()
 
 #setting up main variables
-ZDIR=paste0(ZDIR,"/")
-BLOCKDIR=paste0(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/")
+BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
 dir.create(BLOCKDIR,recursive=T)
 #outname=paste0(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season)
 #outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season)
-
-#loading first file to prepare the matricies
-nomefile=paste0(ZDIR,"Z500_",exp,"_",year1,"01.nc")
-field=ncdf.opener(nomefile,"zg","lon","lat")
 
 #setting up time domain
 years=year1:year2
@@ -28,7 +23,7 @@ leap_noleap=is.leapyear(years)
 first_leap=years[which(leap_noleap)[1]]
 
 #loading February leap year to check calendar in use
-nomefile=paste(ZDIR,"Z500_",exp,"_",first_leap,"02.nc",sep="")
+nomefile=paste(ZDIR,"/Z500_",exp,"_",first_leap,"02.nc",sep="")
 field=ncdf.opener(nomefile,"zg","lon","lat")
 
 #define the calendar
@@ -78,7 +73,7 @@ for (yy in year1:year2)
 for (mm in timeseason)
 		{
 		mm=sprintf("%02d",mm)
-                nomefile=paste(ZDIR,"Z500_",exp,"_",yy,mm,".nc",sep="")
+                nomefile=paste0(ZDIR,"/Z500_",exp,"_",yy,mm,".nc")
 		print(c(season,exp,yy,mm))
 
 		##check existance of the files
@@ -218,8 +213,8 @@ print(tf)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-savefile1=paste(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
-savefile2=paste(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
+savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc")
 
 #which fieds to plot/save
 fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
@@ -265,31 +260,31 @@ for (var in fieldlist)
         var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t1),-999,longname=longvar,prec="single",compression=1)
 	full_var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t2),-999,longname=longvar,prec="single",compression=1)
 	
-        assign(paste("var",var,sep=""),var_ncdf)
-	assign(paste("full_var",var,sep=""),full_var_ncdf)
-        assign(paste("field",var,sep=""),field)
-	assign(paste("full_field",var,sep=""),full_field)
+        assign(paste0("var",var),var_ncdf)
+	assign(paste0("full_var",var),full_var_ncdf)
+        assign(paste0("field",var),field)
+	assign(paste0("full_field",var),full_field)
 }
 
 #Climatologies 
-namelist1=paste("var",fieldlist,sep="")
+namelist1=paste0("var",fieldlist)
 nclist1 <- mget(namelist1)
 ncfile1 <- nc_create(savefile1,nclist1)
 for (var in fieldlist)
 {
         # create ncdf file
-        ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste("field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+        ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste0("field",var)), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 }
 nc_close(ncfile1)
 
 #Fullfield
-namelist2=paste("full_var",full_fieldlist,sep="")
+namelist2=paste0("full_var",full_fieldlist)
 nclist2 <- mget(namelist2)
 ncfile2 <- nc_create(savefile2,nclist2)
 for (var in full_fieldlist)
 {
         # create ncdf file
-        ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste("full_field",var,sep="")), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+        ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste0("full_field",var)), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 }
 nc_close(ncfile2)
 
