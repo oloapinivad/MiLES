@@ -12,12 +12,6 @@
 #- ------user configurations variables---------#
 ################################################
 
-#config name: create your own config file for your machine.
-config=sansone
-################################################
-. config/config_${config}.sh
-################################################
-
 # exp identificator: it is important for the folder structure.
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
@@ -26,17 +20,19 @@ exp="ERAINTERIM"
 # data folder: all the geopotential height data should be here
 #INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500
 INDIR=/home/paolo/work/DATA/$exp/day/Z500
-CFGSCRIPT=$PROGDIR/config/config.R
 
 #years and seasons to analyze
 year1=1979
-year2=2014
+year2=1980
 
+# if std_clim 
+std_clim=1
+
+# only valid if std_clim=0
 dataset_ref="ERAINTERIM"
 year1_ref=1979
 year2_ref=2014
-#REFDIR=$BLOCKDIR
-REFDIR=$PROGDIR"/clim/Block/"
+REFDIR=$BLOCKDIR
 
 #please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM JJA SON"
@@ -48,6 +44,15 @@ teles="NAO"
 #output file type for figures (pdf, png, eps)
 output_file_type="pdf"
 
+#config name: create your own config file for your machine.
+config=sansone
+
+
+
+################################################
+. config/config_${config}.sh
+################################################
+
 
 ################################################
 #-------------Z500 extraction------------------#
@@ -57,7 +62,7 @@ output_file_type="pdf"
 #into the $INDIR folder and prepare them in the single month files needed by MiLES
 #since it is thought to be universal it is pretty much inefficient: it may be worth
 #to personalize the script to obtain significant speedup
-time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2
+#time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2
 
 ################################################
 #-------EOFs computation and figures-----------#
@@ -68,15 +73,12 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2
 #figures are done using linear regressions of PCs on monthly anomalies
 #against standard period for Reanalysis.
 
-time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
+#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles"
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
-<<<<<<< HEAD
-		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
-=======
 		#time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
->>>>>>> devel_v0.3
+		#time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele
 	done
 done
 
@@ -84,9 +86,11 @@ done
 #------Blocking Computation and Figures--------#
 ################################################
 
+echo $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
-        time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT $PROGDIR
+	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $ZDIR $FILESDIR $PROGDIR 
+        time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 
 ################################################

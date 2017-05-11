@@ -3,27 +3,18 @@
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
-miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,BLOCKDIR,REFDIR,cfg)
+miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg)
 {
 source(cfg)
-#get environmental variables
-#PROGDIR<-Sys.getenv(c("PROGDIR"))
-#BLOCKDIR<-Sys.getenv(c("BLOCKDIR"))
-#FIGDIR<-Sys.getenv(c("FIGDIRBLOCK"))
-
-#read command line
-#args <- commandArgs(TRUE)
-#exp=args[1]
-#year1=args[2]
-#year2=args[3]
-#season=args[4]
 
 #correct folder to year and season dependence
-if (REFDIR=="") {
-REFDIR=paste(BLOCKDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
+if (REFDIR=="") 
+{
+	REFDIR=paste(BLOCKDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
 }
-EXPDIR=paste(BLOCKDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
-FIGDIR=paste(FIGDIR,"/",exp,"/",year1,"_",year2,"/",season,"/",sep="")
+
+EXPDIR=paste(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
+FIGDIR=paste(FIGDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines
@@ -50,7 +41,7 @@ for (field in fieldlist) {
 
 #open reference field
 for (field in fieldlist) {
-     nomefile=paste0(REFDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
+     nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
      field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
      assign(paste(field,"_ref",sep=""),field_ref)
 }

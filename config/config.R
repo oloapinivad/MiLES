@@ -3,7 +3,7 @@
 ##########################################################
 
 # filetype
-output_file_type="png"
+output_file_type="pdf"
 print(paste("Writing output as",output_file_type))
 
 # Specific settings for PNG output

@@ -13,6 +13,8 @@ Rscript=/usr/bin/Rscript
 
 #program folder
 export PROGDIR=$(pwd)
+#config R files for plot properties
+export CFGSCRIPT=$PROGDIR/config/config.R
 #data folder
 export DATADIR=/work/users/paolo/scratch/miles
 
@@ -25,12 +27,21 @@ export ZDIR=$DATADIR/Z500/$exp
 #TEMPDIR folder
 export TEMPDIR=$DATADIR/tempdir/${exp}_$RANDOM
 #NetCDF output dir
-export FILESDIR=$DATADIR/files/$exp
+export FILESDIR=$DATADIR/files
 #figures folder
-export FIGDIR=$DATADIR/figures/$exp
+export FIGDIR=$DATADIR/figures
 
 # file type
 export output_file_type
+
+# if we are using standard climatology
+if [[ ${std_clim} -eq 1 ]] ; then
+	export dataset_ref="ERAINTERIM"
+	export year1_ref=1979
+	export year2_ref=2014
+	export REFDIR=$PROGDIR/clim/Block/
+fi
+
 
 #creating folders
 mkdir -p $ZDIR $FIGDIR $FILESDIR $TEMPDIR
