@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.blockfast<-function(exp,year1,year2,season,ZDIR,FILESDIR)
+miles.block.fast<-function(exp,year1,year2,season,ZDIR,FILESDIR)
 {
 
 #t0
@@ -303,9 +303,9 @@ year1=args[2]
 year2=args[3]
 season=args[4]
 ZDIR=args[5]
-BLOCKDIR=args[6]
+FILESDIR=args[6]
 PROGDIR=args[7]
 
 source(paste0(PROGDIR,"/script/basis_functions.R"))
-miles.blockfast(exp,year1,year2,season,ZDIR,BLOCKDIR)
+miles.block.fast(exp,year1,year2,season,ZDIR,FILESDIR)
 }

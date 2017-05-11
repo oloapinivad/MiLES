@@ -1,17 +1,17 @@
 #!/bin/bash
 
-expname=$1
+exp=$1
 yy1=$2
 yy2=$3
 seasons=$4
 teles=$5
 ZDIR=$6
 FILESDIR=$7
-TEMPDIR=$8
 
+TEMPDIR=$ZDIR/tempdir_${exp}_$RANDOM
+mkdir -p $TEMPDIR
 
 #preparing unique netcdf file
-rm -f $TEMPDIR/*.nc
 $cdonc cat $ZDIR/Z500*nc $TEMPDIR/daily_file.nc
 $cdonc monmean -selyear,$yy1/$yy2 $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
 
@@ -22,7 +22,7 @@ for season in $seasons ; do
 	#fix folders and file names
 	EOFDIR=$FILESDIR/EOFs/${tele}/${yy1}_${yy2}/${season}
 	mkdir -p $EOFDIR
-        suffix=${expname}_${yy1}_${yy2}_${season}
+        suffix=${exp}_${yy1}_${yy2}_${season}
 
 	#select seasons, compute monthly anomalies
         $cdonc selseas,$season $TEMPDIR/monthly_file.nc $TEMPDIR/season_monthly.nc
@@ -69,3 +69,6 @@ for season in $seasons ; do
 
 done
 done
+
+rm -f $TEMPDIR/*.nc
+rmdir $TEMPDIR

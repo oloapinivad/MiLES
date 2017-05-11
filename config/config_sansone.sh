@@ -13,8 +13,6 @@ Rscript=/usr/bin/Rscript
 
 #program folder
 export PROGDIR=$(pwd)
-#config R files for plot properties
-export CFGSCRIPT=$PROGDIR/config/config.R
 #data folder
 export DATADIR=/work/users/paolo/scratch/miles
 
@@ -24,8 +22,6 @@ export DATADIR=/work/users/paolo/scratch/miles
 
 #Z500 folder
 export ZDIR=$DATADIR/Z500/$exp
-#TEMPDIR folder
-export TEMPDIR=$DATADIR/tempdir/${exp}_$RANDOM
 #NetCDF output dir
 export FILESDIR=$DATADIR/files
 #figures folder
@@ -46,8 +42,7 @@ fi
 
 
 #creating folders
-mkdir -p $ZDIR $FIGDIR $FILESDIR $TEMPDIR
-echo $TEMPDIR
+mkdir -p $ZDIR $FIGDIR $FILESDIR
 
 #safety check
 echo "Check if R has been loaded"

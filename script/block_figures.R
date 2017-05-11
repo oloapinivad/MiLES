@@ -3,21 +3,16 @@
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
-miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg)
+miles.block.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg)
 {
+
 #figures configuration files
 source(cfg)
-
-#correct folder to year and season dependence
-#if (REFDIR=="") 
-#{
-#	REFDIR=paste(BLOCKDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
-#}
 
 if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
         {REFDIR=REFDIR} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
-EXPDIR=paste(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
+BLOCKDIR=paste(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
 FIGDIR=paste(FIGDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 
@@ -30,7 +25,7 @@ fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEven
 
 #open reference field
 for (field in fieldlist) {
-                nomefile=paste0(EXPDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
+                nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
                 field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
                 assign(paste(field,"_exp",sep=""),field_exp)
 }
@@ -164,11 +159,11 @@ year1_ref=args[5]
 year2_ref=args[6]
 season=args[7]
 FIGDIR=args[8]
-EXPDIR=args[9]
+FILESDIR=args[9]
 REFDIR=args[10]
 cfg=args[11]
 PROGDIR=args[12]
 
 source(paste0(PROGDIR,"/script/basis_functions.R"))
-miles.blockfigures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,EXPDIR,REFDIR,cfg) 
+miles.block.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg) 
 }
