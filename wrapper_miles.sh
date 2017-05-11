@@ -81,8 +81,8 @@ done
 ################################################
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast_cmd.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
-        time $Rscript "$PROGDIR/script/block_figures_cmd.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT $PROGDIR
+	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $ZDIR $BLOCKDIR $PROGDIR 
+        time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIRBLOCK $BLOCKDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 
 ################################################
