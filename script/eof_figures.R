@@ -3,19 +3,10 @@
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
 
+miles.eof.figures<-function(exp,year1,year,season,tele,FIGDIR0,FILESDIR,cfg)
+{
 
-#get environmental variables
-PROGDIR<-Sys.getenv(c("PROGDIR"))
-FILESDIR<-Sys.getenv(c("FILESDIR"))
-FIGDIR0<-Sys.getenv(c("FIGDIR"))
-
-#read command line
-args <- commandArgs(TRUE)
-exp=args[1]
-year1=args[2]
-year2=args[3]
-season=args[4]
-tele=args[5]
+source(cfg)
 
 #correct folder to experiment dependent
 FIGDIR=paste(FIGDIR0,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
@@ -27,7 +18,6 @@ source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 
 #EOFs to plot (depends on how many computed by CDO!)
 neofs=4
-
 #loading anomalies and variances of experiment
 print(EOFDIR)
 nomefile=paste(EOFDIR,"Z500_monthly_anomalies_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
@@ -53,6 +43,7 @@ anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
 nomefile=paste(refdir,tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc",sep="")
 variance=ncdf.opener(nomefile,"zg")
 variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
+
 
 #loop on number of EOFs
 for (neof in 1:neofs)
@@ -81,7 +72,7 @@ for (neof in 1:neofs)
 
 	#check and flip signs
 	if (cor(c(linear_ref),c(linear_exp))<0) {linear_exp=(-linear_exp)}
-
+	
 	#-----plotting-------#
 	
 	#plot properties
@@ -127,3 +118,25 @@ for (neof in 1:neofs)
 	
 	dev.off()
 	}
+
+}
+
+
+#read command line
+args <- commandArgs(TRUE)
+if (length(args)!=0) {
+exp=args[1]
+year1=args[2]
+year2=args[3]
+season=args[4]
+tele=args[5]
+FIGDIR0=args[6]
+FILESDIR=args[7]
+cfg=args[8]
+PROGDIR=args[9]
+
+
+source(paste0(PROGDIR,"/script/basis_functions.R"))
+miles.eof.figures(exp,year1,year,season,tele,FIGDIR0,FILESDIR,cfg)
+}
+

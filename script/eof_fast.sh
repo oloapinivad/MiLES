@@ -5,6 +5,10 @@ yy1=$2
 yy2=$3
 seasons=$4
 teles=$5
+ZDIR=$6
+FILESDIR=$7
+TEMPDIR=$8
+
 
 #preparing unique netcdf file
 rm -f $TEMPDIR/*.nc
