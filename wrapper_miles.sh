@@ -72,7 +72,7 @@ CFGSCRIPT=$PROGDIR/config/config.R
 #into the $INDIR folder and prepare them in the single month files needed by MiLES
 #since it is thought to be universal it is pretty much inefficient: it may be worth
 #to personalize the script to obtain significant speedup
-time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $ZDIR
+#time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $ZDIR
 
 ################################################
 #-------EOFs computation and figures-----------#

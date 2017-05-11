@@ -10,8 +10,8 @@ miles.eof.figures<-function(exp,year1,year,season,tele,FIGDIR0,FILESDIR,cfg)
 source(cfg)
 
 #correct folder to experiment dependent
-FIGDIR=paste(FIGDIR0,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
-EOFDIR=paste(FILESDIR,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
+FIGDIR=paste(FIGDIR0,"/",exp,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
+EOFDIR=paste(FILESDIR,"/",exp,"/EOFs/",tele,"/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
 
 #preparing routines

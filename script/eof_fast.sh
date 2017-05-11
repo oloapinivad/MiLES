@@ -20,7 +20,7 @@ for season in $seasons ; do
 	echo $season
 
 	#fix folders and file names
-	EOFDIR=$FILESDIR/EOFs/${tele}/${yy1}_${yy2}/${season}
+	EOFDIR=$FILESDIR/$exp/EOFs/${tele}/${yy1}_${yy2}/${season}
 	mkdir -p $EOFDIR
         suffix=${exp}_${yy1}_${yy2}_${season}
 
