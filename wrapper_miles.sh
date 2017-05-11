@@ -85,7 +85,7 @@ time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $ZDIR 
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
-		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $season $tele $FIGDIR $FILESDIR $CFGSCRIPT $PROGDIR
+		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
 	done
 done
 
@@ -98,6 +98,5 @@ for season in $seasons ; do
 	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $ZDIR $FILESDIR $PROGDIR 
         time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
-
 
 
