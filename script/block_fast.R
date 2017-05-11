@@ -9,7 +9,6 @@ miles.blockfast<-function(exp,year1,year2,season,ZDIR,FILESDIR)
 t0<-proc.time()
 
 #setting up main variables
-#source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 ZDIR=paste0(ZDIR,"/")
 BLOCKDIR=paste0(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/")
 dir.create(BLOCKDIR,recursive=T)

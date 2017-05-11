@@ -26,13 +26,12 @@ year1=1979
 year2=1980
 
 # if std_clim 
-std_clim=1
+std_clim=0
 
 # only valid if std_clim=0
 dataset_ref="ERAINTERIM"
 year1_ref=1979
-year2_ref=2014
-REFDIR=$BLOCKDIR
+year2_ref=1980
 
 #please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM JJA SON"
@@ -42,12 +41,10 @@ seasons="DJF"
 teles="NAO"
 
 #output file type for figures (pdf, png, eps)
-output_file_type="pdf"
+output_file_type="png"
 
 #config name: create your own config file for your machine.
 config=sansone
-
-
 
 ################################################
 . config/config_${config}.sh
@@ -84,6 +81,8 @@ done
 ################################################
 #------Blocking Computation and Figures--------#
 ################################################
+
+echo  $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 
 for season in $seasons ; do
 	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $ZDIR $FILESDIR $PROGDIR 

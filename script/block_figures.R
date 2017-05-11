@@ -5,20 +5,21 @@
 
 miles.blockfigures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg)
 {
+#figures configuration files
 source(cfg)
 
 #correct folder to year and season dependence
-if (REFDIR=="") 
-{
-	REFDIR=paste(BLOCKDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
-}
+#if (REFDIR=="") 
+#{
+#	REFDIR=paste(BLOCKDIR,"/",dataset_ref,"/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
+#}
+
+if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
+        {REFDIR=REFDIR} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
 EXPDIR=paste(FILESDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
 FIGDIR=paste(FIGDIR,"/",exp,"/Block/",year1,"_",year2,"/",season,"/",sep="")
 dir.create(FIGDIR,recursive=T)
-
-#preparing routines
-#source(paste(PROGDIR,"/script/basis_functions.R",sep=""))
 
 #which fieds to plot/save
 fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
@@ -33,11 +34,6 @@ for (field in fieldlist) {
                 field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
                 assign(paste(field,"_exp",sep=""),field_exp)
 }
-
-#set reference field
-#dataset_ref="ERAINTERIM"
-#year1_ref=1979
-#year2_ref=2014
 
 #open reference field
 for (field in fieldlist) {

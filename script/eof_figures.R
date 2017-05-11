@@ -6,6 +6,7 @@
 miles.eof.figures<-function(exp,year1,year,season,tele,FIGDIR0,FILESDIR,cfg)
 {
 
+#R configuration file 
 source(cfg)
 
 #correct folder to experiment dependent

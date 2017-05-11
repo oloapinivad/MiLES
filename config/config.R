@@ -3,7 +3,8 @@
 ##########################################################
 
 # filetype
-output_file_type="pdf"
+output_file_type=Sys.getenv(c("output_file_type"))
+if (length(output_file_type)==0) {output_file_type="pdf"}
 print(paste("Writing output as",output_file_type))
 
 # Specific settings for PNG output

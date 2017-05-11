@@ -40,6 +40,8 @@ if [[ ${std_clim} -eq 1 ]] ; then
 	export year1_ref=1979
 	export year2_ref=2014
 	export REFDIR=$PROGDIR/clim/Block/
+else
+	export REFDIR=$FILESDIR
 fi
 
 
