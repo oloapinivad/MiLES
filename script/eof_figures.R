@@ -83,7 +83,7 @@ for (neof in 1:neofs)
 	lat_lim=c(20,90)
 	if (tele=="NAO") {region="North Atlantic"}
 	if (tele=="AO") {region="Northern Hemisphere"}
-	title_name=paste("EOF",neof,sep="")
+	title_name=paste(region,"EOF",neof,sep="")
 	info_exp=paste(exp,year1,"-",year2,season)
 	info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
 
