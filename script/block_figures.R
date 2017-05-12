@@ -17,7 +17,8 @@ FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
 dir.create(FIGDIRBLOCK,recursive=T)
 
 #check path for reference dataset
-if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
+#if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
+if (REFDIR!=FILESDIR)
         {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
 #which fieds to load/plot

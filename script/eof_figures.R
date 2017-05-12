@@ -17,8 +17,9 @@ FIGDIREOF=file.path(FIGDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
 dir.create(FIGDIREOF,recursive=T)
 
 #check path for reference dataset
-if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
-        {REFDIR=file.path(REFDIR,"EOFs",tele,season)} else {REFDIR=file.path(FILESDIR,dataset_ref,"EOFs",tele,paste0(year1_ref,"_",year2_ref),season)}
+#if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
+if (REFDIR!=FILESDIR) 
+ 	{REFDIR=file.path(REFDIR,"EOFs",tele,season) } else {REFDIR=file.path(FILESDIR,dataset_ref,"EOFs",tele,paste0(year1_ref,"_",year2_ref),season)}
 
 
 #EOFs to plot (depends on how many computed by CDO!)
