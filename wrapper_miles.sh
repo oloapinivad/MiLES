@@ -38,11 +38,12 @@ year2_ref=1980
 
 # please specify one or more of the 4 standard seasons using 3 characters
 seasons="DJF MAM SON JJA"
+seasons="DJF"
 
 # select which EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
-teles="NAO AO"
+teles="NAO"
 
 # output file type for figures (pdf, png, eps)
 # pdf are set by default

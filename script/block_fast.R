@@ -46,8 +46,9 @@ totdays=length(etime$season)
 
 # decleare main variables to be computed (considerable speed up!)
 totrwb=totmeridional=totBI=Z500=totblocked=array(NA,dim=c(length(ics),length(ipsilon),totdays))
+totTM90=array(NA,dim=c(length(ics),totdays))
 
-# parameters to be set for blocking detection
+# Davini et al. 2012: parameters to be set for blocking detection
 fi0=30    			#lowest latitude to be analyzed
 jump=15				#distance on which compute gradients
 step0=round(jump/diff(ipsilon)[1])   #number of grid points to be used
@@ -58,6 +59,16 @@ maxsouth=central-2*step0
 fiN=ipsilon[north]
 fiS=ipsilon[south]	
 range=round((90-fi0-jump)/diff(ipsilon)[1])  #escursion to the north for computing blocking
+
+# TM90: parametres for blocking detection (beta)
+tm90_fi0=60 #central_lat
+tm90_fiN=tm90_fi0+20; tm90_fiS=tm90_fi0-20 #south and north lath
+tm90_central=whicher(ipsilon,tm90_fi0)
+tm90_south=whicher(ipsilon,tm90_fiS)
+tm90_north=whicher(ipsilon,tm90_fiN)
+tm90_range=c(-2:2)  #5 degrees to the north, 5 to the south
+
+
 
 print("--------------------------------------------------")
 print(c("distance for gradients:",step0*diff(ics)[1]))
@@ -93,13 +104,23 @@ for (mm in timeseason)
 		field=ncdf.opener(nomefile,"zg","lon","lat")
 		days=length(field[1,1,])
 	
+	
 		#introduce matrix for blocking computation
-		BI=rwb=meridional=array(NA,dim=c(length(ics),length(ipsilon),length(field[1,1,])))
-		blocked=array(0,dim=c(length(ics),length(ipsilon),length(field[1,1,])))
+		BI=rwb=meridional=array(NA,dim=c(length(ics),length(ipsilon),days))
+		blocked=array(0,dim=c(length(ics),length(ipsilon),days))
+		tm90_blocked=array(0,dim=c(length(ics),days))
 
 		#----COMPUTING BLOCKING INDICES-----
 		for (t in 1:days)
 		{
+
+		#TM90: beta
+		tm90_ghgn=(field[,tm90_north+tm90_range,t]-field[,tm90_central+tm90_range,t])/(tm90_fiN-tm90_fi0)
+                tm90_ghgs=(field[,tm90_central+tm90_range,t]-field[,tm90_south+tm90_range,t])/(tm90_fi0-tm90_fiS)
+                tm90_check=(tm90_ghgs>0 & tm90_ghgn<(-10)) # TM90 conditions
+                tm90_check[tm90_check==T]=1; tm90_check[tm90_check==F]=0
+		tm90_blocked[,t]=apply(tm90_check,c(1),max,na.rm=T)
+		
 		
 		#multidim extension
                 new_field=rbind(field[,,t],field[,,t],field[,,t])
@@ -157,6 +178,7 @@ for (mm in timeseason)
 		totBI[,,daystowrite]=BI
 		totrwb[,,daystowrite]=rwb
 		totmeridional[,,daystowrite]=meridional
+		totTM90[,daystowrite]=tm90_blocked
 		
                 print(paste("Total # of days:",ndays))
                 print("-------------------------")
@@ -167,6 +189,8 @@ for (mm in timeseason)
 #--------------------Mean Values-------------------------#
 ##########################################################
 
+# beta for TM90
+TM90=apply(totTM90,1,mean)
 
 #compute mean values (use rowMeans that is faster when there are no NA values)
 frequency=rowMeans(totblocked,dims=2)*100               #frequency of Instantaneous Blocking days
