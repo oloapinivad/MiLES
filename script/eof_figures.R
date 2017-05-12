@@ -34,7 +34,7 @@ nomefile=paste0(EOFDIR,"/Z500_monthly_anomalies_",exp,"_",year1,"_",year2,"_",se
 anomalies_exp=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
 nomefile=paste0(EOFDIR,"/",tele,"_Z500_eigenvalues_",exp,"_",year1,"_",year2,"_",season,".nc")
 variance=ncdf.opener(nomefile,"zg")
-variance_exp=round(variance[neofs]/sum(variance)*100,1)
+variance_exp=round(variance[1:neofs]/sum(variance)*100,1)
 
 #loading reference field
 nomefile=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
@@ -70,7 +70,7 @@ for (neof in 1:neofs)
 	#linear_ref=apply(anomalies_ref,c(1,2),function(linreg) lm(linreg ~ timeseries_ref,na.action=na.exclude)$coef[2])
 	linear_ref=apply(anomalies_ref,c(1,2),function(linreg) lin.fit(as.matrix(timeseries_ref,ncol=1),linreg)$coefficients)
 
-	#check and flip signs
+	#check and flip signs (to be in agreement with reference)
 	if (cor(c(linear_ref),c(linear_exp))<0) {linear_exp=(-linear_exp)}
 	
 	#-----plotting-------#
@@ -81,6 +81,8 @@ for (neof in 1:neofs)
 	nlev_field=length(lev_field)-1
 	nlev_diff=length(lev_diff)-1
 	lat_lim=c(20,90)
+	if (tele=="NAO") {region="North Atlantic"}
+	if (tele=="AO") {region="Northern Hemisphere"}
 	title_name=paste("EOF",neof,sep="")
 	info_exp=paste(exp,year1,"-",year2,season)
 	info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)

@@ -89,7 +89,7 @@ it selects the NH only and it organizes their structure and their features in or
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 
 * "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
-provide the figures with an R script.
+provide the figures with an R script. EOFs signs for the main EOFs are checked in order to maintain consistency.
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provide the figures.
 
@@ -101,11 +101,11 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 ## HISTORY
 
 *v0.31 - May 2017*
-- Reformulation: each script can be run from command line
-- Reformulation of the scripts: R functions introduced for each script
-- Change folder structure for saving data
-- Code consolidation and folder name normalization
 - Possibility of comparing EOFs and Blocking figures with any other MiLES-generated dataset
+- Beta-version of sign-check for main EOFs
+- Reformulation: each script is made by R function + can be run from command line
+- Change folder structure to simplify portability
+- Code consolidation and folder/variable name normalization
 
 *v0.3 - May 2017*
 - Blocking Events definition by Davini et al. (2012) now avaiable
