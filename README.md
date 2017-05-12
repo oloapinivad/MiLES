@@ -1,4 +1,4 @@
-# MiLES v0.3
+# MiLES v0.31
 ## Mid-Latitude Evaluation System
 
 May 2017
@@ -16,9 +16,10 @@ Contributors: J. von Hardenberg - ISAC-CNR
 and Reanalysis datasets. It has been originally thought for EC-Earth output and then
 it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
-for the chosen time period (overi the for standard 4 seasons) in 3 different output format. 
+for the chosen time period (over the for standard 4 seasons) in 3 different output format. 
 Data are interpolated on a common 2.5x2.5 grid using CDO.  
-Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014).
+Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
+other MiLES-generated data
 
 Current version includes:
 1. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
@@ -72,29 +73,39 @@ http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on
 ## HOW TO
 
 Before running **MiLES** R packages should installed (see above).
-Also, config_$MACHINE.sh should be set accordingly to your local configuration.
+Also, config/config_$MACHINE.sh should be set accordingly to your local configuration.
 It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
 
-**MiLES** is simply run executing in bash environment the "wrapper_miles.sh". 
-Options as seasons and file format can be specified at this stage.
+The simplest way to run **MiLES** is simply executing in bash environment "wrapper_miles.sh". 
+Options as seasons, which EOFs compute, reference dataset or file format can be specified at this stage.
+All the chain of scripts will be executed as a sequence.
 
-**MiLES** is based on a pre-processing of data, performed by "z500_prepare.sh".
+However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
+R-based script are written as functions and thus can be called inside R if needed.  
+
+* "z500_prepare.sh". **MiLES** is based on a pre-processing of data. 
 This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid,
 it selects the NH only and it organizes their structure and their features in order to make them handable by MiLES.
-You can use both geopotential or geopotential height data, the former will be automatically converted. 
+You can use both geopotential or geopotential height data, the former will be automatically converted.   
 
-After that, blocking analysis is performed by two different R script ("blocking_fast.R" and "blocking_figures.R")
+* "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
+provide the figures with an R script.
 
-EOFs are produced with CDO via the "eof_fast.sh" script and plots are produced by the "eof_figure.R" script
+* "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provide the figures.
 
 Figures are extremely basic: they can be produced in pdf, png and eps format.
+Properties (e.g. resolution, palettes) can be modified playing with the config/config.R file. 
 
 ------------
 
 ## HISTORY
 
 *v0.31 - May 2017*
+- Reformulation: each script can be run from command line
+- Reformulation of the scripts: R functions introduced for each script
 - Change folder structure for saving data
+- Code consolidation and folder name normalization
+- Possibility of comparing EOFs and Blocking figures with any other MiLES-generated dataset
 
 *v0.3 - May 2017*
 - Blocking Events definition by Davini et al. (2012) now avaiable

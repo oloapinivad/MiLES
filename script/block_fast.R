@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(exp,year1,year2,season,ZDIR,FILESDIR)
+miles.block.fast<-function(exp,year1,year2,season,DATADIR,FILESDIR)
 {
 
 #t0
@@ -10,6 +10,8 @@ t0<-proc.time()
 
 #setting up main variables
 BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
+print(DATADIR)
+ZDIR=file.path(DATADIR,exp)
 dir.create(BLOCKDIR,recursive=T)
 #outname=paste0(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season)
 #outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season)
@@ -266,41 +268,54 @@ for (var in fieldlist)
 	assign(paste0("full_field",var),full_field)
 }
 
-#Climatologies 
+#Climatologies Netcdf file creation
+print(savefile1)
 namelist1=paste0("var",fieldlist)
 nclist1 <- mget(namelist1)
 ncfile1 <- nc_create(savefile1,nclist1)
 for (var in fieldlist)
 {
-        # create ncdf file
+        # put variables into the ncdf file
         ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste0("field",var)), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 }
 nc_close(ncfile1)
 
-#Fullfield
+#Fullfield Netcdf file creation
+print(savefile2)
 namelist2=paste0("full_var",full_fieldlist)
 nclist2 <- mget(namelist2)
 ncfile2 <- nc_create(savefile2,nclist2)
 for (var in full_fieldlist)
 {
-        # create ncdf file
+        # put variables into the ncdf file
         ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste0("full_field",var)), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 }
 nc_close(ncfile2)
 
 }
 
-#read command line
+# REAL EXECUTION OF THE SCRIPT 
+# read command line
 args <- commandArgs(TRUE)
-if (length(args)!=0) {
-exp=args[1]
-year1=args[2]
-year2=args[3]
-season=args[4]
-ZDIR=args[5]
-FILESDIR=args[6]
-PROGDIR=args[7]
 
-source(paste0(PROGDIR,"/script/basis_functions.R"))
-miles.block.fast(exp,year1,year2,season,ZDIR,FILESDIR)
+# number of required arguments from command line
+name_args=c("exp","year1","year2","season","DATADIR","FILESDIR","PROGDIR")
+req_args=length(name_args)
+
+# print error message if uncorrect number of command 
+if (length(args)<req_args | length(args)>req_args)
+        {
+        print("Not enough or too many arguments received: if called from R, simply loading miles.block.figures() function.")
+        print(paste("If running from bash, please specify the",req_args,"arguments here below:"))
+        print(name_args)
+        }
+
+# when the number of arguments is ok run the function()
+if (length(args)==req_args)
+        {
+        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        source(paste0(PROGDIR,"/script/basis_functions.R"))
+        miles.block.fast(exp,year1,year2,season,DATADIR,FILESDIR)
 }
+
+

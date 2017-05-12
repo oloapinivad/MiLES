@@ -1,19 +1,22 @@
 ######################################################
 #--------Routines for EOFs plotting for MiLES--------#
-#-------------P. Davini (Oct 2014)-------------------#
+#-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.eof.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg,tele)
+#DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
+
+miles.eof.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
 {
 
 #R configuration file 
-source(cfg)
+source(CFGSCRIPT)
 
 #correct folder to experiment dependent
 EOFDIR=file.path(FILESDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
 FIGDIREOF=file.path(FIGDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
 dir.create(FIGDIREOF,recursive=T)
 
+#check path for reference dataset
 if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
         {REFDIR=file.path(REFDIR,"EOFs",tele,season)} else {REFDIR=file.path(FILESDIR,dataset_ref,"EOFs",tele,paste0(year1_ref,"_",year2_ref),season)}
 
@@ -32,6 +35,7 @@ nomefile=paste0(EOFDIR,"/",tele,"_Z500_eigenvalues_",exp,"_",year1,"_",year2,"_"
 variance=ncdf.opener(nomefile,"zg")
 variance_exp=round(variance[neofs]/sum(variance)*100,1)
 
+#loading reference field
 nomefile=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
 anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
 nomefile=paste0(REFDIR,"/",tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
@@ -96,7 +100,7 @@ for (neof in 1:neofs)
 
 	#plot properties
 	par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
-	print(quantile(linear_exp))
+	#print(quantile(linear_exp))
 
 	filled.contour3(ics,ipsilon,linear_exp,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_exp),levels=lev_field,color.palette=palette0,ylim=lat_lim)
 	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
@@ -117,26 +121,28 @@ for (neof in 1:neofs)
 
 }
 
-#read command line
+# REAL EXECUTION OF THE SCRIPT 
+# read command line
 args <- commandArgs(TRUE)
 
-if (length(args)!=0) {
-exp=args[1]
-year1=args[2]
-year2=args[3]
-dataset_ref=args[4]
-year1_ref=args[5]
-year2_ref=args[6]
-season=args[7]
-FIGDIR=args[8]
-FILESDIR=args[9]
-REFDIR=args[10]
-cfg=args[11]
-PROGDIR=args[12]
-tele=args[13]
+# number of required arguments from command line
+name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","tele")
+req_args=length(name_args)
 
+# print error message if uncorrect number of command 
+if (length(args)<req_args | length(args)>req_args)
+        {
+        print("Not enough or too many arguments received: if called from R, simply loading miles.block.figures() function.")
+        print(paste("If running from bash, please specify the",req_args,"arguments here below:"))
+        print(name_args)
+        }
 
-source(paste0(PROGDIR,"/script/basis_functions.R"))
-miles.eof.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg,tele)
+# when the number of arguments is ok run the function()
+if (length(args)==req_args)
+        {
+        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        source(paste0(PROGDIR,"/script/basis_functions.R"))
+        miles.eof.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
 }
+
 

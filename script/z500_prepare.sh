@@ -8,10 +8,11 @@ expname=$1
 yy1=$2
 yy2=$3
 INDIR=$4
-ZDIR=$5
+DATADIR=$5
 
-TEMPDIR=$ZDIR/tempdir_${exp}_$RANDOM
-mkdir -p $TEMPDIR
+TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
+DATADIR=$ZDIR/$exp
+mkdir -p $TEMPDIR $ZDIR
 
 #create a single huge file: not efficient but universal
 $cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
@@ -34,7 +35,7 @@ fi
 $cdonc splityear $TEMPDIR/smallfile.nc $TEMPDIR/Z500_year_
 for (( yy=$yy1; yy<=$yy2; yy++ )); do
 		#yyyymm=$( printf "%4d%02d" ${yy} ${mm} )
-		$cdo4 splitmon $TEMPDIR/Z500_year_${yy}.nc ${ZDIR}/Z500_${expname}_${yy}
+		$cdo4 splitmon $TEMPDIR/Z500_year_${yy}.nc ${DATADIR}/Z500_${expname}_${yy}
 done
 
 rm -f $TEMPDIR/*.nc

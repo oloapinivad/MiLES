@@ -1,24 +1,26 @@
 ######################################################
-#--Blocking routines plotting for MiLES--------------#
-#-------------P. Davini (Oct 2014)-------------------#
+#------Blocking routines plotting for MiLES----------#
+#-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.block.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg)
+#DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
+
+miles.block.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
 {
 
 #figures configuration files
-source(cfg)
+source(CFGSCRIPT)
 
+#set main paths
 BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
 FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
 dir.create(FIGDIRBLOCK,recursive=T)
 
-
+#check path for reference dataset
 if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
         {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
-
-#which fieds to plot/save
+#which fieds to load/plot
 fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
 
 ##########################################################
@@ -109,7 +111,6 @@ for (field in fieldlist) {
 	field_ref=get(paste(field,"_ref",sep=""))
 	field_exp=get(paste(field,"_exp",sep=""))
 	
-	
 	#secondary plot properties
 	nlev_field=length(lev_field)-1
 	nlev_diff=length(lev_diff)-1
@@ -152,22 +153,28 @@ for (field in fieldlist) {
 	}
 }
 
-#read command line
+# REAL EXECUTION OF THE SCRIPT 
+# read command line
 args <- commandArgs(TRUE)
-if (length(args)!=0) {
-exp=args[1]
-year1=args[2]
-year2=args[3]
-dataset_ref=args[4]
-year1_ref=args[5]
-year2_ref=args[6]
-season=args[7]
-FIGDIR=args[8]
-FILESDIR=args[9]
-REFDIR=args[10]
-cfg=args[11]
-PROGDIR=args[12]
 
-source(paste0(PROGDIR,"/script/basis_functions.R"))
-miles.block.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,cfg) 
+# number of required arguments from command line
+name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
+req_args=length(name_args)
+
+# print error message if uncorrect number of command 
+if (length(args)<req_args | length(args)>req_args)
+	{
+	print("Not enough or too many arguments received: if called from R, simply loading miles.block.figures() function.")
+	print(paste("If running from bash, please specify the",req_args,"arguments here below:"))
+	print(name_args)
+	}
+
+# when the number of arguments is ok run the function()
+if (length(args)==req_args) 
+	{
+	for (k in 1:req_args) {assign(name_args[k],args[k])}
+	source(paste0(PROGDIR,"/script/basis_functions.R"))
+	miles.block.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
 }
+
+

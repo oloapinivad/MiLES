@@ -11,21 +11,21 @@ cdo4="$cdo -f nc4 -z zip"
 #Rscript is the script-launcher by R
 Rscript=/usr/bin/Rscript
 
-#program folder
+#program folder where MiLES is placed
 export PROGDIR=$(pwd)
-#data folder
-export DATADIR=/work/users/paolo/scratch/miles
+#data folder where place output (Z500 files, NetCDF files and figures)
+export OUTPUTDIR=/work/users/paolo/scratch/miles
 
 ####################################
 #no need to change below this line #
 ####################################
 
 #Z500 folder
-export ZDIR=$DATADIR/Z500/$exp
+export DATADIR=$OUTPUTDIR/Z500
 #NetCDF output dir
-export FILESDIR=$DATADIR/files
+export FILESDIR=$OUTPUTDIR/files
 #figures folder
-export FIGDIR=$DATADIR/figures
+export FIGDIR=$OUTPUTDIR/figures
 
 # file type
 export output_file_type

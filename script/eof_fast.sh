@@ -5,10 +5,11 @@ yy1=$2
 yy2=$3
 seasons=$4
 teles=$5
-ZDIR=$6
+DATADIR=$6
 FILESDIR=$7
 
-TEMPDIR=$ZDIR/tempdir_${exp}_$RANDOM
+TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
+ZDIR=$DATADIR/$exp
 mkdir -p $TEMPDIR
 
 #preparing unique netcdf file

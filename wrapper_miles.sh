@@ -57,7 +57,7 @@ config=sansone
 #-------------Configuration scripts------------#
 ################################################
 
-#machine dependent script (set above)
+# machine dependent script (set above)
 . config/config_${config}.sh
 
 # this script controls some of the graphical parameters
@@ -72,7 +72,7 @@ CFGSCRIPT=$PROGDIR/config/config.R
 #into the $INDIR folder and prepare them in the single month files needed by MiLES
 #since it is thought to be universal it is pretty much inefficient: it may be worth
 #to personalize the script to obtain significant speedup
-#time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $ZDIR
+#time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $DATADIR
 
 ################################################
 #-------EOFs computation and figures-----------#
@@ -81,7 +81,7 @@ CFGSCRIPT=$PROGDIR/config/config.R
 #call to program for EOFs index/pattern. CDO-based, fast and efficient
 #figures are done using linear regressions of PCs on monthly anomalies
 
-time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $ZDIR $FILESDIR
+time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $DATADIR $FILESDIR
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
@@ -95,7 +95,7 @@ done
 
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $ZDIR $FILESDIR $PROGDIR 
+	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $DATADIR $FILESDIR $PROGDIR 
         time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 
