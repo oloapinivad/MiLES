@@ -8,8 +8,8 @@
 # -----------------------------------------------#
 
 exp=$1
-yy1=$2
-yy2=$3
+year1=$2
+year2=$3
 seasons=$4
 teles=$5
 DATADIR=$6
@@ -24,16 +24,16 @@ neofs=4
 
 #preparing unique netcdf file
 $cdonc cat $ZDIR/Z500*nc $TEMPDIR/daily_file.nc
-$cdonc monmean -selyear,$yy1/$yy2 $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
+$cdonc monmean -selyear,$year1/$year2 $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
 
 for tele in $teles ; do
 for season in $seasons ; do
 	echo $season
 
 	#fix folders and file names
-	EOFDIR=$FILESDIR/$exp/EOFs/${tele}/${yy1}_${yy2}/${season}
+	EOFDIR=$FILESDIR/$exp/EOFs/${tele}/${year1}_${year2}/${season}
 	mkdir -p $EOFDIR
-        suffix=${exp}_${yy1}_${yy2}_${season}
+        suffix=${exp}_${year1}_${year2}_${season}
 
 	#select seasons, compute monthly anomalies
         $cdonc selseas,$season $TEMPDIR/monthly_file.nc $TEMPDIR/season_monthly.nc
