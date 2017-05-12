@@ -98,7 +98,7 @@ for (mm in timeseason)
 		blocked=array(0,dim=c(length(ics),length(ipsilon),length(field[1,1,])))
 
 		#----COMPUTING BLOCKING INDICES-----
-		for (t in 1:(length(field[1,1,])))
+		for (t in 1:days)
 		{
 		
 		#multidim extension
