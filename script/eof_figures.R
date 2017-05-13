@@ -133,19 +133,17 @@ name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season"
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
-if (length(args)<req_args | length(args)>req_args)
-        {
+if (length(args)!=0) {
+    if (length(args)!=req_args) {
         print("Not enough or too many arguments received: if called from R, simply loading miles.block.figures() function.")
         print(paste("If running from bash, please specify the",req_args,"arguments here below:"))
         print(name_args)
-        }
-
+     } else {
 # when the number of arguments is ok run the function()
-if (length(args)==req_args)
-        {
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
         miles.eof.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
+     }
 }
 
 
