@@ -329,8 +329,7 @@ req_args=length(name_args)
 # print error message if uncorrect number of command 
 if (length(args)!=0) {
     if (length(args)!=req_args) {
-        print("Not enough or too many arguments received: if called from R, simply loading miles.block.figures() function.")
-        print(paste("If running from bash, please specify the",req_args,"arguments here below:"))
+        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
         print(name_args)
     } else {
 # when the number of arguments is ok run the function()
