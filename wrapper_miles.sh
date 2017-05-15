@@ -18,7 +18,7 @@
 # set also years and seasons to analyze
 exp="ERAINTERIM"
 year1=1979
-year2=2014
+year2=1980
 
 # data folder: all the geopotential height data should be here
 #INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500

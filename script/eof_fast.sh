@@ -23,8 +23,14 @@ mkdir -p $TEMPDIR
 neofs=4
 
 #preparing unique netcdf file
-$cdonc cat $ZDIR/Z500*nc $TEMPDIR/daily_file.nc
-$cdonc monmean -selyear,$year1/$year2 $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
+#$cdonc cat $ZDIR/Z500*nc $TEMPDIR/daily_file.nc
+#$cdonc monmean -selyear,$year1/$year2 $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
+
+#preparing unique netcdf file
+for (( year=$year1; year<=$year2; year++ )); do
+	$cdonc cat $ZDIR/Z500_${exp}_${year}??.nc $TEMPDIR/daily_file.nc
+done
+$cdonc monmean $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
 
 for tele in $teles ; do
 for season in $seasons ; do

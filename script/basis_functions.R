@@ -220,6 +220,108 @@ if (dimensions>1)
 daily
 }
 
+#function to open ncdf files (much more refined, to be implemented in the future)
+ncdf.opener.block<-function(namefile,namevar=NULL,namelon="lon",namelat="lat",namelev=NULL,rotate="Y",invertlev=F,interp2grid=F,grid="r144x73",remap_method="remapcon2")
+{
+#complete function to open netcdf files. using ncdf4 library. it loads different file type from 1-d to 4-d in any netcdf format.
+#automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
+#if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
+require(ncdf4)
+
+if (rotate=="Y") {rot=T; move1=move2=1/2}
+if (rotate=="H") {rot=T; move1=1/4; move2=3/4}
+if (rotate=="F") {rot=F}
+
+#interpolation made with CDO: second order conservative remapping
+if (interp2grid)
+        {
+        print(paste("Remapping with CDO on",grid,"grid"))
+        #tempfile=paste0("/data/pdavini/tempfile_",sample(1000,1),".nc")
+        p=strsplit(namefile,"/"); nn=p[[1]][length(p[[1]])];
+	cdo=system("which cdo")
+        tempfile=paste0("/data/pdavini/tempfile_",nn)
+        system(paste0(cdo," -t ecmwf  ",remap_method,",",grid," -setname,Z ",namefile," ",tempfile),ignore.stdout=TRUE)
+        namefile=tempfile
+        }
+
+#define rotate function (faster than with apply)
+rotation<-function(line) {
+vettore=line; dims=length(dim(vettore))
+if (dims==1)
+{ll=length(line); line[(ll*move1):ll]=vettore[1:(ll*move2+1)]; line[1:(ll*move1-1)]=vettore[(ll*move2+2):ll]-360}
+if (dims==2)
+{ll=length(line[,1]); line[(ll*move1):ll,]=vettore[1:(ll*move2+1),]; line[1:(ll*move1-1),]=vettore[(ll*move2+2):ll,]}
+if (dims==3)
+{ll=length(line[,1,1]); line[(ll*move1):ll,,]=vettore[1:(ll*move2+1),,]; line[1:(ll*move1-1),,]=vettore[(ll*move2+2):ll,,]}
+return(line)    }
+
+#define flip function ('cos rev/apply is not working)
+flipper<-function(field) {
+dims=length(dim(field))
+if (dims==2) {ll=length(daily[1,]); field=field[,ll:1]}
+if (dims==3) {ll=length(daily[1,,1]); field=field[,ll:1,]}
+return(field) }
+
+#define flip function ('cos rev/apply is not working)
+flipper.zonal<-function(field) {
+dims=length(dim(field))
+if (dims==2) {ll=length(daily[,1]); field=field[ll:1,1]}
+if (dims==3) {ll=length(daily[,1,1]); field=field[ll:1,,]}
+return(field) }
+
+#opening file: getting variable (if namevar is given, that variable is extracted)
+a=nc_open(namefile)
+if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
+
+#getting longname of the variable
+name=ncatt_get(a,namevar,"long_name")
+assign("name",name$value, envir = .GlobalEnv)
+
+#check for dimensions (presence or not of time dimension)
+dimensions=length(dim(daily))
+
+#if dimensions are multiple, get longitude, latitude and levels (if asked)
+#if needed, rotate and flip the array
+if (dimensions>1)
+{
+        #read attributes
+        ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
+        if (!is.null(namelev))
+                {
+                lev=ncvar_get(a,namelev)
+                if (max(lev)>2000) {slp=100000} else {slp=1000}
+                vertical=-8000*log(lev/slp)/1000
+                }
+
+        #longitute rotation around Greenwich
+        if (rot)     {ics=rotation(ics); daily=rotation(daily) }
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+                if (length(ics)>1)
+                {ipsilon=sort(ipsilon); daily=flipper(daily) }
+                else
+                {ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
+
+        #exporting variables to the main program
+        assign("ics",ics, envir = .GlobalEnv)
+        assign("ipsilon",ipsilon, envir = .GlobalEnv)
+
+}
+
+#close connection
+nc_close(a)
+
+#close connection
+nc_close(a)
+
+#remove interpolated file
+if (interp2grid) {system(paste("rm",tempfile))}
+
+#showing array properties
+print(dim(daily))
+
+return(daily)
+}
+
 ##########################################################
 #--------------Plotting functions------------------------#
 ##########################################################
