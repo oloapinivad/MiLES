@@ -26,7 +26,7 @@ first_leap=years[which(leap_noleap)[1]]
 
 #loading February leap year to check calendar in use
 nomefile=paste(ZDIR,"/Z500_",exp,"_",first_leap,"02.nc",sep="")
-field=ncdf.opener(nomefile,"zg","lon","lat")
+field=ncdf.opener(nomefile,namevar="zg",namelon="lon",namelat="lat")
 
 #define the calendar
 feb.len=length(field[1,1,])
@@ -101,7 +101,7 @@ for (mm in timeseason)
 		{
 
 		# routine for reading the file
-		field=ncdf.opener(nomefile,"zg","lon","lat")
+		field=ncdf.opener(nomefile,namevar="zg",namelon="lon",namelat="lat",rotate="full")
 		days=length(field[1,1,])
 	
 	

@@ -31,14 +31,14 @@ neofs=4
 
 #loading anomalies and variances of experiment
 nomefile=paste0(EOFDIR,"/Z500_monthly_anomalies_",exp,"_",year1,"_",year2,"_",season,".nc")
-anomalies_exp=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
+anomalies_exp=ncdf.opener(nomefile,"zg","lon","lat",rotate="full")
 nomefile=paste0(EOFDIR,"/",tele,"_Z500_eigenvalues_",exp,"_",year1,"_",year2,"_",season,".nc")
 variance=ncdf.opener(nomefile,"zg")
 variance_exp=round(variance[1:neofs]/sum(variance)*100,1)
 
 #loading reference field
 nomefile=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate=T)
+anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate="full")
 nomefile=paste0(REFDIR,"/",tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
 variance=ncdf.opener(nomefile,"zg")
 variance_ref=round(variance[1:neofs]/sum(variance)*100,1)

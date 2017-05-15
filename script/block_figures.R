@@ -32,7 +32,7 @@ fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEven
 for (field in fieldlist) 
 	{
         nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-        field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
+        field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
         assign(paste(field,"_exp",sep=""),field_exp)
 }
 
@@ -40,7 +40,7 @@ for (field in fieldlist)
 for (field in fieldlist) 
 	{
      	nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-     	field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate=F)
+     	field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
      	assign(paste(field,"_ref",sep=""),field_ref)
 }
 
