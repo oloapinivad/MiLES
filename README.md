@@ -109,8 +109,9 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 
 ## HISTORY
 
-*v0.4 - June 2017
+*v0.4 - June 2017*
 - Weather regimes k-means clustering over North Atlantic.
+- Reformulation of input Z500 files, now based on a single NetCDF file
 
 *v0.31 - May 2017*
 - Comparison of EOFs and Blocking figures with any other MiLES-generated dataset

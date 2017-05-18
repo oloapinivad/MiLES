@@ -15,7 +15,6 @@ NorthAtlantic=T
 xlim=c(-80,40)
 ylim=c(30,87.5)
 
-
 #setting up main variables
 REGIMESDIR=file.path(FILESDIR,exp,"Regimes",paste0(year1,"_",year2),season)
 dir.create(REGIMESDIR,recursive=T)
@@ -25,18 +24,64 @@ ZDIR=file.path(DATADIR,exp)
 years=year1:year2
 timeseason=season2timeseason(season)
 
-#new file opening
-nomefile=paste0(ZDIR,"/Z500_",exp,"_fullfile.nc")
-fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
-print(str(fieldlist))
+#define model calendar: Gregorian, No-leap-year or 30-day?
+leap_noleap=is.leapyear(years)
+first_leap=years[which(leap_noleap)[1]]
 
-#time array
-datas=fieldlist$time
-#etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas)
-etime=power.date.new(datas)
+#loading February leap year to check calendar in use
+nomefile=paste0(ZDIR,"/Z500_",exp,"_",first_leap,"02.nc")
+field=ncdf.opener(nomefile,"zg","lon","lat")
+
+#define the calendar
+feb.len=length(field[1,1,])
+if (feb.len==29) {kalendar="gregorian"}
+if (feb.len==28) {kalendar="noleap"}
+if (feb.len==30) {kalendar="30day"}
+print(paste("IMPORTANT: Using",kalendar,"calendar"))
+
+#setting time calendar
+if (kalendar=="gregorian") {etime=power.date(season,year1,year2)}
+if (kalendar=="noleap") {etime=power.date.no.leap(season,year1,year2)}
+if (kalendar=="30day") {etime=power.date.30day(season,year1,year2)}
+
+#setting up time length
+totdays=length(etime$season)
+ndays=0
 
 #declare variable
-Z500=fieldlist$field
+Z500=array(NA,dim=c(length(ics),length(ipsilon),totdays))
+
+# main cycles on years and months
+for (yy in year1:year2)
+{
+for (mm in timeseason)
+                {
+                mm=sprintf("%02d",mm)
+                nomefile=paste0(ZDIR,"/Z500_",exp,"_",yy,mm,".nc")
+                print(c(season,exp,yy,mm))
+
+                ##check existance of the files
+                if (!file.exists(nomefile))    # if files do not exist add empty array for all fields
+                {
+                print("last file does not exist")
+                stop("File missing: aborted")
+                }
+
+                if (file.exists(nomefile))
+                {
+
+                # routine for reading the file
+                field=ncdf.opener(nomefile,"zg","lon","lat")
+		
+                days=length(field[1,1,])
+		daystowrite=(ndays+1):(ndays+days)
+                ndays=ndays+days
+		Z500[,,daystowrite]=field
+		}
+		print(paste("Total # of days:",ndays))
+                print("-------------------------")
+		}
+}
 
 print("Compute anomalies based on daily mean")
 Z500cycle=apply(Z500,c(1,2),ave,etime$month,etime$day)

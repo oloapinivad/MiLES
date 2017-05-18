@@ -20,24 +20,32 @@ dir.create(BLOCKDIR,recursive=T)
 years=year1:year2
 timeseason=season2timeseason(season)
 
-#new file opening
-nomefile=paste0(ZDIR,"/Z500_",exp,"_fullfile.nc")
-fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
-print(str(fieldlist))
+#define model calendar: Gregorian, No-leap-year or 30-day?
+leap_noleap=is.leapyear(years)
+first_leap=years[which(leap_noleap)[1]]
 
-#time array
-datas=fieldlist$time
-#etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas)
-etime=power.date.new(datas)
-totdays=length(datas)
+#loading February leap year to check calendar in use
+nomefile=paste(ZDIR,"/Z500_",exp,"_",first_leap,"02.nc",sep="")
+field=ncdf.opener(nomefile,namevar="zg",namelon="lon",namelat="lat")
 
-#declare variable
-Z500=fieldlist$field
+#define the calendar
+feb.len=length(field[1,1,])
+if (feb.len==29) {kalendar="gregorian"}
+if (feb.len==28) {kalendar="noleap"}
+if (feb.len==30) {kalendar="30day"}
+print(paste("IMPORTANT: Using",kalendar,"calendar for the time filtering"))
 
+#setting time calendar
+if (kalendar=="gregorian") {etime=power.date(season,year1,year2)}
+if (kalendar=="noleap") {etime=power.date.no.leap(season,year1,year2)}
+if (kalendar=="30day") {etime=power.date.30day(season,year1,year2)}
+
+#setting up time length
+ndays=0
+totdays=length(etime$season)
 
 # decleare main variables to be computed (considerable speed up!)
-
-totrwb=totmeridional=totBI=totblocked=Z500*NA
+totrwb=totmeridional=totBI=Z500=totblocked=array(NA,dim=c(length(ics),length(ipsilon),totdays))
 totTM90=array(NA,dim=c(length(ics),totdays))
 
 # Davini et al. 2012: parameters to be set for blocking detection
@@ -71,19 +79,47 @@ print("--------------------------------------------------")
 ##########################################################
 #--------------Istantaneous Blocking---------------------#
 ##########################################################
-field=Z500
-#----COMPUTING BLOCKING INDICES-----
-for (t in 1:totdays)
+
+# main cycles on years and months
+for (yy in year1:year2)
+{
+for (mm in timeseason)
 		{
-		if (any(t==round(seq(0,totdays,,11))))
-                {print(paste("--->",round(t/totdays*100),"%"))}
+		mm=sprintf("%02d",mm)
+                nomefile=paste0(ZDIR,"/Z500_",exp,"_",yy,mm,".nc")
+		print(c(season,exp,yy,mm))
+
+		##check existance of the files
+		if (file.exists(nomefile)==FALSE)    # if files do not exist add empty array for all fields
+		{
+		print("last file does not exist")
+		print("File missing: aborted")
+		break
+		}
+		 
+		if (file.exists(nomefile)==TRUE) 
+		{
+
+		# routine for reading the file
+		field=ncdf.opener(nomefile,namevar="zg",namelon="lon",namelat="lat",rotate="full")
+		days=length(field[1,1,])
+	
+	
+		#introduce matrix for blocking computation
+		BI=rwb=meridional=array(NA,dim=c(length(ics),length(ipsilon),days))
+		blocked=array(0,dim=c(length(ics),length(ipsilon),days))
+		tm90_blocked=array(0,dim=c(length(ics),days))
+
+		#----COMPUTING BLOCKING INDICES-----
+		for (t in 1:days)
+		{
 
 		#TM90: beta
 		tm90_ghgn=(field[,tm90_north+tm90_range,t]-field[,tm90_central+tm90_range,t])/(tm90_fiN-tm90_fi0)
                 tm90_ghgs=(field[,tm90_central+tm90_range,t]-field[,tm90_south+tm90_range,t])/(tm90_fi0-tm90_fiS)
                 tm90_check=(tm90_ghgs>0 & tm90_ghgn<(-10)) # TM90 conditions
                 tm90_check[tm90_check==T]=1; tm90_check[tm90_check==F]=0
-		totTM90[,t]=apply(tm90_check,c(1),max,na.rm=T)
+		tm90_blocked[,t]=apply(tm90_check,c(1),max,na.rm=T)
 		
 		
 		#multidim extension
@@ -100,7 +136,7 @@ for (t in 1:totdays)
                 if (length(check1)>0)
                 {
                 # 1-MATRIX FOR INSTANTANEOUS BLOCKING
-                totblocked[check1,central+delta,t]=1
+                blocked[check1,central+delta,t]=1
 
                 # 2-PART ON COMPUTATION OF ROSSBY WAVEBREAKING
                 r=check1+length(ics)
@@ -110,8 +146,8 @@ for (t in 1:totdays)
                 rwb_east=new_field[(r+steprwb),south+delta+steprwb]
                 fullgh=(rwb_west-rwb_east)
 
-                totrwb[check1[fullgh<0],central+delta,t]=(-10)     # gradient decreasing: cyclonic RWB     
-                totrwb[check1[fullgh>0],central+delta,t]=10        # gradient increasing: anticyclonic RWB                 
+                rwb[check1[fullgh<0],central+delta,t]=(-10)     # gradient decreasing: cyclonic RWB     
+                rwb[check1[fullgh>0],central+delta,t]=10        # gradient increasing: anticyclonic RWB                 
 
                 # 4-part about adapted version of blocking intensity by Wiedenmann et al. (2002)
                 step=round(60/(ics[2]-ics[1]))
@@ -124,16 +160,30 @@ for (t in 1:totdays)
                         }
                 mz=field[check1,central+delta,t]
                 rc=0.5*((zu+mz)/2+(zd+mz)/2)
-                totBI[check1,central+delta,t]=100*(mz/rc-1)
+                BI[check1,central+delta,t]=100*(mz/rc-1)
 
                 #5 - part about meridional gradient index
-                totmeridional[check1,central+delta,t]=ghgs[check1]
+                meridional[check1,central+delta,t]=ghgs[check1]
 
 
-                }}}
+                }}}}
 
-                print(paste("Total # of days:",t))
+		# prepare data for arrays
+		daystowrite=(ndays+1):(ndays+days)
+		ndays=ndays+days
+	
+		# update arrays
+		totblocked[,,daystowrite]=blocked
+		Z500[,,daystowrite]=field
+		totBI[,,daystowrite]=BI
+		totrwb[,,daystowrite]=rwb
+		totmeridional[,,daystowrite]=meridional
+		totTM90[,daystowrite]=tm90_blocked
+		
+                print(paste("Total # of days:",ndays))
                 print("-------------------------")
+
+}}
 
 ##########################################################
 #--------------------Mean Values-------------------------#
@@ -149,8 +199,8 @@ BI=apply(totBI,c(1,2),mean,na.rm=T)                     #Blocking Intensity Inde
 MGI=apply(totmeridional,c(1,2),mean,na.rm=T)   		 #Value of meridional gradient inversion
 
 #anticyclonic and cyclonic averages RWB
-CN=apply(totrwb,c(1,2),function(x) sum(x[x==(-10)],na.rm=T))/(totdays)*(-10)
-ACN=apply(totrwb,c(1,2),function(x) sum(x[x==(10)],na.rm=T))/(totdays)*(10)
+CN=apply(totrwb,c(1,2),function(x) sum(x[x==(-10)],na.rm=T))/(ndays)*(-10)
+ACN=apply(totrwb,c(1,2),function(x) sum(x[x==(10)],na.rm=T))/(ndays)*(10)
 
 #saving
 #print("Saving Instantaneous Blocking...")

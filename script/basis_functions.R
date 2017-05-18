@@ -72,6 +72,24 @@ is.leapyear=function(year)
 	return(((year %% 4 == 0) & (year %% 100 != 0)) | (year %% 400 == 0))
 }
 
+power.date.new<-function(datas)
+{
+whichdays=as.numeric(format(datas,"%m"))
+#create a "season" for continuous time, used by persistance tracking
+seas=whichdays*1; ss=1
+for (i in 1:(length(whichdays)-1))
+       {
+       if (diff(whichdays)[i]>1)  {ss=ss+1}
+       seas[i+1]=ss
+       }
+
+etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
+print("Time Array Built")
+print(paste("Length:",length(seas),"days for",season,"season"))
+print(paste("From",datas[1],"to",datas[length(seas)]))
+return(etime)
+}
+
 power.date<-function(season,ANNO1,ANNO2)
 {
 #evalute the number of days that will analyze in order
@@ -141,85 +159,6 @@ power.date.30day<-function(season,ANNO1,ANNO2)
 #--------------NetCDF loading function-------------------#
 ##########################################################
 
-#function to open ncdf files: old but reliable version (now deprecated)
-ncdf.opener.old<-function(namefile,namevar,namelon,namelat,rotate=T)
-{
-
-#opening file
-a=nc_open(namefile)
-b=ncvar_get(a,namevar)
-
-#check for 2d or 3d dimensions (presence or not of time dimension)
-daily=b
-dimensions=length(dim(daily))
-
-#traslating arrays to center on Greenwich
-if (dimensions>1)
-{
-	ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat); nc_close(a)
-
-	if (rotate==TRUE)
-        	{
-        	x=vettore=ics
-        	x[(length(ics)/2):length(ics)]=vettore[1:(length(ics)/2+1)]
-        	x[1:(length(ics)/2-1)]=vettore[(length(ics)/2+2):length(ics)]-360
-        	ics=x
-        	}
-}
-
-if (dimensions==2)
-{
-        if (ipsilon[1]>ipsilon[2])
-                {
-                ipsilon=rev(ipsilon)
-                b=b[,length(ipsilon):1]
-                }
-        daily=b
-
-
-        if (rotate==TRUE)
-                {
-                matrice=b
-                daily[(length(ics)/2):length(ics),]=matrice[1:(length(ics)/2+1),]
-                daily[1:(length(ics)/2-1),]=matrice[(length(ics)/2+2):length(ics),]
-                }
-}
-
-
-if (dimensions==3)
-{
-        if (ipsilon[1]>ipsilon[2])
-                {
-                ipsilon=rev(ipsilon)
-                b=b[,length(ipsilon):1,]
-                }
-        daily=b
-
-
-        if (rotate==TRUE)
-                {
-                for (i in 1:length(b[1,1,]))
-                        {
-                        matrice=b[,,i]
-                        daily[(length(ics)/2):length(ics),,i]=matrice[1:(length(ics)/2+1),]
-                        daily[1:(length(ics)/2-1),,i]=matrice[(length(ics)/2+2):length(ics),]
-                        }
-                }
-}
-
-#showing array properties
-#print(str(daily))
-
-#exporting variables to the main program
-
-if (dimensions>1)
-{
-	assign("ipsilon",ipsilon, envir = .GlobalEnv)
-	assign("ics",ics, envir = .GlobalEnv)
-}
-daily
-}
-
 #function to open ncdf files (much more refined, with CDO-based interpolation)
 ncdf.opener<-function(namefile,namevar=NULL,namelon="lon",namelat="lat",rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
 {
@@ -263,7 +202,6 @@ if (dims==2) {ll=length(daily[1,]); field=field[,ll:1]} #for x,y data
 if (dims==3) {ll=length(daily[1,,1]); field=field[,ll:1,]} #for x,y,t data
 return(field) }
 
-
 #opening file: getting variable (if namevar is given, that variable is extracted)
 a=nc_open(namefile)
 if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
@@ -306,6 +244,109 @@ if (interp2grid) {system2("rm",tempfile)}
 
 return(daily)
 }
+
+
+#function to open ncdf files (much more refined, with CDO-based interpolation)
+ncdf.opener.time<-function(namefile,namevar=NULL,namelon="lon",namelat="lat",tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
+{
+#function to open netcdf files. It uses ncdf4 library. support only 1D (t), 2D (x,y) or 3D (x,y,t) data in any netcdf format.
+#time selection of month and years needed
+#automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
+#if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
+require(ncdf4)
+
+if (is.null(tyears) | is.null(tmonths)) {stop("Please specify both months and years to load")}
+
+if (rotate=="full") {rot=T; move1=move2=1/2} #180 degrees rotation of longitude
+if (rotate=="half") {rot=T; move1=1/4; move2=3/4} #90 degree rotation (useful for TM90)
+if (rotate=="no") {rot=F} #keep as it is, breaking at Greemwich
+
+#interpolation made with CDO: second order conservative remapping
+if (interp2grid)
+        {
+        print(paste("Remapping with CDO on",grid,"grid"))
+        filename=basename(normalizePath(namefile))
+        filedir=dirname(normalizePath(namefile))
+        cdo=Sys.which("cdo")
+        tempfile=paste0(file.path(filedir,paste0("tempfile_",filename)))
+        #system(paste0(cdo," ",remap_method,",",grid," ",namefile," ",tempfile))
+        system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
+        namefile=tempfile
+        }
+
+#define rotate function (faster than with apply)
+rotation<-function(line) {
+vettore=line; dims=length(dim(vettore))
+if (dims==1) #for longitudes
+{ll=length(line); line[(ll*move1):ll]=vettore[1:(ll*move2+1)]; line[1:(ll*move1-1)]=vettore[(ll*move2+2):ll]-360}
+if (dims==2) #for x,y data
+{ll=length(line[,1]); line[(ll*move1):ll,]=vettore[1:(ll*move2+1),]; line[1:(ll*move1-1),]=vettore[(ll*move2+2):ll,]}
+if (dims==3) #for x,y,t data
+{ll=length(line[,1,1]); line[(ll*move1):ll,,]=vettore[1:(ll*move2+1),,]; line[1:(ll*move1-1),,]=vettore[(ll*move2+2):ll,,]}
+return(line)    }
+
+#define flip function ('cos rev/apply is not working)
+flipper<-function(field) {
+dims=length(dim(field))
+if (dims==2) {ll=length(daily[1,]); field=field[,ll:1]} #for x,y data
+if (dims==3) {ll=length(daily[1,,1]); field=field[,ll:1,]} #for x,y,t data
+return(field) }
+
+
+#opening file: getting variable (if namevar is given, that variable is extracted)
+print(paste("opening file:",namefile))
+a=nc_open(namefile)
+
+#time selection and variable loading
+print("loading full field...")
+if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
+print("selecting years and months")
+timeline=as.Date(as.character(ncvar_get(a,"time")),"%Y%m%d")
+select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
+daily=daily[,,select]
+
+#check for dimensions (presence or not of time dimension)
+dimensions=length(dim(daily))
+
+#if dimensions are multiple, get longitude, latitude
+#if needed, rotate and flip the array
+if (dimensions>1)
+{
+	print("flipping and rotating")
+
+        #read attributes
+        ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
+
+        #longitute rotation around Greenwich
+        if (rot)     {ics=rotation(ics); daily=rotation(daily) }
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+                if (length(ics)>1)
+                {ipsilon=sort(ipsilon); daily=flipper(daily) }
+                else
+                {ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
+
+        #exporting variables to the main program
+        assign("ics",ics, envir = .GlobalEnv)
+        assign("ipsilon",ipsilon, envir = .GlobalEnv)
+
+}
+
+if (dimensions>3)
+{stop("This file is more than 3D file")}
+
+#close connection
+nc_close(a)
+
+#remove interpolated file
+if (interp2grid) {system2("rm",tempfile)}
+
+#showing array properties
+print(paste(dim(daily)))
+print(paste("From",timeline[select][1],"to",timeline[select][length(select)]))
+
+return(list(field=daily,lon=ics,lat=ipsilon,time=timeline[select]))
+}
+
 
 ##########################################################
 #--------------Plotting functions------------------------#
