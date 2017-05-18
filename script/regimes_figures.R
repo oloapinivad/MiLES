@@ -74,7 +74,7 @@ for (name in names_ref)
 
         #plot properties
         lev_field=seq(-250,250,20)
-        lev_diff=seq(-95,95,10)
+        lev_diff=seq(-150,150,20)
         nlev_field=length(lev_field)-1
         nlev_diff=length(lev_diff)-1
         lat_lim=c(20,90)

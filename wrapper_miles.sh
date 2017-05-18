@@ -16,29 +16,29 @@
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
 # set also years and seasons to analyze
-exp="ERAINTERIM"
-year1=1979
-year2=2008
+exp="CMCC-CMS"
+year1=1950
+year2=2005
 
 # data folder: all the geopotential height data should be here
-#INDIR=/home/paolo/work/DATA/CMIP5/$exp/AMIP/r1/day/Z500
-INDIR=/home/paolo/work/DATA/$exp/day/Z500
+INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500
+#INDIR=/home/paolo/work/DATA/$exp/day/Z500
 
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=1
+std_clim=0
 
 # only valid if std_clim=0
 dataset_ref="ERAINTERIM"
 year1_ref=1979
-year2_ref=1980
+year2_ref=2008
 
 # please specify one or more of the 4 standard seasons using 3 characters
 seasons="DJF MAM SON JJA"
-seasons="DJF"
+seasons="DJF MAMA"
 
 # select which EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1

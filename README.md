@@ -1,7 +1,7 @@
-# MiLES v0.31
+# MiLES v0.4
 ## Mid-Latitude Evaluation System
 
-May 2017
+Jun 2017
 
 by P. Davini - ISAC-CNR
 p.davini@isac.cnr.it
@@ -29,11 +29,18 @@ Current version includes:
 	and Rossby wave orientation index, computing both Instantenous Blocking and Blocking Events.
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
-2. 	**Z500 Empirical Orthogonal Functions**. Based on CDO "eofs" function.
+2. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
 	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
 	NAO, EA, and Arctic Oscillation are thus computed. 
 	Figures of linear regression are provided.
-	PCs and eigenvectors, as well as the variances explained are provided in NetCDF format.
+	PCs and eigenvectors, as well as the variances explained are provided in NetCDF4 Zip format.
+
+3.	**North Atlantic Weather Regimes (beta)**: following k-means clustering of 500hPa geopotential height.
+	4 weather regimes over North Atlantic (80W-40E 30N-87.5N) are evaluted using 
+	anomalies from daily seasonal cycle. North Atlantic 4 EOFs are computed to reduce 
+	the phase-space dimension and then k-means clustering using Hartigan-Wong algorithm with k=4 is computed. 
+	Figures report patterns and frequencies of occurrence. NetCDF4 Zip data are saved.
+	*Only 4 regimes and DJF is supported so far.*
 
 ----------------
 
@@ -93,12 +100,17 @@ provides the figures with an R script. EOFs signs for the main EOFs are checked 
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures.
 
+* "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
+
 Figures are extremely basic: they can be produced in pdf, png and eps format.
 Properties (e.g. resolution, palettes) can be modified playing with the config/config.R file. 
 
 ------------
 
 ## HISTORY
+
+*v0.4 - June 2017
+- Weather regimes k-means clustering over North Atlantic.
 
 *v0.31 - May 2017*
 - Comparison of EOFs and Blocking figures with any other MiLES-generated dataset
@@ -120,7 +132,6 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 - Improved speed in blocking for long timeseries: ~2.5x faster for 30years (predeclaration of arrays)
 - Minor bugs in axis legends (removal of image.plot)
 - Readme in markdown format
-
 
 *v0.2 - Apr 2017*
 - Support for Arctic Oscillation

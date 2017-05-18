@@ -3,13 +3,14 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(exp,year1,yera2,season,DATADIR,FILESDIR,nclusters=nclusters)
+miles.regimes.fast<-function(exp,year1,year2,season,DATADIR,FILESDIR,nclusters=nclusters)
 {
 
 #t0
 t0<-proc.time()
 
 #region boundaries for North Atlantic 
+if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
 NorthAtlantic=T
 xlim=c(-80,40)
 ylim=c(30,87.5)
