@@ -670,7 +670,7 @@ return(out)
 }
 
 
-regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim)
+regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim,alg="Hartigan-Wong")
 {
 # R tool to compute cluster analysis based on k-means.
 # Requires "personal" function eofs
@@ -678,25 +678,40 @@ regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim)
 
 #Reduce the phase space with EOFs: use SVD and do not standardize PCs
 print("Launching EOFs...")
+t0=proc.time()
 reducedspace=eofs(lon,lat,field,neof=neof,xlim=xlim,ylim=ylim,method="SVD",do_regression=F,do_standardize=F)
+t1=proc.time()-t0
+#print(t1)
 
 #extract the principal components
 PC=reducedspace$coeff
+print(str(PC))
 
 #k-means computation repeat for ntime to find best solution. 
 print("Computing k-means...")
-regimes=kmeans(PC,ncluster,nstart=ntime,iter.max=100)
+t0=proc.time()
+print(str(ncluster))
+regimes=kmeans(PC,as.numeric(ncluster),nstart=ntime,iter.max=1000,algorithm=alg)
+t1=proc.time()-t0
+#print(t1)
 
 #Extract regimes frequencyr and timeseries of occupation
 cluster=regimes$cluster
 frequencies=regimes$size/dim(field)[3]*100
+print(frequencies[order(frequencies,decreasing=T)])
+#print(regimes$tot.withinss)
 
-#Create composites...
 print("Creating Composites...")
 compose=aperm(apply(field,c(1,2),by,cluster,mean),c(2,3,1))
 
+#sorting from the more frequent to the less frequent
+kk=order(frequencies,decreasing=T)
+cluster=cluster+10
+for (ss in 1:ncluster) {cluster[cluster==(ss+10)]=which(kk==ss)}
+
 #prepare output
 print("Finalize...")
-out=list(cluster=cluster,frequencies=frequencies,regimes=compose)
+out=list(cluster=cluster,frequencies=frequencies[kk],regimes=compose[,,kk],tot.withinss=regimes$tot.withinss)
 return(out)
 }
+
