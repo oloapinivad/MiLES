@@ -38,12 +38,16 @@ year2_ref=2008
 
 # please specify one or more of the 4 standard seasons using 3 characters
 seasons="DJF MAM SON JJA"
-seasons="DJF MAMA"
+seasons="DJF MAM"
 
 # select which EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
 teles="NAO"
+
+# select how many clusters for k-means over the North Atlantic
+# NB: only 4 clusters supported so far.  
+nclusters=4
 
 # output file type for figures (pdf, png, eps)
 # pdf are set by default
@@ -105,10 +109,9 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $DATADIR
 #-------Regimes Computation and Figures--------#
 ################################################
 
-nclusters=4
 for season in $seasons ; do
        time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $DATADIR $FILESDIR $PROGDIR $nclusters
-       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 

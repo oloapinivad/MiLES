@@ -1,7 +1,14 @@
+######################################################
+#------Regimes routines figures for MiLES------------#
+#-------------P. Davini (May 2017)-------------------#
+######################################################
+
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.regimes.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
+miles.regimes.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
 {
+
+if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
 
 #R configuration file 
 CFGSCRIPT="/home/paolo/MiLES/config/config.R"
@@ -33,6 +40,10 @@ regimes_ref=ncdf.opener(nomefile,"Regimes","Lon","Lat",rotate="no")
 
 nclusters=length(frequencies_exp)
 
+#try to assign the 4 standard regimes names to the dataset using the distance between 
+#the location of the maximum/minimum of the pattern and 4 "standard" locations
+#when something is wrong (i.e. multiple assignments) general "Regime X" names are set
+#It is not perfect, it is just aimed at simplying the plots 
 for (ii in c("ref","exp"))
 {
 	compose=get(paste0("regimes_",ii))
@@ -58,25 +69,21 @@ for (ii in c("ref","exp"))
 assign(paste0("names_",ii),names)
 }
 
-#for (ncluster in 1:nclusters)
-print(names_exp)
-print(names_ref)
 kk0=1
-#print(setdiff(names_exp,names_ref))
 for (name in names_ref)
 {
 	#-----plotting-------#
+
+	#a bit complicated but it is used to compare similar regimes even if they not
+	#equale percentage of occurrence.
 	ii=which(name==names_exp)
 	jj=which(name==names_ref)
 	if (length(ii)==0) {ii=which(setdiff(names_exp,names_ref)[kk0]==names_exp); kk0=kk0+1}
-	print(ii)
 	print(name)
 
         #plot properties
         lev_field=seq(-250,250,20)
         lev_diff=seq(-150,150,20)
-        nlev_field=length(lev_field)-1
-        nlev_diff=length(lev_diff)-1
         lat_lim=c(20,90)
         info_exp=paste(exp,year1,"-",year2,season)
         info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
@@ -97,7 +104,6 @@ for (name in names_ref)
 
         #plot properties
         par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
-        #print(quantile(linear_exp))
 
         filled.contour3(ics,ipsilon,regimes_exp[,,ii],xlab="Longitude",ylab="Latitude",main=paste(names_exp[ii],info_exp),levels=lev_field,color.palette=palette0,ylim=lat_lim)
         map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
@@ -124,7 +130,7 @@ for (name in names_ref)
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
+name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","nclusters")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -136,7 +142,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
+        miles.regimes.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
     }
 }
 

@@ -83,12 +83,7 @@ for (mm in timeseason)
 		}
 }
 
-#to adapt to Irene's script
-#k0=60:(60+2617)
-#Z500=Z500[,,k0]
-
 print("Compute anomalies based on daily mean")
-#Z500cycle=apply(Z500[,,k0],c(1,2),ave,etime$month[k0],etime$day[k0])
 Z500cycle=apply(Z500,c(1,2),ave,etime$month,etime$day)
 Z500anom=Z500-aperm(Z500cycle,c(2,3,1))
 
@@ -98,20 +93,7 @@ Z500anom=Z500-aperm(Z500cycle,c(2,3,1))
 #runZ500cycle[2617:2618,,]=runZ500cycle[2616,,]
 #Z500anom=Z500-aperm(runZ500cycle,c(2,3,1))
 
-#Z500anom4=ncdf.opener("/home/paolo/scratch/miles/anomaly_zg500_day_ERAInterim_obs_144x73_1ens_DJF_EAT_0.nc",rotate="no")
-#Z500anom2=ncdf.opener("/home/paolo/scratch/miles/final.nc")
-#Z500anom3=ncdf.opener("/home/paolo/scratch/miles/final_DJF.nc")
-
-
-print(str(Z500anom))
 weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
-#weather_regimes4=regimes(slon,slat,Z500anom4,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Lloyd")
-#weather_regimes5=regimes(slon,slat,Z500anom4,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
-
-
-#irene=read.table("/home/paolo/devel4miles/indclORD_4clus_zg500_day_ERAInterim_obs_144x73_1ens_DJF_EAT_4pcs.txt")$V1
-#ifreq=table(irene)/length(irene)*100
-#print(ifreq)
 
 t1=proc.time()-t0
 print(t1)
