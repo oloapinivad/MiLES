@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(exp,year1,year2,season,DATADIR,FILESDIR)
+miles.block.fast<-function(exp,year1,year2,season,z500filename,FILESDIR)
 {
 
 #t0
@@ -10,8 +10,6 @@ t0<-proc.time()
 
 #setting up main variables
 BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
-print(DATADIR)
-ZDIR=file.path(DATADIR,exp)
 dir.create(BLOCKDIR,recursive=T)
 #outname=paste0(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season)
 #outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season)
@@ -21,7 +19,7 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #new file opening
-nomefile=paste0(ZDIR,"/Z500_",exp,"_fullfile.nc")
+nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
@@ -273,7 +271,7 @@ nc_close(ncfile2)
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","season","DATADIR","FILESDIR","PROGDIR")
+name_args=c("exp","year1","year2","season","z500filename","FILESDIR","PROGDIR")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -285,6 +283,6 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.block.fast(exp,year1,year2,season,DATADIR,FILESDIR)
+        miles.block.fast(exp,year1,year2,season,z500filename,FILESDIR)
     }
 }

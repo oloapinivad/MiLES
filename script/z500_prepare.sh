@@ -8,14 +8,12 @@ exp=$1
 year1=$2
 year2=$3
 INDIR=$4
-DATADIR=$5
+z500filename=$5
 
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
-ZDIR=$DATADIR/$exp
-mkdir -p $TEMPDIR $ZDIR
-outfile=$ZDIR/Z500_${exp}_fullfile.nc
+mkdir -p $TEMPDIR
 
-if [ ! -f $outfile ] ; then
+if [ ! -f $z500filename ] ; then
 
 	echo "Z500 data are missing... full extraction is performed"
 
@@ -40,10 +38,10 @@ if [ ! -f $outfile ] ; then
 	#pippo=($(cdo showyear $TEMPDIR/smallfile.nc) )
 	#echo ${pippo[0]}
 	#echo ${pippo[-1]}
-	$cdo4 copy $TEMPDIR/smallfile.nc $ZDIR/Z500_${exp}_fullfile.nc
+	$cdo4 copy $TEMPDIR/smallfile.nc $z500filename
 
 else
-	echo "All Z500 NetCDF data seems there, avoid z500_prepare.sh"
+	echo "Z500 NetCDF data seems there, avoid z500_prepare.sh"
 fi
 
 #check cleaning

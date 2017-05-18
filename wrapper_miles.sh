@@ -68,6 +68,12 @@ config=sansone
 # as plot resolutions and palettes
 CFGSCRIPT=$PROGDIR/config/config.R
 
+#definition of the fullfile name
+ZDIR=$DATADIR/$exp
+mkdir -p $ZDIR
+z500filename=$ZDIR/Z500_${exp}_fullfile.nc
+echo $z500filename
+
 ################################################
 #-------------Z500 extraction------------------#
 ################################################
@@ -76,7 +82,7 @@ CFGSCRIPT=$PROGDIR/config/config.R
 # into the $INDIR folder and prepare them in the single month files needed by MiLES
 # since it is thought to be universal it is pretty much inefficient: it may be worth
 # to personalize the script to obtain significant speedup
-time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $DATADIR
+time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
 
 ################################################
 #-------EOFs computation and figures-----------#
@@ -85,7 +91,7 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $DATADIR
 # call to program for EOFs index/pattern. CDO-based, fast and efficient
 # figures are done using linear regressions of PCs on monthly anomalies
 
-time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $DATADIR $FILESDIR
+time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
@@ -101,7 +107,7 @@ done
 # figures provide atmospheric blocking index and several other additional diagnostics
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $DATADIR $FILESDIR $PROGDIR 
+	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
         time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 
@@ -110,7 +116,7 @@ done
 ################################################
 
 for season in $seasons ; do
-       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $DATADIR $FILESDIR $PROGDIR $nclusters
+       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
        time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 

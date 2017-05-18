@@ -12,21 +12,17 @@ year1=$2
 year2=$3
 seasons=$4
 teles=$5
-DATADIR=$6
+z500filename=$6
 FILESDIR=$7
 
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
-ZDIR=$DATADIR/$exp
 mkdir -p $TEMPDIR
 
 #number of EOFs
 neofs=4
 
 #preparing unique netcdf file
-#$cdonc cat $ZDIR/Z500*nc $TEMPDIR/daily_file.nc
-#$cdonc monmean -selyear,$year1/$year2 $TEMPDIR/daily_file.nc $TEMPDIR/monthly_file.nc
-
-$cdonc monmean -selyear,$year1/$year2 $ZDIR/Z500_${exp}_fullfile.nc $TEMPDIR/monthly_file.nc
+$cdonc monmean -selyear,$year1/$year2 $z500filename $TEMPDIR/monthly_file.nc
 
 for tele in $teles ; do
 for season in $seasons ; do

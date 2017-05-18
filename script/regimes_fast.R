@@ -3,7 +3,7 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(exp,year1,year2,season,DATADIR,FILESDIR,nclusters=nclusters)
+miles.regimes.fast<-function(exp,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters)
 {
 
 #t0
@@ -19,14 +19,13 @@ ylim=c(30,87.5)
 #setting up main variables
 REGIMESDIR=file.path(FILESDIR,exp,"Regimes",paste0(year1,"_",year2),season)
 dir.create(REGIMESDIR,recursive=T)
-ZDIR=file.path(DATADIR,exp)
 
 #setting up time domain
 years=year1:year2
 timeseason=season2timeseason(season)
 
 #new file opening
-nomefile=paste0(ZDIR,"/Z500_",exp,"_fullfile.nc")
+nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
@@ -97,7 +96,7 @@ nc_close(ncfile1)
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","season","DATADIR","FILESDIR","PROGDIR","nclusters")
+name_args=c("exp","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -109,7 +108,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.fast(exp,year1,year2,season,DATADIR,FILESDIR,nclusters)
+        miles.regimes.fast(exp,year1,year2,season,z500filename,FILESDIR,nclusters)
     }
 }
 
