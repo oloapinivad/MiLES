@@ -78,8 +78,6 @@ for (neof in 1:neofs)
 	#plot properties
 	lev_field=seq(-150,150,20)
 	lev_diff=seq(-95,95,10)
-	nlev_field=length(lev_field)-1
-	nlev_diff=length(lev_diff)-1
 	lat_lim=c(20,90)
 	if (tele=="NAO") {region="North Atlantic"}
 	if (tele=="AO") {region="Northern Hemisphere"}
@@ -117,7 +115,7 @@ for (neof in 1:neofs)
 	#delta field plot
 	filled.contour3(ics,ipsilon,linear_exp-linear_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,"Difference"),levels=lev_diff,color.palette=palette2,ylim=lat_lim)
 	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-	image.scale3(volcano,levels=lev_field,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=3)
+	image.scale3(volcano,levels=lev_dff,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=3)
 	
 	dev.off()
 	}
