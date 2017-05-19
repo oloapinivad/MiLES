@@ -15,6 +15,7 @@ teles=$5
 z500filename=$6
 FILESDIR=$7
 
+DATADIR=$(dirname $z500filename)
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
 mkdir -p $TEMPDIR
 

@@ -16,13 +16,13 @@
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
 # set also years and seasons to analyze
-exp="ERAINTERIM"
+exp="HadGEM2-ES"
 year1=1979
 year2=1991
 
 # data folder: all the geopotential height data should be here
-#INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500
-INDIR=/home/paolo/work/DATA/$exp/day/Z500
+INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500
+#INDIR=/home/paolo/work/DATA/$exp/day/Z500
 
 
 # std_clim flag: this is used to choose which climatology compare with results
@@ -69,7 +69,7 @@ config=sansone
 CFGSCRIPT=$PROGDIR/config/config.R
 
 #definition of the fullfile name
-ZDIR=$DATADIR/$exp
+ZDIR=$OUTPUTDIR/Z500/$exp
 mkdir -p $ZDIR
 z500filename=$ZDIR/Z500_${exp}_fullfile.nc
 echo $z500filename
@@ -92,12 +92,12 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
 # figures are done using linear regressions of PCs on monthly anomalies
 
 #time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
-for tele in $teles ; do
-	for season in $seasons ; do
-		echo $season $tele
+#for tele in $teles ; do
+#	for season in $seasons ; do
+#		echo $season $tele
 #		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
-	done
-done
+#	done
+#done
 
 ################################################
 #------Blocking Computation and Figures--------#
@@ -106,18 +106,18 @@ done
 # call R-based script for blocking analysis 
 # figures provide atmospheric blocking index and several other additional diagnostics
 
-#for season in $seasons ; do
+for season in $seasons ; do
 	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
         time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
-#done
+done
 
 ################################################
 #-------Regimes Computation and Figures--------#
 ################################################
 
 for season in $seasons ; do
-#       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
-#       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 

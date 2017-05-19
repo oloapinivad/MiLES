@@ -10,6 +10,7 @@ year2=$3
 INDIR=$4
 z500filename=$5
 
+DATADIR=$(dirname $z500filename)
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
 mkdir -p $TEMPDIR
 

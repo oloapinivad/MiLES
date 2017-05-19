@@ -20,8 +20,6 @@ export OUTPUTDIR=/work/users/paolo/scratch/miles
 #no need to change below this line #
 ####################################
 
-#Z500 folder
-export DATADIR=$OUTPUTDIR/Z500
 #NetCDF output dir
 export FILESDIR=$OUTPUTDIR/files
 #figures folder

@@ -254,6 +254,7 @@ ncdf.opener.time<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmont
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
 #if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
 require(ncdf4)
+require(PCICt)
 
 if (is.null(tyears) | is.null(tmonths)) {stop("Please specify both months and years to load")}
 
@@ -304,12 +305,22 @@ print("loading full field...")
 if (is.null(namevar)) {namevar=names(a$var)} 
 field=ncvar_get(a,namevar)
 
+
 #load axis
-for (axis in names(a$dim)) {assign(axis,ncvar_get(a,axis))}
+naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
 
 print("selecting years and months")
-#extracting time
-timeline=strptime(time,"%Y%m%d")
+#extracting time (BETA)
+origin=strsplit(ncatt_get(a,"time","units")$value," ")[[1]][3]
+cal=ncatt_get(a,"time","calendar")$value
+if (substring(orig, 1, 1)=="%") {
+	timeline=strptime(time,orig) #time with format
+} else {
+	origin.pcict <- as.PCICt(orig, cal)
+	timeline=origin.pcict + (time * seconds.per.day)	#time with origin
+}
+#select time needed
 select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
 field=field[,,select]
 time=timeline[select]
@@ -324,15 +335,15 @@ if (dimensions>1)
 	#assign ics and ipsilon 
 	if (is.null(namelon)) {
 		xlist=c("lon","Lon","longitude","Longitude")
-		if (any(xlist %in% names(a$dim)))  {
-			  ics=get(names(a$dim[which(names(a$dim) %in% xlist)]))} else {stop("No lon found")}
+		if (any(xlist %in% naxis))  {
+			  ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
 		} else {
 		ics=ncvar_get(a,namelon)
 		}
 	if (is.null(namelat)) {
 		ylist=c("lat","Lat","latitude","Latitude")
-		if (any(ylist %in% names(a$dim)))  {
-			ipsilon=get(names(a$dim[which(names(a$dim) %in% ylist)]))} else {stop("No lat found")}
+		if (any(ylist %in% naxis))  {
+			ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")}
 		} else {
 		ipsilon=ncvar_get(a,namelat)
 		}
@@ -347,8 +358,8 @@ if (dimensions>1)
         #exporting variables to the main program
         assign("ics",ics, envir = .GlobalEnv)
         assign("ipsilon",ipsilon, envir = .GlobalEnv)
-	assign(names(a$dim[which(names(a$dim) %in% xlist)]),ics)
-	assign(names(a$dim[which(names(a$dim) %in% ylist)]),ipsilon)
+	assign(names(a$dim[which(naxis %in% xlist)]),ics)
+	assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
 
 }
 
@@ -365,7 +376,7 @@ if (interp2grid) {system2("rm",tempfile)}
 print(paste(dim(field)))
 print(paste("From",time[1],"to",time[length(time)]))
 
-return(mget(c("field",names(a$dim))))
+return(mget(c("field",naxis)))
 }
 
 
