@@ -85,7 +85,7 @@ for (i in 1:(length(whichdays)-1))
 
 etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
 print("Time Array Built")
-print(paste("Length:",length(seas),"days for",season,"season"))
+print(paste("Length:",length(seas)))
 print(paste("From",datas[1],"to",datas[length(seas)]))
 return(etime)
 }
@@ -247,9 +247,9 @@ return(daily)
 
 
 #function to open ncdf files (much more refined, with CDO-based interpolation)
-ncdf.opener.time<-function(namefile,namevar=NULL,namelon="lon",namelat="lat",tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
+ncdf.opener.time<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
 {
-#function to open netcdf files. It uses ncdf4 library. support only 1D (t), 2D (x,y) or 3D (x,y,t) data in any netcdf format.
+#function to open netcdf files. It uses ncdf4 library
 #time selection of month and years needed
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
 #if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
@@ -288,8 +288,8 @@ return(line)    }
 #define flip function ('cos rev/apply is not working)
 flipper<-function(field) {
 dims=length(dim(field))
-if (dims==2) {ll=length(daily[1,]); field=field[,ll:1]} #for x,y data
-if (dims==3) {ll=length(daily[1,,1]); field=field[,ll:1,]} #for x,y,t data
+if (dims==2) {ll=length(field[1,]); field=field[,ll:1]} #for x,y data
+if (dims==3) {ll=length(field[1,,1]); field=field[,ll:1,]} #for x,y,t data
 return(field) }
 
 
@@ -299,35 +299,56 @@ a=nc_open(namefile)
 
 #time selection and variable loading
 print("loading full field...")
-if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
+
+#if no name provided load the only variable available
+if (is.null(namevar)) {namevar=names(a$var)} 
+field=ncvar_get(a,namevar)
+
+#load axis
+for (axis in names(a$dim)) {assign(axis,ncvar_get(a,axis))}
+
 print("selecting years and months")
-timeline=as.Date(as.character(ncvar_get(a,"time")),"%Y%m%d")
+#extracting time
+timeline=strptime(time,"%Y%m%d")
 select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
-daily=daily[,,select]
+field=field[,,select]
+time=timeline[select]
 
 #check for dimensions (presence or not of time dimension)
-dimensions=length(dim(daily))
+dimensions=length(dim(field))
 
 #if dimensions are multiple, get longitude, latitude
 #if needed, rotate and flip the array
 if (dimensions>1)
 {
+	#assign ics and ipsilon 
+	if (is.null(namelon)) {
+		xlist=c("lon","Lon","longitude","Longitude")
+		if (any(xlist %in% names(a$dim)))  {
+			  ics=get(names(a$dim[which(names(a$dim) %in% xlist)]))} else {stop("No lon found")}
+		} else {
+		ics=ncvar_get(a,namelon)
+		}
+	if (is.null(namelat)) {
+		ylist=c("lat","Lat","latitude","Latitude")
+		if (any(ylist %in% names(a$dim)))  {
+			ipsilon=get(names(a$dim[which(names(a$dim) %in% ylist)]))} else {stop("No lat found")}
+		} else {
+		ipsilon=ncvar_get(a,namelat)
+		}
+		
 	print("flipping and rotating")
-
-        #read attributes
-        ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
-
         #longitute rotation around Greenwich
-        if (rot)     {ics=rotation(ics); daily=rotation(daily) }
-        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+        if (rot)     {ics=rotation(ics); field=rotation(field) }
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
                 if (length(ics)>1)
-                {ipsilon=sort(ipsilon); daily=flipper(daily) }
-                else
-                {ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
+                {ipsilon=sort(ipsilon); field=flipper(field) }
 
         #exporting variables to the main program
         assign("ics",ics, envir = .GlobalEnv)
         assign("ipsilon",ipsilon, envir = .GlobalEnv)
+	assign(names(a$dim[which(names(a$dim) %in% xlist)]),ics)
+	assign(names(a$dim[which(names(a$dim) %in% ylist)]),ipsilon)
 
 }
 
@@ -341,10 +362,10 @@ nc_close(a)
 if (interp2grid) {system2("rm",tempfile)}
 
 #showing array properties
-print(paste(dim(daily)))
-print(paste("From",timeline[select][1],"to",timeline[select][length(select)]))
+print(paste(dim(field)))
+print(paste("From",time[1],"to",time[length(time)]))
 
-return(list(field=daily,lon=ics,lat=ipsilon,time=timeline[select]))
+return(mget(c("field",names(a$dim))))
 }
 
 

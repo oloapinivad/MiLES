@@ -10,8 +10,11 @@ miles.regimes.fast<-function(exp,year1,year2,season,z500filename,FILESDIR,nclust
 t0<-proc.time()
 
 #region boundaries for North Atlantic 
-if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
-NorthAtlantic=T
+if (nclusters!=4 | season!="DJF") {
+	stop("Beta version: unsupported season and/or number of clusters")
+}
+
+smoothing=F
 xlim=c(-80,40)
 ylim=c(30,87.5)
 
@@ -24,6 +27,15 @@ dir.create(REGIMESDIR,recursive=T)
 years=year1:year2
 timeseason=season2timeseason(season)
 
+#if (smoothing) {
+#	timeseason0=timeseason
+#	if (season=="DJF") {
+#		timeseason=sort(c(timeseason,11,3)) 
+#	} else {
+#	timeseason=sort(c(timeseason[1]-1,timeseason,timeseason[length(timeseason)]+1))
+#	}
+#}
+
 #new file opening
 nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
@@ -31,7 +43,6 @@ print(str(fieldlist))
 
 #time array
 datas=fieldlist$time
-#etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas)
 etime=power.date.new(datas)
 
 #declare variable
@@ -39,13 +50,20 @@ Z500=fieldlist$field
 
 print("Compute anomalies based on daily mean")
 Z500cycle=apply(Z500,c(1,2),ave,etime$month,etime$day)
-Z500anom=Z500-aperm(Z500cycle,c(2,3,1))
 
-#print("running mean")
-#runZ500cycle=apply(Z500cycle,c(2,3),filter,rep(1/5,5),sides=2)
-#runZ500cycle[1:2,,]=runZ500cycle[3,,]
-#runZ500cycle[2617:2618,,]=runZ500cycle[2616,,]
-#Z500anom=Z500-aperm(runZ500cycle,c(2,3,1))
+if (!smoothing) {
+	Z500anom=Z500-aperm(Z500cycle,c(2,3,1)) 
+}
+
+#if (smoothing) {
+#	print("running mean")
+#	rundays=5
+#	runZ500cycle=apply(Z500cycle,c(2,3),filter,rep(1/rundays,rundays),sides=2)
+#	Z500anom0=Z500-aperm(runZ500cycle,c(2,3,1))
+#	whichdays=which(as.numeric(format(datas,"%m")) %in% timeseason0)
+#	Z500anom=Z500anom0[,,whichdays]
+#	etime=power.date.new(datas[whichdays])
+#	}
 
 weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
 

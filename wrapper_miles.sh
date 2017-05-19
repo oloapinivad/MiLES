@@ -37,8 +37,8 @@ year1_ref=1979
 year2_ref=2008
 
 # please specify one or more of the 4 standard seasons using 3 characters
-seasons="DJF MAM SON JJA"
-#seasons="MAM"
+#seasons="DJF MAM SON JJA"
+seasons="DJF"
 
 # select which EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
@@ -91,11 +91,11 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
 # call to program for EOFs index/pattern. CDO-based, fast and efficient
 # figures are done using linear regressions of PCs on monthly anomalies
 
-time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
+#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
 for tele in $teles ; do
 	for season in $seasons ; do
 		echo $season $tele
-		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+#		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
 	done
 done
 
@@ -106,10 +106,10 @@ done
 # call R-based script for blocking analysis 
 # figures provide atmospheric blocking index and several other additional diagnostics
 
-for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
-        time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
-done
+#for season in $seasons ; do
+#	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+#        time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+#done
 
 ################################################
 #-------Regimes Computation and Figures--------#
@@ -117,7 +117,7 @@ done
 
 for season in $seasons ; do
        time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
-       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+#       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 
