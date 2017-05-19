@@ -14,6 +14,7 @@ if (nclusters!=4 | season!="DJF") {
 	stop("Beta version: unsupported season and/or number of clusters")
 }
 
+#test function to smooth seasonal cycle: it does not work fine yet, keep it false
 smoothing=F
 xlim=c(-80,40)
 ylim=c(30,87.5)
@@ -39,7 +40,6 @@ timeseason=season2timeseason(season)
 #new file opening
 nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
-print(str(fieldlist))
 
 #time array
 datas=fieldlist$time
@@ -65,6 +65,7 @@ if (!smoothing) {
 #	etime=power.date.new(datas[whichdays])
 #	}
 
+#compute weather regimes
 weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
 
 t1=proc.time()-t0
@@ -102,10 +103,6 @@ ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1, 1),  c
 ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 ncvar_put(ncfile1, "Frequencies", weather_regimes$frequencies, start = c(1),  count = c(-1))
 nc_close(ncfile1)
-
-
-
-
 
 }
 
