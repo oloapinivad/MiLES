@@ -254,7 +254,7 @@ ncdf.opener.time<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmont
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
 #if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
 require(ncdf4)
-require(PCICt)
+#require(PCICt)
 
 if (is.null(tyears) | is.null(tmonths)) {stop("Please specify both months and years to load")}
 
@@ -270,7 +270,6 @@ if (interp2grid)
         filedir=dirname(normalizePath(namefile))
         cdo=Sys.which("cdo")
         tempfile=paste0(file.path(filedir,paste0("tempfile_",filename)))
-        #system(paste0(cdo," ",remap_method,",",grid," ",namefile," ",tempfile))
         system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
         namefile=tempfile
         }
@@ -304,6 +303,7 @@ print("loading full field...")
 #if no name provided load the only variable available
 if (is.null(namevar)) {namevar=names(a$var)} 
 field=ncvar_get(a,namevar)
+print(str(field))
 
 
 #load axis
@@ -314,13 +314,27 @@ print("selecting years and months")
 #extracting time (BETA)
 origin=strsplit(ncatt_get(a,"time","units")$value," ")[[1]][3]
 cal=ncatt_get(a,"time","calendar")$value
-if (substring(orig, 1, 1)=="%") {
-	timeline=strptime(time,orig) #time with format
-} else {
-	origin.pcict <- as.PCICt(orig, cal)
-	timeline=origin.pcict + (time * seconds.per.day)	#time with origin
-}
+
+# check for calendar properties
+print(origin)
+print(cal)
+print(time[1:5])
+
+#if (substring(origin, 1, 1)=="%") {
+#	print("qui")
+#	timeline=strptime(time,format="%Y%m%d") #time with format
+#} else {
+#	origin.pcict <- as.PCICt(origin, cal)
+#	timeline=origin.pcict + (time * 86400)	#time with origin
+#}
 #select time needed
+
+#based on preprocessing of CDO time format
+timeline=strptime(time,format="%Y%m%d")
+print(timeline[1:5])
+
+if (is.na(timeline[1])) {stop("Unsupported calendar!!!")}
+
 select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
 field=field[,,select]
 time=timeline[select]

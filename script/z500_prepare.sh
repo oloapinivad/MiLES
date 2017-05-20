@@ -39,7 +39,7 @@ if [ ! -f $z500filename ] ; then
 	#pippo=($(cdo showyear $TEMPDIR/smallfile.nc) )
 	#echo ${pippo[0]}
 	#echo ${pippo[-1]}
-	$cdo4 copy $TEMPDIR/smallfile.nc $z500filename
+	$cdo4 -a copy $TEMPDIR/smallfile.nc $z500filename
 
 else
 	echo "Z500 NetCDF data seems there, avoid z500_prepare.sh"
