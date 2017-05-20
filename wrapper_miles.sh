@@ -17,8 +17,8 @@
 # this variable to distinguish them
 # set also years and seasons to analyze
 exp="HadGEM2-ES"
-year1=1979
-year2=1991
+year1=1990
+year2=1999
 
 # data folder: all the geopotential height data should be here
 INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500

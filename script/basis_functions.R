@@ -254,7 +254,7 @@ ncdf.opener.time<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmont
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
 #if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
 require(ncdf4)
-#require(PCICt)
+require(PCICt)
 
 if (is.null(tyears) | is.null(tmonths)) {stop("Please specify both months and years to load")}
 
@@ -330,14 +330,17 @@ print(time[1:5])
 #select time needed
 
 #based on preprocessing of CDO time format
-timeline=strptime(time,format="%Y%m%d")
+#timeline=strptime(time,format="%Y%m%d")
+timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=cal)
 print(timeline[1:5])
 
-if (is.na(timeline[1])) {stop("Unsupported calendar!!!")}
+#if (is.na(timeline[1])) {stop("Unsupported calendar!!!")}
+if (any(is.na(timeline))) {stop("Unsupported calendar!!!")}
 
 select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
 field=field[,,select]
 time=timeline[select]
+print(time)
 
 #check for dimensions (presence or not of time dimension)
 dimensions=length(dim(field))
