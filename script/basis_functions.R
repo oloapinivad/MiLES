@@ -405,7 +405,7 @@ filled.contour3 <-
             y = seq(0, 1, length.out = ncol(z)), z, xlim = range(x, finite = TRUE), 
             ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE), 
             levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
-            col = color.palette(length(levels) - 1), plot.title, plot.axes, 
+            col = color.palette(length(levels) - 1), extend=TRUE, plot.title, plot.axes, 
             key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
             axes = TRUE, frame.plot = axes,mar, ...) 
 {
@@ -413,6 +413,7 @@ filled.contour3 <-
   # to remove the key and facilitate overplotting with contour()
   # further modified by Carey McGilliard and Bridget Ferris
   # to allow multiple plots on one page
+  # modification to allow plot outside boundaries
 
   if (missing(z)) {
     if (!missing(x)) {
@@ -434,13 +435,17 @@ filled.contour3 <-
   }
   if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
     stop("increasing 'x' and 'y' values expected")
- # mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
- # on.exit(par(par.orig))
- # w <- (3 + mar.orig[2]) * par("csi") * 2.54
- # par(las = las)
- # mar <- mar.orig
+
+ #trim extremes for nicer plots
+ if (extend) {
+	#extendvalue=10^8
+	#levels=c(-extendvalue,levels,extendvalue)
+	#col=c(col[1],col,col[length(col)])
+	z[z<min(levels)]=min(levels)
+	z[z>max(levels)]=max(levels)
+	}
+
  plot.new()
- # par(mar=mar)
   plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
   if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
     stop("no proper 'z' matrix specified")
@@ -464,7 +469,7 @@ filled.contour3 <-
   invisible()
 }
 
-image.scale3 <- function(z,levels,color.palette=heat.colors,colorbar.label="image.scale",
+image.scale3 <- function(z,levels,color.palette=heat.colors,colorbar.label="image.scale",extend=T,
 line.label=2,line.colorbar=0,cex.label=1,cex.colorbar=1,colorbar.width=1,...){
 
  #save properties from main plotting region
@@ -489,14 +494,35 @@ line.label=2,line.colorbar=0,cex.label=1,cex.colorbar=1,colorbar.width=1,...){
  poly <- vector(mode="list", length(col))
  for(i in seq(poly))
   {poly[[i]] <- c(levels[i], levels[i+1], levels[i+1], levels[i])}
- ylim<-range(levels); xlim<-c(0,1)
+  
+ xlim<-c(0,1)
+ if (extend) {
+	longer=1.5
+	dl=diff(levels)[1]*longer
+	ylim<-c(min(levels)-dl,max(levels)+dl)
+	} else {
+	ylim<-range(levels)
+ }
  plot(1,1,t="n",ylim=ylim, xlim=xlim, axes=FALSE, xlab="", ylab="", xaxs="i", yaxs="i", ...)
  for(i in seq(poly))
    {polygon(c(0,0,1,1), poly[[i]], col=col[i], border=NA)}
 
+if (extend) {
+  polygon(c(0,1,1/2), c(levels[1], levels[1], levels[1]-dl), 
+                col = col[1],border=NA) 
+  polygon(c(0,1,1/2), c(levels[length(levels)], levels[length(levels)], levels[length(levels)]+dl), 
+                col = col[length(col)],border=NA)
+  polygon(c(0,0,1/2,1,1,1/2),c(levels[1],levels[length(levels)],levels[length(levels)]+dl, levels[length(levels)],levels[1],
+		levels[1]-dl),border="black",lwd=2)
+  ylim0=range(levels)
+  prettyspecial=pretty(ylim0); prettyspecial=prettyspecial[prettyspecial<=max(ylim0) & prettyspecial>=min(ylim0)]
+  axis(4,las=1,cex.axis=cex.colorbar,at=prettyspecial,labels=prettyspecial,...)
+} else {
+  box()
+  axis(4,las=1,cex.axis=cex.colorbar,...)
+}
+
  #box, axis and leged
- box()
- axis(4,las=1,cex.axis=cex.colorbar,...)
  mtext(colorbar.label,line=line.label,side=4,cex=cex.label,...)
 
  #resetting properties for starting a new plot (mfrow style)

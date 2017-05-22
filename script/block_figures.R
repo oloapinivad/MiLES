@@ -54,14 +54,14 @@ for (field in fieldlist) {
 	if (field=="InstBlock")
 	{
 		color_field=palette1; color_diff=palette2
-		lev_field=seq(0,35,3); lev_diff=seq(-10.5,10.5,1)
+		lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
 		legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:"; legend_distance=3
 	}
 
 	if (field=="BlockEvents")
 	{
                 color_field=palette1; color_diff=palette2
-                lev_field=seq(0,25,3); lev_diff=seq(-10.5,10.5,1)
+                lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1)
                 legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:"; legend_distance=3
 	}
 	
@@ -146,7 +146,12 @@ for (field in fieldlist) {
 		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=c(0,25),main=paste(title_name),xlab="Longitude",ylab="Blocked Days (%)",col=tm90cols[1])
 		points(ics2,field_ref2,type="l",lwd=lwdline,lty=1,col=tm90cols[2])
 		grid()
-		legend(100,25,legend=c(info_ref,info_exp),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+                legend(100,25,legend=c(info_ref,info_exp),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+	
+		#par(new=TRUE)	
+		#plot(ics2,field_exp2,type="n",ylim=c(0,90),xlab="",ylab="",axes=F)
+		#map("world",regions=".",interior=F,exact=F,boundary=T,add=T,ylim=c(40,80))
+		
 		dev.off()
 
 		#skip other part of the script
