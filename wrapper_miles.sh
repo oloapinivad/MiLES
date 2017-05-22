@@ -16,9 +16,9 @@
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
 # set also years and seasons to analyze
-exp="bcc-csm1-1"
-year1=1990
-year2=1999
+exp="NCEP"
+year1=1979
+year2=2014
 
 # data folder: all the geopotential height data should be here
 # NB: this is a folder structure used in my local machine
@@ -40,7 +40,7 @@ year1_ref=1979
 year2_ref=2008
 
 # please specify one or more of the 4 standard seasons using 3 characters
-#seasons="DJF MAM SON JJA"
+seasons="DJF MAM SON JJA"
 seasons="DJF"
 
 # select which EOFs you want to compute
@@ -118,10 +118,10 @@ done
 #-------Regimes Computation and Figures--------#
 ################################################
 
-for season in $seasons ; do
-       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
-       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
-done
+#for season in $seasons ; do
+#       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+#       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+#done
 
 
 

@@ -37,7 +37,7 @@ Z500=fieldlist$field
 #--------------Tibaldi and Molteni 1990------------------#
 ##########################################################
 
-print("Tibaldi and Molteni 1990")
+print("Tibaldi and Molteni (1990) index...")
 # TM90: parametres for blocking detection (beta)
 tm90_fi0=60 #central_lat
 tm90_fiN=tm90_fi0+20; tm90_fiS=tm90_fi0-20 #south and north lath
@@ -54,6 +54,7 @@ tm90_check=(tm90_ghgs>0 & tm90_ghgn<(-10)) # TM90 conditions
 tm90_check[tm90_check==T]=1; tm90_check[tm90_check==F]=0
 totTM90=apply(tm90_check,c(1,3),max,na.rm=T)
 TM90=apply(totTM90,1,mean)*100
+print("Done!")
 
 ##########################################################
 #--------------Davini et al. 2012------------------------#
@@ -76,10 +77,9 @@ fiS=ipsilon[south]
 range=round((90-fi0-jump)/diff(ipsilon)[1])  #escursion to the north for computing blocking
 
 print("--------------------------------------------------")
+print("Davini et al. (2012) index and diagnostics...")
 print(c("distance for gradients:",step0*diff(ics)[1]))
 print(paste("range of latitudes ",fi0,"-",90-step0*diff(ics)[1]," N",sep=""))
-
-print("--------------------------------------------------")
 
 ##########################################################
 #--------------Istantaneous Blocking---------------------#
@@ -162,6 +162,8 @@ ACN=apply(totrwb,c(1,2),function(x) sum(x[x==(10)],na.rm=T))/(totdays)*(10)
 
 t1=proc.time()-t0
 print(t1)
+
+print("Instantaneous blocking and diagnostics done!")
 
 ##########################################################
 #--------------------Time filtering----------------------#

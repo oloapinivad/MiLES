@@ -27,15 +27,21 @@ Current version includes:
 	atmospheric blocking evaluating meridional gradient reversal at 500hPa.
 	It includes also Meridional Gradient Index and Blocking Intensity index
 	and Rossby wave orientation index, computing both Instantenous Blocking and Blocking Events.
+	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
-2. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
+2.	**1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere
+	Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
+	It is computed as inner routine of the 2D atmospheric blocking.
+	Full timeseries and climatologies are provided in NetCDF4 Zip format.
+
+3. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
 	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
 	NAO, EA, and Arctic Oscillation are thus computed. 
 	Figures of linear regression are provided.
 	PCs and eigenvectors, as well as the variances explained are provided in NetCDF4 Zip format.
 
-3.	**North Atlantic Weather Regimes (beta)**: following k-means clustering of 500hPa geopotential height.
+4.	**North Atlantic Weather Regimes (beta)**: following k-means clustering of 500hPa geopotential height.
 	4 weather regimes over North Atlantic (80W-40E 30N-87.5N) are evaluted using 
 	anomalies from daily seasonal cycle. North Atlantic 4 EOFs are computed to reduce 
 	the phase-space dimension and then k-means clustering using Hartigan-Wong algorithm with k=4 is computed. 
@@ -51,10 +57,14 @@ free of bugs. Please report any issue at p.davini@isac.cnr.it
 
 Please refer to **MiLES** specifing which version has been used in the acknowledgment of any publication.
 
+Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. 
+Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."*
+in case you  use 2D the blocking index in any publication.
+
 Please cite *"Davini, P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012:
 Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking.
 J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."*
-in case you  use the blocking index in any publication.
+in case you  use 2D the blocking index in any publication.
 
 
 ----------------
@@ -73,7 +83,7 @@ Packages are also included in **MiLES** and can be installed offline.
 - "ncdf4" provides the interface for NetCDF files.
 - "maps" provides the world maps for the plots
 - "PCICt" provides the tools to handle 360-days and 365-days calendars. 
-If you are aware of other way to implement this 3 passages without using those packages, please write me.
+If you are aware of other way to implement this 3 passages without using those packages, please contact me.
 
 The installation of some packages requires specifically gfortran-4.8: there is an issue known on 
 Mac OS X (10.11 and later at least) which requires a few turnarounds. See here for help:
@@ -102,7 +112,8 @@ You can use both geopotential or geopotential height data, the former will be au
 * "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
 provides the figures with an R script. EOFs signs for the main EOFs are checked in order to maintain consistency.
 
-* "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures.
+* "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
+Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are provided.
 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
 

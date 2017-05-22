@@ -22,7 +22,7 @@ if (REFDIR!=FILESDIR)
         {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
 #which fieds to load/plot
-fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
+fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents","TM90")
 
 ##########################################################
 #-----------------Loading datasets-----------------------#
@@ -111,13 +111,57 @@ for (field in fieldlist) {
 
 	field_ref=get(paste(field,"_ref",sep=""))
 	field_exp=get(paste(field,"_exp",sep=""))
+	info_exp=paste(exp,year1,"-",year2,season)
+        info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+
+	#special treatment for TM90: it is a 1D field!
+	if (field=="TM90") {
+		#final plot production
+	        figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+        	print(figname)
+
+        	# Chose output format for figure - by JvH
+        	if (tolower(output_file_type) == "png") {
+        	   png(filename = figname, width=png_width, height=png_height/2)
+        	} else if (tolower(output_file_type) == "pdf") {
+        	    pdf(file=figname,width=pdf_width,height=pdf_height/2,onefile=T)
+        	} else if (tolower(output_file_type) == "eps") {
+        	    setEPS(width=pdf_width,height=pdf_height/2,onefile=T,paper="special")
+        	    postscript(figname)
+        	}
+
+		#panels option
+        	par(cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,3),oma=c(0,0,0,0))
+
+		#rotation to simplify the view (90 deg to the west)
+		n=(-length(ics)/4)
+		ics2=c(tail(ics,n),head(ics,-n)+360)
+		field_exp2=c(tail(field_exp,n),head(field_exp,-n))
+		field_ref2=c(tail(field_ref,n),head(field_ref,-n))
+
+		#plot properties
+		lwdline=4
+		title_name="TM90 Instantaneous Blocking"
+		tm90cols=c("dodgerblue","darkred")
+		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=c(0,25),main=paste(title_name),xlab="Longitude",ylab="Blocked Days (%)",col=tm90cols[1])
+		points(ics2,field_ref2,type="l",lwd=lwdline,lty=1,col=tm90cols[2])
+		grid()
+		legend(100,25,legend=c(info_ref,info_exp),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+		dev.off()
+
+		#skip other part of the script
+		next()
+
+		}
+
+
+		
+
 	
 	#secondary plot properties
 	nlev_field=length(lev_field)-1
 	nlev_diff=length(lev_diff)-1
 	lat_lim=c(20,90)
-	info_exp=paste(exp,year1,"-",year2,season)
-	info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
 
 	#final plot production
 	figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")

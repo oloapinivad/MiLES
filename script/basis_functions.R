@@ -327,7 +327,6 @@ print("selecting years and months")
 
 #based on preprocessing of CDO time format: get calendar type and use PCICt package for irregular data
 cal=ncatt_get(a,"time","calendar")$value
-print(cal)
 timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=cal)
 
 #if (is.na(timeline[1])) {stop("Unsupported calendar!!!")}
