@@ -23,7 +23,7 @@ other MiLES-generated data
 
 Current version includes:
 
-1.      **1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere.
+1. 	**1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere.
         Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
         Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
