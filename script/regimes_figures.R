@@ -38,8 +38,6 @@ nomefile=paste0(REFDIR,"/RegimesPattern_",dataset_ref,"_",year1_ref,"_",year2_re
 frequencies_ref=ncdf.opener(nomefile,"Frequencies")
 regimes_ref=ncdf.opener(nomefile,"Regimes","Lon","Lat",rotate="no")
 
-nclusters=length(frequencies_exp)
-
 #try to assign the 4 standard regimes names to the dataset using the distance between 
 #the location of the maximum/minimum of the pattern and 4 "standard" locations
 #when something is wrong (i.e. multiple assignments) general "Regime X" names are set
@@ -69,7 +67,15 @@ for (ii in c("ref","exp"))
 assign(paste0("names_",ii),names)
 }
 
+#plot properties
+lev_field=seq(-250,250,20)
+lev_diff=seq(-150,150,20)
+lat_lim=c(20,90)
+info_exp=paste(exp,year1,"-",year2,season)
+info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+
 kk0=1
+# loop on regimes
 for (name in names_ref)
 {
 	#-----plotting-------#
@@ -80,13 +86,6 @@ for (name in names_ref)
 	jj=which(name==names_ref)
 	if (length(ii)==0) {ii=which(setdiff(names_exp,names_ref)[kk0]==names_exp); kk0=kk0+1}
 	print(name)
-
-        #plot properties
-        lev_field=seq(-250,250,20)
-        lev_diff=seq(-150,150,20)
-        lat_lim=c(20,90)
-        info_exp=paste(exp,year1,"-",year2,season)
-        info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
 
         #final plot production
         figname=paste(FIGDIRREGIMES,"/Regime",ii,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
@@ -105,11 +104,11 @@ for (name in names_ref)
         #plot properties
         par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
 
-        filled.contour3(ics,ipsilon,regimes_exp[,,ii],xlab="Longitude",ylab="Latitude",main=paste(names_exp[ii],info_exp),levels=lev_field,color.palette=palette0,ylim=lat_lim)
+        filled.contour3(ics,ipsilon,regimes_exp[,,ii],xlab="Longitude",ylab="Latitude",main=paste(names_exp[ii],info_exp),levels=lev_field,color.palette=palette3,ylim=lat_lim)
         map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
         text(120,85,paste("Frequencies: ",round(frequencies_exp[ii],2),"%",sep=""),cex=2)
 
-        filled.contour3(ics,ipsilon,regimes_ref[,,jj],xlab="Longitude",ylab="Latitude",main=paste(names_ref[jj],info_ref),levels=lev_field,color.palette=palette0,ylim=lat_lim)
+        filled.contour3(ics,ipsilon,regimes_ref[,,jj],xlab="Longitude",ylab="Latitude",main=paste(names_ref[jj],info_ref),levels=lev_field,color.palette=palette3,ylim=lat_lim)
         map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
         image.scale3(volcano,levels=lev_field,color.palette=palette0,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=3)
         text(120,85 ,paste("Frequencies: ",round(frequencies_ref[jj],2),"%",sep=""),cex=2)

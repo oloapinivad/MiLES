@@ -35,5 +35,6 @@ palette0=colorRampPalette(c("#00008F", "#00009F", "#0000AF", "#0000BF", "#0000CF
         "#AF0000", "#9F0000", "#8F0000", "#800000"))
 palette1=colorRampPalette(c("white","orange","darkred"))
 palette2=colorRampPalette(c("blue","white","red"))
+palette3=colorRampPalette(c("darkblue","blue","dodgerblue","white","orange","red","darkred"))
 
 

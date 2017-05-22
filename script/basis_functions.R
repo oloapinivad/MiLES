@@ -298,15 +298,6 @@ return(field) }
 print(paste("opening file:",namefile))
 a=nc_open(namefile)
 
-#time selection and variable loading
-print("loading full field...")
-
-#if no name provided load the only variable available
-if (is.null(namevar)) {namevar=names(a$var)} 
-field=ncvar_get(a,namevar)
-print(str(field))
-
-
 #load axis
 naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
 for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
@@ -329,12 +320,29 @@ print("selecting years and months")
 cal=ncatt_get(a,"time","calendar")$value
 timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=cal)
 
-#if (is.na(timeline[1])) {stop("Unsupported calendar!!!")}
-if (any(is.na(timeline))) {stop("Unsupported calendar!!!")}
+# break if the calendar has not been recognized
+if (any(is.na(timeline))) {
+	stop("Calendar from NetCDF is unsupported or not present. Stopping!!!")
+}
+#break if the data requested is not there
+lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-28"),cal="standard",format="%Y-%m-%d")
+firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal="standard",format="%Y-%m-%d")
+if (max(timeline)<lastday | min(timeline)>min(timeline)) {
+	stop("You requested a time interval that is not present in the NetCDF")
+}
 
+#time selection and variable loading
+print("loading full field...")
+#if no name provided load the only variable available
+if (is.null(namevar)) {namevar=names(a$var)}
+field=ncvar_get(a,namevar)
+print(str(field))
+
+# select data we need
 select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
 field=field[,,select]
 time=timeline[select]
+
 print(paste("This is a",cal,"calendar"))
 print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
 

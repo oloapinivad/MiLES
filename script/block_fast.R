@@ -11,8 +11,6 @@ t0<-proc.time()
 #setting up main variables
 BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
 dir.create(BLOCKDIR,recursive=T)
-#outname=paste0(BLOCKDIR,"/Block_",exp,"_",year1,"_",year2,"_",season)
-#outname2=paste0(BLOCKDIR,"/Events_",exp,"_",year1,"_",year2,"_",season)
 
 #setting up time domain
 years=year1:year2

@@ -1,6 +1,5 @@
 #check for present library paths
 RLIBPATH=.libPaths()
-print(RLIBPATH)
 #check if we can write in the present R libaries paths
 if (any(file.access(RLIBPATH,2)==0))
         {

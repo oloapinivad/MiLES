@@ -22,7 +22,7 @@ if (REFDIR!=FILESDIR)
         {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
 #which fieds to load/plot
-fieldlist=c("InstBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents","TM90")
+fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents","TM90")
 
 ##########################################################
 #-----------------Loading datasets-----------------------#
@@ -48,71 +48,77 @@ for (field in fieldlist)
 #-----------------Produce figures------------------------#
 ##########################################################
 
+#standard properties
+legend_distance=3
+info_exp=paste(exp,year1,"-",year2,season)
+info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+lat_lim=c(20,90)
+
 #loop on fields
 for (field in fieldlist) {
+
 	#define field-dependent properties
-	if (field=="InstBlock")
-	{
+	if (field=="InstBlock") {
 		color_field=palette1; color_diff=palette2
 		lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
-		legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:"; legend_distance=3
+		legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:"; 
 	}
 
-	if (field=="BlockEvents")
-	{
+	if (field=="ExtraBlock") {
+                color_field=palette1; color_diff=palette2
+                lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
+                legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency (GHGS2 condition):"; 
+        }
+
+	if (field=="BlockEvents") {
                 color_field=palette1; color_diff=palette2
                 lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1)
-                legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:"; legend_distance=3
+                legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:"; 
 	}
 	
-	if (field=="DurationEvents")
-        {
+	if (field=="DurationEvents") {
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2)
-                legend_unit="Duration (days)"; title_name="Duration of Blocking Events:"; legend_distance=3
+                legend_unit="Duration (days)"; title_name="Duration of Blocking Events:";
         }
 	
-	if (field=="NumberEvents")
-        {
+	if (field=="NumberEvents") {
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5)
-                legend_unit=""; title_name="Number of Blocking Events:"; legend_distance=3
+                legend_unit=""; title_name="Number of Blocking Events:";
         }
 
-	if (field=="Z500")
-        {
+	if (field=="Z500") {
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(4800,6000,50); lev_diff=seq(-310,310,20)
                 legend_unit="Geopotential Height (m)"; title_name="Z500:" ; legend_distance=4
         }
 
-	if (field=="BI")
-        {
+	if (field=="BI") {
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(1,6,0.25); lev_diff=seq(-2.1,2.1,.2)
-                legend_unit="BI index"; title_name="Blocking Intensity (BI):" ; legend_distance=3
+                legend_unit="BI index"; title_name="Blocking Intensity (BI):" ;
         }
 
-	if (field=="MGI")
-        {
+	if (field=="MGI") {
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(0,15,1); lev_diff=seq(-5.25,5.25,.5)
-                legend_unit="MGI Index"; title_name="Meridional Gradient Inversion (MGI):" ; legend_distance=3
+                legend_unit="MGI Index"; title_name="Meridional Gradient Inversion (MGI):" ; 
         }
 
-	if (field=="ACN" | field=="CN")
-        {
+	if (field=="ACN" | field=="CN") {
                 if (field=="ACN") {title_name="Anticyclonic Rossby wave breaking frequency:"}
 		if (field=="CN") {title_name="Cyclonic Rossby wave breaking frequency:"}
                 color_field=palette1; color_diff=palette2
                 lev_field=seq(0,20,2); lev_diff=seq(-5.25,5.25,.5)
-                legend_unit="RWB frequency (%)"; legend_distance=3
+                legend_unit="RWB frequency (%)"; 
         }
 
-	field_ref=get(paste(field,"_ref",sep=""))
-	field_exp=get(paste(field,"_exp",sep=""))
-	info_exp=paste(exp,year1,"-",year2,season)
-        info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+	#get fields
+        field_ref=get(paste(field,"_ref",sep=""))
+        field_exp=get(paste(field,"_exp",sep=""))
+
+
 
 	#special treatment for TM90: it is a 1D field!
 	if (field=="TM90") {
@@ -143,10 +149,10 @@ for (field in fieldlist) {
 		lwdline=4
 		title_name="TM90 Instantaneous Blocking"
 		tm90cols=c("dodgerblue","darkred")
-		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=c(0,25),main=paste(title_name),xlab="Longitude",ylab="Blocked Days (%)",col=tm90cols[1])
+		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=c(0,30),main=paste(title_name),xlab="Longitude",ylab="Blocked Days (%)",col=tm90cols[1])
 		points(ics2,field_ref2,type="l",lwd=lwdline,lty=1,col=tm90cols[2])
 		grid()
-                legend(100,25,legend=c(info_ref,info_exp),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+                legend(100,30,legend=c(info_ref,info_exp),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
 	
 		#par(new=TRUE)	
 		#plot(ics2,field_exp2,type="n",ylim=c(0,90),xlab="",ylab="",axes=F)
@@ -158,15 +164,10 @@ for (field in fieldlist) {
 		next()
 
 		}
-
-
-		
-
 	
 	#secondary plot properties
 	nlev_field=length(lev_field)-1
 	nlev_diff=length(lev_diff)-1
-	lat_lim=c(20,90)
 
 	#final plot production
 	figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
