@@ -16,13 +16,16 @@
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
 # set also years and seasons to analyze
-exp="HadGEM2-ES"
+exp="bcc-csm1-1"
 year1=1990
 year2=1999
 
 # data folder: all the geopotential height data should be here
+# NB: this is a folder structure used in my local machine
 INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500
-#INDIR=/home/paolo/work/DATA/$exp/day/Z500
+if [ "${dataset}" = NCEP ] || [ "${dataset}" == ERA40 ] || [ "${dataset}" == ERAINTERIM  ] || [ "${dataset}" == MERRA  ] ; then
+	INDIR=/home/paolo/work/DATA/$exp/day/Z500
+fi
 
 
 # std_clim flag: this is used to choose which climatology compare with results

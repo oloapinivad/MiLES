@@ -1,6 +1,6 @@
 #check for present library paths
 RLIBPATH=.libPaths()
-
+print(RLIBPATH)
 #check if we can write in the present R libaries paths
 if (any(file.access(RLIBPATH,2)==0))
         {
@@ -19,7 +19,7 @@ if (web==1)
 {
 # web based installation
 #packages=c("spam","maps","fields","ncdf4")
-packages=c("maps","ncdf4")
+packages=c("maps","ncdf4","PCICt")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 
 if (length(new.packages)==0) {print("All packages are there, no need to install anything")}

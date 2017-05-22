@@ -65,11 +65,15 @@ in case you  use the blocking index in any publication.
 * b. CDO version > 1.6.5, compiled with netCDF4
 * c. Compiling environment (gcc)
 
-IMPORTANT: there are 2 R packages (maps and ncdf4) needed to run **MiLES**.
+IMPORTANT: there are 3 R packages (ncdf4, maps and PCICt) needed to run **MiLES**.
 You have to run "Rscript config/installpack.R" as first step in order to install the packages.
-If everything runs fine, their installation is performed by an automated 
-routine that brings the user through the standard web-based installation. 
+If everything runs fine, their installation is performed by an automated
+routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
+- "ncdf4" provides the interface for NetCDF files.
+- "maps" provides the world maps for the plots
+- "PCICt" provides the tools to handle 360-days and 365-days calendars. 
+If you are aware of other way to implement this 3 passages without using those packages, please write me.
 
 The installation of some packages requires specifically gfortran-4.8: there is an issue known on 
 Mac OS X (10.11 and later at least) which requires a few turnarounds. See here for help:
@@ -110,8 +114,10 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 ## HISTORY
 
 *v0.4 - June 2017*
+- Tibaldi and Molteni (1990) blocking index is now computed by blocking_fast.R
 - Weather regimes k-means clustering over North Atlantic.
-- Reformulation of input Z500 files, now based on a single NetCDF file
+- Reformulation of input Z500 files, now based on a single NetCDF file: to handle 360-days 
+  and 365day calendar package PCICt is now required.
 
 *v0.31 - May 2017*
 - Comparison of EOFs and Blocking figures with any other MiLES-generated dataset

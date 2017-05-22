@@ -1,13 +1,14 @@
 #basis functions
-R_LIBLOC=.libPaths()[1]
+
 
 ##########################################################
 #------------------------Packages------------------------#
 ##########################################################
 
 #loadin packages
-library("maps",lib.loc=R_LIBLOC)
-library("ncdf4",lib.loc=R_LIBLOC)
+library("maps")
+library("ncdf4")
+library("PCICt")
 
 #check if fast linear fit is operative (after R 3.1): 3x faster than lm.fit, 36x faster than lm
 if (exists(".lm.fit")) {lin.fit=.lm.fit} else {lin.fit=lm.fit}
@@ -312,13 +313,8 @@ for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
 
 print("selecting years and months")
 #extracting time (BETA)
-origin=strsplit(ncatt_get(a,"time","units")$value," ")[[1]][3]
-cal=ncatt_get(a,"time","calendar")$value
+#origin=strsplit(ncatt_get(a,"time","units")$value," ")[[1]][3]
 
-# check for calendar properties
-print(origin)
-print(cal)
-print(time[1:5])
 
 #if (substring(origin, 1, 1)=="%") {
 #	print("qui")
@@ -329,10 +325,10 @@ print(time[1:5])
 #}
 #select time needed
 
-#based on preprocessing of CDO time format
-#timeline=strptime(time,format="%Y%m%d")
+#based on preprocessing of CDO time format: get calendar type and use PCICt package for irregular data
+cal=ncatt_get(a,"time","calendar")$value
+print(cal)
 timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=cal)
-print(timeline[1:5])
 
 #if (is.na(timeline[1])) {stop("Unsupported calendar!!!")}
 if (any(is.na(timeline))) {stop("Unsupported calendar!!!")}
@@ -340,7 +336,8 @@ if (any(is.na(timeline))) {stop("Unsupported calendar!!!")}
 select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
 field=field[,,select]
 time=timeline[select]
-print(time)
+print(paste("This is a",cal,"calendar"))
+print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
 
 #check for dimensions (presence or not of time dimension)
 dimensions=length(dim(field))
@@ -379,6 +376,7 @@ if (dimensions>1)
 	assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
 
 }
+
 
 if (dimensions>3)
 {stop("This file is more than 3D file")}
