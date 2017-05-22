@@ -86,10 +86,10 @@ for (neof in 1:neofs) {
 	#plot properties
 	if (tele=="NAO") {region="North Atlantic"}
 	if (tele=="AO") {region="Northern Hemisphere"}
-	title_name=paste(region,"EOF",neof,sep="")
+	title_name=paste0(region," EOF",neof)
 
 	#final plot production
-	figname=paste(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+	figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type)
 	print(figname)
 
 	# Chose output format for figure - by JvH

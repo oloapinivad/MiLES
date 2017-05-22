@@ -22,23 +22,23 @@ Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard peri
 other MiLES-generated data
 
 Current version includes:
-1. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
+1.      **1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere.
+        Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
+        Full timeseries and climatologies are provided in NetCDF4 Zip format.
+
+2. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
 	atmospheric blocking evaluating meridional gradient reversal at 500hPa.
 	It includes also Meridional Gradient Index and Blocking Intensity index
-	and Rossby wave orientation index, computing both Instantenous Blocking and Blocking Events.
+	and Rossby wave orientation index, computing both Instantenous Blocking and Blocking Events frequency.
+	Blocking Events allow the estimation of the blocking duration
 	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
-	Full timeseries and climatologies are provided in NetCDF4 Zip format.
-
-2.	**1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere
-	Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
-	It is computed as inner routine of the 2D atmospheric blocking.
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
 3. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
 	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
-	NAO, EA, and Arctic Oscillation are thus computed. 
-	Figures of linear regression are provided.
+	North Atlantic Oscillation, East Atlantic Pattern, and Arctic Oscillation are thus computed. 
+	Figures showing linear regression of PCs on monthly Z500 are provided.
 	PCs and eigenvectors, as well as the variances explained are provided in NetCDF4 Zip format.
 
 4.	**North Atlantic Weather Regimes (beta)**: following k-means clustering of 500hPa geopotential height.
@@ -81,8 +81,8 @@ If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
 - "ncdf4" provides the interface for NetCDF files.
-- "maps" provides the world maps for the plots
-- "PCICt" provides the tools to handle 360-days and 365-days calendars. 
+- "maps" provides the world maps for the plots.
+- "PCICt" provides the tools to handle 360-days and 365-days calendars (from model data). 
 If you are aware of other way to implement this 3 passages without using those packages, please contact me.
 
 The installation of some packages requires specifically gfortran-4.8: there is an issue known on 
@@ -99,7 +99,7 @@ It is a trivial configuration, needing only information on CDO/R paths and some 
 
 The simplest way to run **MiLES** is simply executing in bash environment "wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file format can be specified at this stage.
-All the chain of scripts will be executed as a sequence.
+All the chain of scripts will be executed as a sequence. You can comment the script you do not need.
 
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based script are written as functions and thus can be called inside R if needed.  
@@ -107,15 +107,18 @@ R-based script are written as functions and thus can be called inside R if neede
 * "z500_prepare.sh". **MiLES** is based on a pre-processing of data. 
 This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid,
 it selects the NH only and it organizes their structure and their features in order to make them handable by MiLES.
+It produces a single NetCDF4 Zip files. 
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
+To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data. 
 
 * "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
 provides the figures with an R script. EOFs signs for the main EOFs are checked in order to maintain consistency.
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
-Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are provided.
+Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed by this script.
 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
+The second script try to assign the right weather regimes to its name. However please aware it is not always effective.
 
 Figures are extremely basic: they can be produced in pdf, png and eps format.
 Properties (e.g. resolution, palettes) can be modified playing with the config/config.R file. 
@@ -126,39 +129,40 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 
 *v0.4 - June 2017*
 - Tibaldi and Molteni (1990) blocking index is now computed by blocking_fast.R
-- Weather regimes k-means clustering over North Atlantic.
+- Weather regimes k-means clustering over North Atlantic is now available.
 - Reformulation of input Z500 files, now based on a single NetCDF file: to handle 360-days 
   and 365day calendar package PCICt is now required.
+- Figures updates and various bug fixing.
 
 *v0.31 - May 2017*
-- Comparison of EOFs and Blocking figures with any other MiLES-generated dataset
-- Beta-version of sign-check for main EOFs
-- Reformulation: each script is made by R function + can be run from command line
-- Change folder structure to simplify portability
-- Code consolidation and folder/variable name normalization
+- Comparison of EOFs and Blocking figures with any other MiLES-generated dataset.
+- Beta-version of sign-check for main EOFs.
+- Reformulation: each script is made by R function + can be run from command line.
+- Change folder structure to simplify portability.
+- Code consolidation and folder/variable name normalization.
 
 *v0.3 - May 2017*
-- Blocking Events definition by Davini et al. (2012) now avaiable
-- Removed dependencies from fields and spam R packages
-- Support for figures format in png, pdf or eps - by J. von Hardenberg
-- Removed dependencies on R-files saving blocking data (using now NetCDF)
-- Blocking timeseries available in NetCDF
-- NetCDF4 Zip for blocking output files
-- Support for different model calendar: 30-day, Gregorian and No-Leap-Year
-- ~36x faster linear regression for EOFs (.fit.lm function)
-- new ~2x faster largescale.extension.if() function
-- Improved speed in blocking for long timeseries: ~2.5x faster for 30years (predeclaration of arrays)
-- Minor bugs in axis legends (removal of image.plot)
-- Readme in markdown format
+- Blocking Events definition by Davini et al. (2012) now avaiable.
+- Removed dependencies from fields and spam R packages.
+- Support for figures format in png, pdf or eps - by J. von Hardenberg.
+- Removed dependencies on R-files saving blocking data (using now NetCDF).
+- Blocking timeseries available in NetCDF.
+- NetCDF4 Zip for blocking output files.
+- Support for different model calendar: 30-day, Gregorian and No-Leap-Year.
+- ~36x faster linear regression for EOFs (.fit.lm function).
+- new ~2x faster largescale.extension.if() function.
+- Improved speed in blocking for long timeseries: ~2.5x faster for 30years (predeclaration of arrays).
+- Minor bugs in axis legends (removal of image.plot).
+- Readme in markdown format.
 
 *v0.2 - Apr 2017*
-- Support for Arctic Oscillation
-- External unique configuration file
-- Psuedo-universal adaptability to any model data
-- Automated script for R package installing
-- Adaptation to geopotential/geopotential height data
-- Climatological blocking data are stored in NetCDF
-- Now on GitHUB
+- Support for Arctic Oscillation.
+- External unique configuration file.
+- Psuedo-universal adaptability to any model data.
+- Automated script for R package installing.
+- Adaptation to geopotential/geopotential height data.
+- Climatological blocking data are stored in NetCDF.
+- Now on GitHUB.
 
 *v0.11 - Mar 2015*
 
@@ -166,13 +170,13 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 
 *v0.1 - Oct 2014*
 
-- EOFs and 2D Blocking calculation
-- Basic functions implemented
-- Support for NetCDF4
-- Support for 4 standard season (DJF,MAM,JJA,SON)
-- ERAINTERIM comparison via netCDF files
-- Parallelization Z500 extraction
-- Png outputs from PDF
+- EOFs and 2D Blocking calculation.
+- Basic functions implemented.
+- Support for NetCDF4.
+- Support for 4 standard season (DJF,MAM,JJA,SON).
+- ERAINTERIM comparison via netCDF files.
+- Parallelization Z500 extraction.
+- Png outputs from PDF.
 
 -----------------
 
