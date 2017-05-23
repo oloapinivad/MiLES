@@ -18,7 +18,7 @@ it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
 for the chosen time period (over the for standard 4 seasons) in 3 different output format. 
 Data are interpolated on a common 2.5x2.5 grid using CDO.  
-Model data are compated against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
+Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
 other MiLES-generated data
 
 Current version includes:
@@ -119,7 +119,7 @@ provides the figures with an R script. EOFs signs for the main EOFs are checked 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed by this script.
 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
-The second script try to assign the right weather regimes to its name. However please aware it is not always effective.
+The second script tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
 Figures are extremely basic: they can be produced in pdf, png and eps format.
 Properties (e.g. resolution, palettes) can be modified playing with the config/config.R file. 
