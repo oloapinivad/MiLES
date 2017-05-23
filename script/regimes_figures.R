@@ -11,7 +11,6 @@ miles.regimes.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,
 if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
 
 #R configuration file 
-CFGSCRIPT="/home/paolo/MiLES/config/config.R"
 source(CFGSCRIPT)
 
 #correct folder to experiment dependent
