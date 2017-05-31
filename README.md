@@ -4,9 +4,11 @@
 Jun 2017
 
 by P. Davini - ISAC-CNR
+
 p.davini@isac.cnr.it
 
 Contributors: 	J. von Hardenberg - ISAC-CNR
+
 		I. Mavilia - ISAC-CNR
 
 ------------------------------
@@ -101,11 +103,19 @@ http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on
 ## HOW TO
 
 Before running **MiLES** R packages should installed (see above).
-Also, config/config_$MACHINE.sh should be set accordingly to your local configuration.
-It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
 
-The simplest way to run **MiLES** is simply executing in bash environment "wrapper_miles.sh". 
-Options as seasons, which EOFs compute, reference dataset or file format can be specified at this stage.
+Two configuration scripts controls the options:
+1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
+	It should be set accordingly to your local configuration. 
+	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
+2.	*config/config.R* controls the plot proporties. If everything is ok, you should not touch this file.
+	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
+	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
+	Figures are extremely basic: they can be produced in pdf, png and eps format.
+
+The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
+Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
+can be specified at this stage.
 All the chain of scripts will be executed as a sequence. You can comment the script you do not need.
 
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
@@ -114,7 +124,8 @@ R-based script are written as functions and thus can be called inside R if neede
 * "z500_prepare.sh". **MiLES** is based on a pre-processing of data. 
 This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid,
 it selects the NH only and it organizes their structure and their features in order to make them handable by **MiLES**.
-It produces a single NetCDF4 Zip files. 
+It produces a single NetCDF4 Zip files with all the data avaialble. A check is performed in order to avoid useless run of 
+the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
 
@@ -128,7 +139,6 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
 Figures are extremely basic: they can be produced in pdf, png and eps format.
-Properties (e.g. resolution, palettes) can be modified playing with the config/config.R file. 
 
 ------------
 
