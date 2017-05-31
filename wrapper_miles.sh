@@ -61,7 +61,7 @@ output_file_type="pdf"
 # "azequalarea": polar plot with equal area
 # these are suggested: any other polar plot by "mapproj" R package are supported
 map_projection="no"
-map_projection="azequalarea"
+#map_projection="azequalarea"
 
 #config name: create your own config file for your machine.
 config=sansone
