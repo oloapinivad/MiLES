@@ -61,6 +61,7 @@ output_file_type="pdf"
 # "azequalarea": polar plot with equal area
 # these are suggested: any other polar plot by "mapproj" R package are supported
 map_projection="no"
+map_projection="azequalarea"
 
 #config name: create your own config file for your machine.
 config=sansone
@@ -101,12 +102,12 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
 # figures are done using linear regressions of PCs on monthly anomalies
 
 #time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
-#for tele in $teles ; do
-#	for season in $seasons ; do
-#		echo $season $tele
-#		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
-#	done
-#done
+for tele in $teles ; do
+	for season in $seasons ; do
+		echo $season $tele
+		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+	done
+done
 
 ################################################
 #------Blocking Computation and Figures--------#
@@ -124,10 +125,10 @@ done
 #-------Regimes Computation and Figures--------#
 ################################################
 
-#for season in $seasons ; do
+for season in $seasons ; do
 #       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
-#       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
-#done
+       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+done
 
 
 

@@ -51,7 +51,6 @@ variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
 #plot properties
 info_exp=paste(exp,year1,"-",year2,season)
 info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
-lat_lim=c(20,90)
 lev_field=seq(-150,150,20)
 lev_diff=seq(-95,95,10)
 nlev_field=length(lev_field)-1
@@ -103,21 +102,27 @@ for (neof in 1:neofs) {
         }
 
 	#plot properties
-	par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
+	par(plotpar)
 
-	filled.contour3(ics,ipsilon,linear_exp,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_exp),levels=lev_field,color.palette=palette3,ylim=lat_lim)
-	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
+	im=plot.prepare(ics,ipsilon,linear_exp,proj=map_projection,lat_lim=lat_lim)
+        filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+        mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
+        proj.addland(proj=map_projection)
 	text(120,85,paste("Variance Explained: ",variance_exp[neof],"%",sep=""),cex=2)
 
-	filled.contour3(ics,ipsilon,linear_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_ref),levels=lev_field,color.palette=palette3,ylim=lat_lim)
-	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-	image.scale3(volcano,levels=lev_field,color.palette=palette0,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=3)
+	im=plot.prepare(ics,ipsilon,linear_ref,proj=map_projection,lat_lim=lat_lim)
+        filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+        mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
+        proj.addland(proj=map_projection)
+	image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
 	text(120,85 ,paste("Variance Explained: ",variance_ref[neof],"%",sep=""),cex=2)
 
 	#delta field plot
-	filled.contour3(ics,ipsilon,linear_exp-linear_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,"Difference"),levels=lev_diff,color.palette=palette2,ylim=lat_lim)
-	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-	image.scale3(volcano,levels=lev_diff,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=3)
+        im=plot.prepare(ics,ipsilon,linear_exp-linear_ref,proj=map_projection,lat_lim=lat_lim)        
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=lev_diff,color.palette=palette2,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+        proj.addland(proj=map_projection)
+        image.scale3(volcano,levels=lev_diff,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
+
 	
 	dev.off()
 	}

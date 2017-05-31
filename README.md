@@ -6,7 +6,8 @@ Jun 2017
 by P. Davini - ISAC-CNR
 p.davini@isac.cnr.it
 
-Contributors: J. von Hardenberg - ISAC-CNR
+Contributors: 	J. von Hardenberg - ISAC-CNR
+		I. Mavilia - ISAC-CNR
 
 ------------------------------
 
@@ -16,7 +17,8 @@ Contributors: J. von Hardenberg - ISAC-CNR
 and Reanalysis datasets. It has been originally thought for EC-Earth output and then
 it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
-for the chosen time period (over the for standard 4 seasons) in 3 different output format. 
+for the chosen time period (over the for standard 4 seasons) in 3 different output format: the type
+of map projection can specified too.
 Data are interpolated on a common 2.5x2.5 grid using CDO.  
 Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
 other MiLES-generated data
@@ -76,7 +78,7 @@ in case you use the 2D blocking index in any publication.
 * b. CDO version > 1.6.5, compiled with netCDF4
 * c. Compiling environment (gcc)
 
-IMPORTANT: there are 3 R packages (ncdf4, maps and PCICt) needed to run **MiLES**.
+IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.
 You have to run "Rscript config/installpack.R" as first step in order to install the packages.
 If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
@@ -84,8 +86,11 @@ Packages are also included in **MiLES** and can be installed offline.
 - "ncdf4" provides the interface for NetCDF files.
 - "maps" provides the world maps for the plots.
 - "PCICt" provides the tools to handle 360-days and 365-days calendars (from model data). 
+- "akima" provides the interpolation for map projections.
+- "mapproj" provides a series of map projection that can be used.
 
-If you are aware of other way to implement this 3 passages without using those packages, please contact me.
+
+If you are aware of other way to implement this 5 passages without using those packages, please contact me.
 
 The installation of some packages requires specifically gfortran-4.8: there is an issue known on 
 Mac OS X (10.11 and later at least) which requires a few turnarounds. See here for help:
@@ -134,6 +139,7 @@ Properties (e.g. resolution, palettes) can be modified playing with the config/c
 - Weather regimes based on k-means clustering over North Atlantic is now available.
 - Reformulation of input Z500 files, now based on a single NetCDF file: to handle 360-days 
   and 365-day calendar package PCICt is now required.
+- Polar projection support: requires mapproj and akima packages. 
 - Figures updates and various bug fixing.
 
 *v0.31 - May 2017*

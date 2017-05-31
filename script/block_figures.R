@@ -171,7 +171,6 @@ for (field in fieldlist) {
 	#final plot production
 	figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
 	print(figname)
-	#par(plotpar)
 	
 	# Chose output format for figure - by JvH
         if (tolower(output_file_type) == "png") {

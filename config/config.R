@@ -2,6 +2,9 @@
 #-------------Plot configurations------------------------#
 ##########################################################
 
+#plot all the warnings
+options(warn=1)
+
 # filetype
 output_file_type=Sys.getenv(c("output_file_type"))
 if (nchar(output_file_type)==0) {output_file_type="pdf"}
@@ -43,8 +46,8 @@ if (map_projection!="no") {
 }
 
 # Custom paramteres for plots
-zero<-par(mfrow=panels,cex.main=2.5,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,5,10),oma=c(1,1,3,1))
-plotpar<-par()
+zero<-par(mfrow=panels,cex.main=2.5,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,5,7),oma=c(1,1,3,2))
+plotpar<-par(no.readonly=T)
 
 #color palette to be used
 #palette0 is taken from tim.colors of field to avoid library dependencies...
