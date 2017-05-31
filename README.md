@@ -3,14 +3,10 @@
 
 Jun 2017
 
-by P. Davini - ISAC-CNR
-(p.davini@isac.cnr.it)
+by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
 Contributors: 	
-
-J. von Hardenberg - ISAC-CNR
-
-I. Mavilia - ISAC-CNR
+J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR)
 
 ------------------------------
 
