@@ -52,7 +52,6 @@ for (field in fieldlist)
 legend_distance=3
 info_exp=paste(exp,year1,"-",year2,season)
 info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
-lat_lim=c(20,90)
 
 #loop on fields
 for (field in fieldlist) {
@@ -172,6 +171,7 @@ for (field in fieldlist) {
 	#final plot production
 	figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
 	print(figname)
+	#par(plotpar)
 	
 	# Chose output format for figure - by JvH
         if (tolower(output_file_type) == "png") {
@@ -183,22 +183,26 @@ for (field in fieldlist) {
             postscript(figname)
         }
 
-	#panels option
-	par(mfrow=c(3,1),cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,8),oma=c(1,1,1,1))
+	#plot options	
+	par(plotpar)
 
 	#main experiment plot
-	filled.contour3(ics,ipsilon,field_exp,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_exp),levels=lev_field,color.palette=color_field,ylim=lat_lim)
-	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
+	im=plot.prepare(ics,ipsilon,field_exp,proj=map_projection,lat_lim=lat_lim)
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+	mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
+	proj.addland(proj=map_projection)
 
 	#reference field plot
-	filled.contour3(ics,ipsilon,field_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,info_ref),levels=lev_field,color.palette=color_field,ylim=lat_lim)
-	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-	image.scale3(volcano,levels=lev_field,color.palette=color_field,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=legend_distance,line.colorbar=1.5)
+	im=plot.prepare(ics,ipsilon,field_ref,proj=map_projection,lat_lim=lat_lim)
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+	proj.addland(proj=map_projection)
+	image.scale3(volcano,levels=lev_field,color.palette=color_field,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance,line.colorbar=1.5)
 
 	#delta field plot
-	filled.contour3(ics,ipsilon,field_exp-field_ref,xlab="Longitude",ylab="Latitude",main=paste(title_name,"Difference"),levels=lev_diff,color.palette=color_diff,ylim=lat_lim)
-	map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-	image.scale3(volcano,levels=lev_diff,color.palette=color_diff,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1,line.label=legend_distance,line.colorbar=1.5)
+	im=plot.prepare(ics,ipsilon,field_exp-field_ref,proj=map_projection,lat_lim=lat_lim)
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=lev_diff,color.palette=color_diff,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+	proj.addland(proj=map_projection)
+	image.scale3(volcano,levels=lev_diff,color.palette=color_diff,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance,line.colorbar=1.5)
 
 	dev.off()
 	}

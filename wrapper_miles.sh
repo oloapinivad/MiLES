@@ -56,6 +56,12 @@ nclusters=4
 # pdf are set by default
 output_file_type="pdf"
 
+# map projection that is used for plotting
+# "no": standard lon-lat plotting (fastest)
+# "azequalarea": polar plot with equal area
+# these are suggested: any other polar plot by "mapproj" R package are supported
+map_projection="no"
+
 #config name: create your own config file for your machine.
 config=sansone
 
@@ -94,13 +100,13 @@ time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
 # call to program for EOFs index/pattern. CDO-based, fast and efficient
 # figures are done using linear regressions of PCs on monthly anomalies
 
-time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
-for tele in $teles ; do
-	for season in $seasons ; do
-		echo $season $tele
-		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
-	done
-done
+#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" "$teles" $z500filename $FILESDIR
+#for tele in $teles ; do
+#	for season in $seasons ; do
+#		echo $season $tele
+#		time $Rscript "$PROGDIR/script/eof_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+#	done
+#done
 
 ################################################
 #------Blocking Computation and Figures--------#
@@ -110,7 +116,7 @@ done
 # figures provide atmospheric blocking index and several other additional diagnostics
 
 for season in $seasons ; do
-	time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+	#time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
         time $Rscript "$PROGDIR/script/block_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 done
 
@@ -118,10 +124,10 @@ done
 #-------Regimes Computation and Figures--------#
 ################################################
 
-for season in $seasons ; do
-       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
-       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
-done
+#for season in $seasons ; do
+#       time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+#       time $Rscript "$PROGDIR/script/regimes_figures.R" $exp $year1 $year2 $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+#done
 
 
 

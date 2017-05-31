@@ -17,8 +17,7 @@ web=1
 if (web==1)
 {
 # web based installation
-#packages=c("spam","maps","fields","ncdf4")
-packages=c("maps","ncdf4","PCICt")
+packages=c("maps","ncdf4","PCICt","akima","mapproj")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 
 if (length(new.packages)==0) {print("All packages are there, no need to install anything")}
@@ -35,8 +34,7 @@ install.packages(pack,repos="http://cran.irsn.fr",type="source")
 if (web==0)
 {
 #manual installation
-#packages=c("spam_1.0-1.tar.gz","maps_2.3-9.tar.gz","fields_7.1.tar.gz","ncdf4_1.13.tar.gz")
-packages=c("maps_2.3-9.tar.gz","ncdf4_1.13.tar.gz")
+packages=c("maps_3.1.1.tar.gz","ncdf4_1.16.tar.gz","CICt_0.5-4.tar.gz","akima_0.6-2.tar.gz","mapproj_1.2-4.tar.gz")
 PROGDIR<-Sys.getenv(c("PROGDIR"))
 R_PACKDIR=paste0(PROGDIR,"/R_packages")
 for (pack in new.packages)

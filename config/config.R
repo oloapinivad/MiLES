@@ -8,8 +8,8 @@ if (nchar(output_file_type)==0) {output_file_type="pdf"}
 print(paste("Writing output as",output_file_type))
 
 # Specific settings for PNG output
-png_width=960
-png_height=960
+png_width=1280
+png_height=1280
 png_units="px"
 png_pointsize=12
 png_bg="white"
@@ -17,6 +17,34 @@ png_bg="white"
 # Specific settings for PDF and EPS output (in inches)
 pdf_width=12
 pdf_height=12
+
+#aspect ratio
+af=1
+
+# Type of projection ("no" for standard plotting")
+# All projection from mapproj package should be supported
+# but error may arise for non-polar plots
+map_projection=Sys.getenv(c("map_projection"))
+if (nchar(output_file_type)==0) {map_projection="no"}
+print(paste(map_projection,"projection is chosen"))
+
+#Number of panels per figure (rows and column)
+panels=c(3,1)
+
+# Latitudinal range for plots
+lat_lim=c(25,90)
+
+# if not regular projection (i.e. if using polar)
+if (map_projection!="no") {
+	af=round(sqrt(3),2)
+	pdf_height=pdf_height/af; pdf_width=3*pdf_width/af
+	png_height=png_height/af; png_width=3*png_width/af
+	panels=rev(panels)
+}
+
+# Custom paramteres for plots
+zero<-par(mfrow=panels,cex.main=2.5,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,5,10),oma=c(1,1,3,1))
+plotpar<-par()
 
 #color palette to be used
 #palette0 is taken from tim.colors of field to avoid library dependencies...

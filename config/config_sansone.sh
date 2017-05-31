@@ -27,6 +27,7 @@ export FIGDIR=$OUTPUTDIR/figures
 
 # file type
 export output_file_type
+export map_projection
 
 # if we are using standard climatology
 if [[ ${std_clim} -eq 1 ]] ; then

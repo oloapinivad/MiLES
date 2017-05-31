@@ -444,11 +444,7 @@ filled.contour3 <-
   if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
     stop("increasing 'x' and 'y' values expected")
 
- #trim extremes for nicer plots
  if (extend) {
-	#extendvalue=10^8
-	#levels=c(-extendvalue,levels,extendvalue)
-	#col=c(col[1],col,col[length(col)])
 	z[z<min(levels)]=min(levels)
 	z[z>max(levels)]=max(levels)
 	}
@@ -539,6 +535,84 @@ if (extend) {
  invisible()
 
 }
+
+#function for interpolation and projection of a 2D field on a mapproj R projection
+proj.plot<-function(lon,lat,field,lmin=NULL,proj="azequalarea",param=NULL,orient=c(90,0,0),npoints=201) {
+
+        #default is azimuthal equal area map
+
+        #required packages      
+        require(mapproj)
+        require(akima)
+
+        #it provides lower latitude limit for plots
+        if (is.null(lmin)) {lmin=min(lat)}
+
+        #build grids
+        lon.grid <- rep(lon,length(lat))
+        lat.grid <- sort(rep(ipsilon,length(lon)))
+
+        #project grid
+        proj.grid=mapproject(lon.grid,lat.grid,projection=proj,parameters=param,orientation=orient)
+
+        #provide limits for future plots (for polar projection)
+        limiter=mapproject(c(0,90,180,270),rep(lmin,4),proj="",orientation=orient)
+        xlims=sort(c(limiter$x[2],limiter$x[4]))
+        ylims=sort(c(limiter$y[1],limiter$y[3]))
+
+        #plot grid
+        lon.plot <- seq(min(proj.grid$x,na.rm=T),max(proj.grid$x,na.rm=T),length.out=npoints)
+        lat.plot <- seq(min(proj.grid$y,na.rm=T),max(proj.grid$y,na.rm=T),length.out=npoints)
+
+        #interpolation (akima needed)
+        good <- is.finite(field) & is.finite(proj.grid$x) & is.finite(proj.grid$y)
+        projected <- interp(proj.grid$x[good],proj.grid$y[good],field[good],lon.plot,lat.plot,duplicate="strip")
+        return(projected=list(x=projected$x,y=projected$y,z=projected$z,xlim=xlims,ylim=ylims))
+}
+
+#addland function based on map which can handle projections
+proj.addland<-function(proj="no",orient=c(90,0,0),param=NULL,color="black") {
+
+        #required packages      
+        require(maps)
+        require(mapproj)
+
+	if (proj=="no") {
+		map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
+		} else {
+        	# get map, project and do the lines     
+		box()
+        	map("world",add=T,projection=proj,orientation=orient,parameter=param,interior=F,exact=F,boundary=T)
+
+        	#default lines for northern hemisphere
+        	for (i in seq(-80,80,20)) {
+        	x0=ics; y0=rep(i,length(ics))
+        	p=mapproject(x0,y0,proj="",orientation=orient)
+        	lines(p,lty=3)
+        	}
+
+        	#default circles for northern hemisphere
+        	for (i in c(seq(-360,360,30))) {
+        	y0=seq(min(ipsilon),max(ipsilon),,90); x0=rep(i,90)
+        	p=mapproject(x0,y0,proj="",orientation=orient)
+        	lines(p,lty=3)
+        	}
+	}
+}
+
+#rearrange arrays for use both standard plotting and proj.plot
+plot.prepare<-function(ics,ipsilon,field,proj,lat_lim) {
+
+	if (proj=="no") {
+		outfile=list(x=ics,y=ipsilon,z=field,xlim=range(ics),ylim=lat_lim,xlab="Longitude",ylab="Latitude",axes=T)
+	} else {
+		field[is.na(field)]=0;
+		p=proj.plot(ics,ipsilon,field,lmin=lat_lim[1],proj=proj,param=NULL,orient=c(90,0,0),npoints=80)
+		outfile=list(x=p$x,y=p$y,z=p$z,xlim=p$xlim,ylim=p$ylim,xlab="",ylab="",axes=F)
+	}
+	return(outfile)
+}
+
 
 ##########################################################
 #------------Blocking Tracking Functions-----------------#
