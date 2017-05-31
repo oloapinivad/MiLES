@@ -2,8 +2,8 @@
 
 ################################################
 #--MidLatitude Evaluation System for Ec-Earth--#
-#------------------MiLES v0.31-----------------#
-#----------May 2017, P. Davini, ISAC-CNR-------#
+#------------------MiLES v0.4------------------#
+#----------Jun 2017, P. Davini, ISAC-CNR-------#
 #
 #
 #
@@ -16,14 +16,14 @@
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
 # set also years and seasons to analyze
-exp="CMCC-CMS"
-year1=1979
-year2=2000
+exp="NCEP"
+year1=1950
+year2=2005
 
 # data folder: all the geopotential height data should be here
 # NB: this is a folder structure used in my local machine
 INDIR=/home/paolo/work/DATA/CMIP5/$exp/HIST/r1/day/Z500
-if [ "${dataset}" = NCEP ] || [ "${dataset}" == ERA40 ] || [ "${dataset}" == ERAINTERIM  ] || [ "${dataset}" == MERRA  ] ; then
+if [ "${exp}" == NCEP ] || [ "${exp}" == ERA40 ] || [ "${exp}" == ERAINTERIM  ] || [ "${exp}" == MERRA  ] ; then
 	INDIR=/home/paolo/work/DATA/$exp/day/Z500
 fi
 
