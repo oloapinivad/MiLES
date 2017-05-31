@@ -4,12 +4,13 @@
 Jun 2017
 
 by P. Davini - ISAC-CNR
+(p.davini@isac.cnr.it)
 
-p.davini@isac.cnr.it
+Contributors: 	
 
-Contributors: 	J. von Hardenberg - ISAC-CNR
+J. von Hardenberg - ISAC-CNR
 
-		I. Mavilia - ISAC-CNR
+I. Mavilia - ISAC-CNR
 
 ------------------------------
 
