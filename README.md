@@ -12,13 +12,13 @@ J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR)
 
 ## WHAT IS MiLES?
 
-**MiLES** is a tool for estimating properties of mid-latitude climate in Global Climate Models
+**MiLES** is a tool for estimating properties of Northern Hemisphere mid-latitude climate in Global Climate Models
 and Reanalysis datasets. It has been originally thought for EC-Earth output and then
 it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
-for the chosen time period (over the for standard 4 seasons) in 3 different output format: the type
-of map projection can specified too.
-Data are interpolated on a common 2.5x2.5 grid using CDO.  
+for the chosen time period (over the for standard 4 seasons) in 3 possible output formats.
+Map projection for plots can specified as well.
+Before performing analhysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
 Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
 other MiLES-generated data
 
@@ -32,8 +32,8 @@ Current version includes:
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
 	atmospheric blocking evaluating meridional gradient reversal at 500hPa.
 	It includes also Meridional Gradient Index and Blocking Intensity index
-	and Rossby wave orientation index,i computing both Instantenous Blocking and Blocking Events frequency.
-	Blocking Events allow the estimation of the blocking duration.
+	and Rossby wave orientation index, computing both Instantenous Blocking and Blocking Events frequency.
+	Blocking Events definition allows the estimation of the blocking duration.
 	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
@@ -45,10 +45,10 @@ Current version includes:
 
 4.	**North Atlantic Weather Regimes (beta)**: following k-means clustering of 500hPa geopotential height.
 	4 weather regimes over North Atlantic (80W-40E 30N-87.5N) are evaluted using 
-	anomalies from daily seasonal cycle. North Atlantic 4 EOFs are computed to reduce 
+	anomalies from daily seasonal cycle. North Atlantic first 4 EOFs are computed to reduce 
 	the phase-space dimension and then k-means clustering using Hartigan-Wong algorithm with k=4 is computed. 
 	Figures report patterns and frequencies of occurrence. NetCDF4 Zip data are saved.
-	*Only 4 regimes and DJF is supported so far.*
+	*Only 4 regimes and DJF season is supported so far.*
 
 ----------------
 
@@ -101,11 +101,11 @@ http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on
 
 Before running **MiLES** R packages should installed (see above).
 
-Two configuration scripts controls the options:
+Two configuration scripts controls the program options:
 1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
 	It should be set accordingly to your local configuration. 
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
-2.	*config/config.R* controls the plot proporties. If everything is ok, you should not touch this file.
+2.	*config/config.R* controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
 	Figures are extremely basic: they can be produced in pdf, png and eps format.
@@ -135,8 +135,6 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
 It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
-Figures are extremely basic: they can be produced in pdf, png and eps format.
-
 ------------
 
 ## HISTORY
@@ -148,6 +146,7 @@ Figures are extremely basic: they can be produced in pdf, png and eps format.
   and 365-day calendar package PCICt is now required.
 - Polar projection support: requires mapproj and akima packages. 
 - Figures updates and various bug fixing.
+- Re-written wrapper to provide dynamic comparison of datasets
 
 *v0.31 - May 2017*
 - Comparison of EOFs and Blocking figures with any other MiLES-generated dataset.

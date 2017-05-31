@@ -29,16 +29,6 @@ export FIGDIR=$OUTPUTDIR/figures
 export output_file_type
 export map_projection
 
-# if we are using standard climatology
-if [[ ${std_clim} -eq 1 ]] ; then
-	export dataset_ref="ERAINTERIM"
-	export year1_ref=1979
-	export year2_ref=2014
-	export REFDIR=$PROGDIR/clim
-else
-	export REFDIR=$FILESDIR
-fi
-
 
 #creating folders
 mkdir -p $ZDIR $FIGDIR $FILESDIR
