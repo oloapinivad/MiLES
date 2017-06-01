@@ -54,10 +54,6 @@ seasons="DJF"
 #tele="NAO"
 tele="-50_20_10_80"
 
-# select how many clusters for k-means over the North Atlantic
-# NB: only 4 clusters supported so far.  
-nclusters=4
-
 # output file type for figures (pdf, png, eps)
 # pdf are set by default
 output_file_type="pdf"
@@ -83,6 +79,10 @@ config=sansone
 # this script controls some of the graphical parameters
 # as plot resolutions and palettes
 CFGSCRIPT=$PROGDIR/config/config.R
+
+# select how many clusters for k-means over the North Atlantic
+# NB: only 4 clusters supported so far.  
+nclusters=4
 
 
 ################################################

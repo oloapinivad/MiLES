@@ -111,7 +111,13 @@ Two configuration scripts controls the program options:
 	Figures are extremely basic: they can be produced in pdf, png and eps format.
 
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
-Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
+Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use: here below a list 
+of the commands that can be set up
+- "std_clim" -> 1 to use standard ERAI 1979-2014 climatology, 0 for custom comparison. 
+- "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
+- "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
+- "output_file_type" -> pdf, eps or png figures format
+- "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plots. All projection from mapproj R package are supported. 
 can be specified at this stage.
 All the chain of scripts will be executed as a sequence. You can comment the script you do not need.
 
