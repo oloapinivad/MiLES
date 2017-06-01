@@ -42,9 +42,10 @@ for season in $seasons ; do
 	#fix borders for EOFs
         if [ "${tele}" = NAO ]; then
                 box=-90,40,20,85
-        fi
-        if [ "${tele}" = AO ]; then
+        elif [ "${tele}" = AO ]; then
                 box=0,360,20,85
+	else
+		box=$(sed "s/_/,/g" <<<"$tele")
         fi
 
 	#select box for anomalies

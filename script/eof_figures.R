@@ -83,6 +83,7 @@ for (neof in 1:neofs) {
 	#-----plotting-------#
 	
 	#plot properties
+	region=tele
 	if (tele=="NAO") {region="North Atlantic"}
 	if (tele=="AO") {region="Northern Hemisphere"}
 	title_name=paste0(region," EOF",neof)
