@@ -32,7 +32,7 @@ fi
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=0
+std_clim=1
 
 # only valid if std_clim=0
 dataset_ref="ERAINTERIM"
@@ -51,8 +51,8 @@ seasons="DJF"
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
 # "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to 0!
-#tele="NAO"
-tele="-50_20_10_80"
+tele="NAO"
+#tele="-50_20_10_80"
 
 # output file type for figures (pdf, png, eps)
 # pdf are set by default
@@ -91,7 +91,7 @@ nclusters=4
 
 #check if you can compare run with std_clim=1
 if  [ $std_clim -eq 1 ] ; then
-        if ! { [ "$tele" = NAO ] | [ "$tele" = AO ]; } ; then
+        if ! { [ "$tele" = NAO ] || [ "$tele" = AO ]; } ; then
                 echo "Error: you cannot use non-standard EOFs region with std_clim=1"
                 exit
         fi
