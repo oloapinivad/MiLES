@@ -151,7 +151,7 @@ for (field in fieldlist) {
 		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=c(0,30),main=paste(title_name),xlab="Longitude",ylab="Blocked Days (%)",col=tm90cols[1])
 		points(ics2,field_ref2,type="l",lwd=lwdline,lty=1,col=tm90cols[2])
 		grid()
-                legend(100,30,legend=c(info_ref,info_exp),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+                legend(100,30,legend=c(info_exp,info_ref),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
 	
 		#par(new=TRUE)	
 		#plot(ics2,field_exp2,type="n",ylim=c(0,90),xlab="",ylab="",axes=F)
