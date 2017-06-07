@@ -28,7 +28,7 @@ af=1
 # All projection from mapproj package should be supported
 # but error may arise for non-polar plots
 map_projection=Sys.getenv(c("map_projection"))
-if (nchar(output_file_type)==0) {map_projection="no"}
+if (nchar(map_projection)==0) {map_projection="no"}
 print(paste(map_projection,"projection is chosen"))
 
 #Number of panels per figure (rows and column)
