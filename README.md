@@ -33,7 +33,7 @@ Current version includes:
 	It includes also Meridional Gradient Index and Blocking Intensity index
 	and Rossby wave orientation index,i computing both Instantenous Blocking and Blocking Events frequency.
 	Blocking Events allow the estimation of the blocking duration.
-	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
+	A supplementary Instantaneous Blocking index with the GHGS2 condition is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
 3. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
