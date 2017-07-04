@@ -21,8 +21,6 @@ export OUTPUTDIR=/Users/paolo/Desktop/miles/data
 #no need to change below this line #
 ####################################
 
-#Z500 folder
-export DATADIR=$OUTPUTDIR/Z500
 #NetCDF output dir
 export FILESDIR=$OUTPUTDIR/files
 #figures folder
@@ -30,20 +28,11 @@ export FIGDIR=$OUTPUTDIR/figures
 
 # file type
 export output_file_type
-
-# if we are using standard climatology
-if [[ ${std_clim} -eq 1 ]] ; then
-	export dataset_ref="ERAINTERIM"
-	export year1_ref=1979
-	export year2_ref=2014
-	export REFDIR=$PROGDIR/clim
-else
-	export REFDIR=$FILESDIR
-fi
+export map_projection
 
 
 #creating folders
-mkdir -p $ZDIR $FIGDIR $FILESDIR $OUTPUTDIR
+mkdir -p $ZDIR $FIGDIR $FILESDIR
 
 #safety check
 echo "Check if R has been loaded"
@@ -56,5 +45,4 @@ echo "NetCDF found: starting...."
 
 #R check for key packages
 Rscript $PROGDIR/config/installpack.R
-
 
