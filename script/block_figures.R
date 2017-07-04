@@ -49,13 +49,13 @@ for (field in fieldlist)
 ##########################################################
 
 #standard properties
-legend_distance=3
 info_exp=paste(exp,year1,"-",year2,season)
 info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
 
 #loop on fields
 for (field in fieldlist) {
-
+	
+	legend_distance=3
 	#define field-dependent properties
 	if (field=="InstBlock") {
 		color_field=palette1; color_diff=palette2
@@ -127,11 +127,11 @@ for (field in fieldlist) {
 
         	# Chose output format for figure - by JvH
         	if (tolower(output_file_type) == "png") {
-        	   png(filename = figname, width=png_width, height=png_height/2)
+        	   png(filename = figname, width=png_width*af, height=png_height/2/af)
         	} else if (tolower(output_file_type) == "pdf") {
-        	    pdf(file=figname,width=pdf_width,height=pdf_height/2,onefile=T)
+        	    pdf(file=figname,width=pdf_width*af,height=pdf_height/2/af,onefile=T)
         	} else if (tolower(output_file_type) == "eps") {
-        	    setEPS(width=pdf_width,height=pdf_height/2,onefile=T,paper="special")
+        	    setEPS(width=pdf_width*af,height=pdf_height/2/af,onefile=T,paper="special")
         	    postscript(figname)
         	}
 
@@ -195,13 +195,13 @@ for (field in fieldlist) {
 	im=plot.prepare(ics,ipsilon,field_ref,proj=map_projection,lat_lim=lat_lim)
 	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
 	proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=lev_field,color.palette=color_field,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance,line.colorbar=1.5)
+	image.scale3(volcano,levels=lev_field,color.palette=color_field,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance)
 
 	#delta field plot
 	im=plot.prepare(ics,ipsilon,field_exp-field_ref,proj=map_projection,lat_lim=lat_lim)
 	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=lev_diff,color.palette=color_diff,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
 	proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=lev_diff,color.palette=color_diff,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance,line.colorbar=1.5)
+	image.scale3(volcano,levels=lev_diff,color.palette=color_diff,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance)
 
 	dev.off()
 	}
