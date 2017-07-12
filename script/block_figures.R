@@ -127,11 +127,11 @@ for (field in fieldlist) {
 
         	# Chose output format for figure - by JvH
         	if (tolower(output_file_type) == "png") {
-        	   png(filename = figname, width=png_width*af, height=png_height/2/af)
+        	   png(filename = figname, width=png_width/af, height=png_height*af/2)
         	} else if (tolower(output_file_type) == "pdf") {
-        	    pdf(file=figname,width=pdf_width*af,height=pdf_height/2/af,onefile=T)
+        	    pdf(file=figname,width=pdf_width/af,height=pdf_height*af/2,onefile=T)
         	} else if (tolower(output_file_type) == "eps") {
-        	    setEPS(width=pdf_width*af,height=pdf_height/2/af,onefile=T,paper="special")
+        	    setEPS(width=pdf_width/af,height=pdf_height*af/2,onefile=T,paper="special")
         	    postscript(figname)
         	}
 
