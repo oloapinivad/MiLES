@@ -1,7 +1,7 @@
 # MiLES v0.4
 ## Mid-Latitude Evaluation System
 
-Jun 2017
+Aug 2017
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
