@@ -68,9 +68,17 @@ season2timeseason<-function(season)
 }
 
 #leap year treu/false function
-is.leapyear=function(year)
-{
+is.leapyear=function(year) {
 	return(((year %% 4 == 0) & (year %% 100 != 0)) | (year %% 400 == 0))
+}
+
+#check number of days for each month
+number.days.month <- function(datas) {
+	#evaluate the number of days in a defined month of a year
+	datas=as.Date(datas)
+	m=format(datas,format="%m")
+	while (format(datas,format="%m") == m) {datas=datas+1}
+	return(as.integer(format(datas-1,format="%d")))
 }
 
 power.date.new<-function(datas)
@@ -303,7 +311,6 @@ naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
 for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
 
 print("selecting years and months")
-#extracting time (BETA)
 #origin=strsplit(ncatt_get(a,"time","units")$value," ")[[1]][3]
 
 
@@ -317,17 +324,22 @@ print("selecting years and months")
 #select time needed
 
 #based on preprocessing of CDO time format: get calendar type and use PCICt package for irregular data
-cal=ncatt_get(a,"time","calendar")$value
-timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=cal)
+caldata=ncatt_get(a,"time","calendar")$value
+timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
 
 # break if the calendar has not been recognized
 if (any(is.na(timeline))) {
 	stop("Calendar from NetCDF is unsupported or not present. Stopping!!!")
 }
+
 #break if the data requested is not there
-lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-28"),cal="standard",format="%Y-%m-%d")
-firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal="standard",format="%Y-%m-%d")
-if (max(timeline)<lastday | min(timeline)>min(timeline)) {
+lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
+lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-",number.days.month(lastday_base)),cal=caldata,format="%Y-%m-%d")
+firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
+
+#print(max(timeline)); print(lastday); print(min(timeline)); print(firstday)
+
+if (max(timeline)<lastday | min(timeline)>firstday) {
 	stop("You requested a time interval that is not present in the NetCDF")
 }
 
@@ -343,7 +355,7 @@ select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(t
 field=field[,,select]
 time=timeline[select]
 
-print(paste("This is a",cal,"calendar"))
+print(paste("This is a",caldata,"calendar"))
 print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
 
 #check for dimensions (presence or not of time dimension)

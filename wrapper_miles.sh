@@ -138,7 +138,7 @@ for exp in $exps ; do
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
 		time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
