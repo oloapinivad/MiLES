@@ -113,6 +113,7 @@ Two configuration scripts controls the program options:
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
+- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths
 - "std_clim" -> 1 to use standard ERAI 1979-2014 climatology, 0 for custom comparison. 
 - "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
 - "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
