@@ -4,7 +4,7 @@
 
 #CDO
 #if you CDO is not equipped of NetCDF4 compression change "cdo4" command here
-cdo=/usr/local/apps/cdo/1.7.2/bin/cdo
+cdo=/usr/local/apps/cdo/1.8.2/bin/cdo
 cdonc="$cdo -f nc"
 cdo4="$cdo -f nc4 -z zip"
 

@@ -16,13 +16,21 @@
 # if you have more than on runs or experiments of the same model use
 # this variable to distinguish them
 # set also years and seasons to analyze
-ECMWF=1
-dataset_list="ERAI ERA5_ens0 S4_ens00"
 
+#flag specific for ECMWF data structure
+ECMWF=1
+
+
+#loop to create the ensembles
+#for ens in $(seq -f "%02g" 0 0 ) ; do
+#	dataset_list=$(echo $dataset_list S5_ens$ens)
+#done 
+
+dataset_list="S5_ens01"
 for dataset_exp in ${dataset_list} ; do
 
-year1_exp=2010
-year2_exp=2015
+year1_exp=1982
+year2_exp=2016
 #INDIR_EXP=/scratch/rd/nedd/regimes/ERAI_daily
 
 # INDIR_EXP ->data folder: all the geopotential height data should be here
@@ -31,12 +39,12 @@ year2_exp=2015
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=1
+std_clim=0
 
 # only valid if std_clim=0
-dataset_ref="ERAI"
-year1_ref=2010
-year2_ref=2015
+dataset_ref="S4_ens01"
+year1_ref=1982
+year2_ref=2016
 INDIR_REF=/scratch/rd/nedd/regimes/ERAI_daily
 
 # please specify one or more of the 4 standard seasons using 3 characters

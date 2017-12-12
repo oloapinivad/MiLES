@@ -646,7 +646,7 @@ return(nn)
 
 
 #blocking 5 days tracking
-blocking.persistence<-function(field,persistence=5,time.array)
+blocking.persistence<-function(field,minduration=5,time.array)
 {
 
 #function for persistence
@@ -675,7 +675,7 @@ return(xx)
 if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
 
 print("Time filtering...")
-newfield=apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))
+newfield=apply(field,c(1,2),function(x) pers2(x,persistence=minduration,time.array))
 newfield=aperm(newfield,c(2,3,1))
 print("Mean field...")
 meanfield=apply(newfield,c(1,2),mean,na.rm=T)*100
@@ -691,6 +691,8 @@ print("Number of Events...")
 nevents=apply(events,c(1,2),function(x) length(x[!is.na(x)]))
 
 out=list(track=newfield,percentage=meanfield,duration=duration,events=events,nevents=nevents)
+print(quantile(meanfield))
+print(min(duration,na.rm=T))
 return(out)
 }
 

@@ -22,7 +22,7 @@ if (REFDIR!=FILESDIR)
         {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
 
 #which fieds to load/plot
-fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents","TM90")
+fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
 
 ##########################################################
 #-----------------Loading datasets-----------------------#
@@ -74,6 +74,12 @@ for (field in fieldlist) {
                 lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1)
                 legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:"; 
 	}
+
+	if (field=="LongBlockEvents") {
+                color_field=palette1; color_diff=palette2
+                lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1)
+                legend_unit="Blocked Days (%)"; title_name="10-day Blocking Events frequency:";
+    }
 	
 	if (field=="DurationEvents") {
                 color_field=palette0; color_diff=palette2

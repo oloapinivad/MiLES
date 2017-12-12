@@ -175,8 +175,11 @@ spatial=longitude.filter(ics,ipsilon,totblocked)
 large=largescale.extension.if(ics,ipsilon,spatial)
 #LARGE=apply(large,c(1,2),sum,na.rm=T)/ndays*100
 
-#5 days persistence filter
-block=blocking.persistence(large,persistence=5,time.array=etime)
+#5-day persistence filter
+block=blocking.persistence(large,minduration=5,time.array=etime)
+
+#10-day persistence for extreme long block
+longblock=blocking.persistence(large,minduration=10,time.array=etime)
 
 tf=proc.time()-t1
 print(tf)
@@ -192,8 +195,8 @@ savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc"
 savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc")
 
 #which fieds to plot/save
-fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
-full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents")
+fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
+full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents")
 
 # dimensions definition
 TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
@@ -233,6 +236,8 @@ for (var in fieldlist)
                 {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
         if (var=="BlockEvents")
                 {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
+		if (var=="LongBlockEvents")
+                {longvar="10-day Blocking Events frequency"; unit="%"; field=longblock$percentage; full_field=longblock$track}
         if (var=="DurationEvents")
                 {longvar="Blocking Events duration"; unit="days"; field=block$duration}
         if (var=="NumberEvents")

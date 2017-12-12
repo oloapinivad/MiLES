@@ -29,6 +29,11 @@ if [ ${dataset} == "S4" ] ; then
     expected_input_name=*/*S4*_${ensemble}.grb
 fi
 
+if [ ${dataset} == "S5" ] ; then
+    INDIR=/scratch/rd/nedd/regimes/S5_24h_nov
+    expected_input_name=*/*S5*_${ensemble}.grb
+fi
+
 DATADIR=$(dirname $z500filename)
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
 mkdir -p $TEMPDIR

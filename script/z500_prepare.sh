@@ -9,7 +9,6 @@ year1=$2
 year2=$3
 INDIR=$4
 z500filename=$5
-expected_input_name=$6
 
 DATADIR=$(dirname $z500filename)
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
