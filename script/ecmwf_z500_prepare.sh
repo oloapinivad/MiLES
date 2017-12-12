@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#special prepare file for ECMWF
 #loop for Z500 files preparation
 #interpolation on regolar 2.5x2.5 grid, NH selection, daily averages.
 
@@ -7,9 +8,26 @@
 exp=$1
 year1=$2
 year2=$3
-INDIR=$4
-z500filename=$5
-expected_input_name=$6
+z500filename=$4
+
+#extract dataset and ensemble for expname
+dataset=$(echo $exp | cut -d_ -f1)
+ensemble=$(echo $exp | cut -d"s" -f2)
+
+if [ ${dataset} == "ERA5" ] ; then
+    INDIR=/scratch/rd/nedd/regimes/ERA5_daily
+    expected_input_name=*ERA5*${ensemble}.grb
+fi
+
+if [ ${dataset} == "ERAI" ] ; then
+    INDIR=/scratch/rd/nedd/regimes/ERAI_daily
+    expected_input_name=*ERAI*.grb
+fi
+
+if [ ${dataset} == "S4" ] ; then
+    INDIR=/home/ms/it/ccpd/regimes/S4_daily_nov
+    expected_input_name=*/*S4*_${ensemble}.grb
+fi
 
 DATADIR=$(dirname $z500filename)
 TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
@@ -20,16 +38,17 @@ if [ ! -f $z500filename ] ; then
 	echo "Z500 data are missing... full data preparation is performed"
 
 	#create a single huge file: not efficient but universal
-	#$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
+	$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
 
 	# step 1: do it for NetCDF
-	$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
+	#$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
 	
 	# if NetCDF do not exists, check for grib files
-	if [ $? -ne 0 ] ; then
-		echo "perhaps you are using grib files..."
-		$cdonc cat $INDIR/*.grb $TEMPDIR/fullfile.nc
-	fi
+	#if [ $? -ne 0 ] ; then
+	#	echo "perhaps you are using grib files..."
+	#	$cdonc cat $INDIR/*.grb $TEMPDIR/fullfile.nc
+
+	#fi
 	
 	#main operation: setlevel, name, resolution and NH
 	$cdonc sellonlatbox,0,360,0,90 -remapcon2,r144x73 -setlevel,50000 -setname,zg $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc

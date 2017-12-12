@@ -355,8 +355,13 @@ select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(t
 field=field[,,select]
 time=timeline[select]
 
+
 print(paste("This is a",caldata,"calendar"))
 print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
+
+print(paste("Months that have been loaded are.. "))
+print(unique(format(time,"%Y-%m")))
+
 
 #check for dimensions (presence or not of time dimension)
 dimensions=length(dim(field))

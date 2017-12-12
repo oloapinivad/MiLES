@@ -199,6 +199,13 @@ full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","B
 TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+
+print(fulltime[2])
+#temporary check for seconds/days TO BE FIXED
+if (fulltime[2]==1) {tunit="days"}
+if (fulltime[2]==86400) {tunit="seconds"}
+TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+
 x <- ncdim_def( "Lon", "degrees", ics)
 y <- ncdim_def( "Lat", "degrees", ipsilon)
 z <- ncdim_def( "Lev", "Pa", LEVEL)
