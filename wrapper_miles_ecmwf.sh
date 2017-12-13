@@ -26,7 +26,7 @@ ECMWF=1
 #	dataset_list=$(echo $dataset_list S5_ens$ens)
 #done 
 
-dataset_list="S5_ens01"
+dataset_list="S5_ens00"
 for dataset_exp in ${dataset_list} ; do
 
 year1_exp=1982
@@ -39,13 +39,13 @@ year2_exp=2016
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=0
+std_clim=1
 
 # only valid if std_clim=0
-dataset_ref="S4_ens01"
-year1_ref=1982
+dataset_ref="ERAINTERIM"
+year1_ref=1979
 year2_ref=2016
-INDIR_REF=/scratch/rd/nedd/regimes/ERAI_daily
+#INDIR_REF=/scratch/rd/nedd/regimes/ERAI_daily
 
 # please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM SON JJA"
@@ -105,7 +105,7 @@ fi
 if [[ ${std_clim} -eq 1 ]] ; then
         dataset_ref="ERAINTERIM"
         year1_ref=1979
-        year2_ref=2014
+        year2_ref=2016
         REFDIR=$PROGDIR/clim
         exps=$dataset_exp
 else
@@ -147,11 +147,11 @@ for exp in $exps ; do
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+		time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
 		time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
-		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+		time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done
 
 done
@@ -162,11 +162,11 @@ done
 for season in $seasons ; do
 	echo $season
 	# EOFs figures
-	#time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+	time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
 	# blocking figures
 	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	# regimes figures
-	#time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+	time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 

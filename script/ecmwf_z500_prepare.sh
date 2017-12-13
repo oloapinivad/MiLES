@@ -19,7 +19,7 @@ if [ ${dataset} == "ERA5" ] ; then
     expected_input_name=*ERA5*${ensemble}.grb
 fi
 
-if [ ${dataset} == "ERAI" ] ; then
+if [ ${dataset} == "ERAI" ] |  [ ${dataset} == "ERAINTERIM" ] ; then
     INDIR=/scratch/rd/nedd/regimes/ERAI_daily
     expected_input_name=*ERAI*.grb
 fi
