@@ -1,7 +1,7 @@
 # MiLES v0.4
 ## Mid-Latitude Evaluation System
 
-Aug 2017
+Dec 2017
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
@@ -18,8 +18,8 @@ it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
 for the chosen time period (over the for standard 4 seasons) in 3 possible output formats.
 Map projection for plots can specified as well.
-Before performing analhysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
-Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
+Before performing analysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
+Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2016) or with any 
 other MiLES-generated data
 
 Current version includes:
@@ -83,7 +83,7 @@ If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
 - "ncdf4" provides the interface for NetCDF files.
-- "maps" provides the world maps for the plots.
+- "maps" provides the world maps for the plots: it needs to be at least v3.0
 - "PCICt" provides the tools to handle 360-days and 365-days calendars (from model data). 
 - "akima" provides the interpolation for map projections.
 - "mapproj" provides a series of map projection that can be used.
@@ -113,8 +113,10 @@ Two configuration scripts controls the program options:
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
-- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths
-- "std_clim" -> 1 to use standard ERAI 1979-2014 climatology, 0 for custom comparison. 
+- "ECMWF" -> this is to call the preprocessing of Z500 ad hoc for ECMWF data structure
+- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths: if you have multiple ensemble members you should
+  distinguish them from here
+- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. 
 - "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
 - "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
 - "output_file_type" -> pdf, eps or png figures format
@@ -132,6 +134,8 @@ It produces a single NetCDF4 Zip files with all the data avaialble. A check is p
 the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
+A new version of this file ("ecmwf_z500_prepare.sh") is provided to run with ECMWF data structure: it is clearly evident that you can think about personalize
+this script in order to tailor it on your data structure.
 
 * "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
 provides the figures with an R script. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
@@ -145,6 +149,16 @@ It also tries to assign the right weather regimes to its name. However please be
 ------------
 
 ## HISTORY
+
+*v0.42 - Dec 2017*
+- Bug fixing for calendar handling 
+- 10-day blocking events as new output
+- ECMWF data structure support
+- Updated climatology (1979-2016)
+- Support for Grib files
+
+*v0.41 - Jul 2017*
+- Plot bug fixing
 
 *v0.4 - June 2017*
 - Tibaldi and Molteni (1990) blocking index is now computed by blocking_fast.R

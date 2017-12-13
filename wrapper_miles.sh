@@ -12,21 +12,33 @@
 #- ------user configurations variables---------#
 ################################################
 
+# flag specific for ECMWF data structure
+# it is used to call a specific preprocessing tool that follows 
+# ensemble structure and folder at ECMWF
+ECMWF=1
+
 # exp identificator: it is important for the folder structure.
-# if you have more than on runs or experiments of the same model use
+# if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
-# set also years and seasons to analyze
-dataset_exp="CMCC-CMS"
-year1_exp=1950
-year2_exp=1970
+# set also years 
 
-# data folder: all the geopotential height data should be here
+#loop to create the ensembles
+#for ens in $(seq -f "%02g" 0 0 ) ; do
+#	dataset_list=$(echo $dataset_list S5_ens$ens)
+#done 
+dataset_list="S5_ens00"
+for dataset_exp in ${dataset_list} ; do
+year1_exp=1982
+year2_exp=2016
+
+# INDIR_EXP ->data folder: all the geopotential height data should be here
 # NB: this is a folder structure used in my local machine
+# it is not used when you use ECMWF=1
 INDIR_EXP=/home/paolo/work/DATA/CMIP5/${dataset_exp}/HIST/r1/day/Z500
-if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || [ "${dataset_exp}" == MERRA  ] ; then
-	INDIR_EXP=/home/paolo/work/DATA/${dataset_exp}/day/Z500
+if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || [
+"${dataset_exp}" == MERRA  ] ; then
+    INDIR_EXP=/home/paolo/work/DATA/${dataset_exp}/day/Z500
 fi
-
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
@@ -35,11 +47,14 @@ fi
 std_clim=1
 
 # only valid if std_clim=0
-dataset_ref="ERAINTERIM"
-year1_ref=1980
-year2_ref=2000
+dataset_ref="S4_ens00"
+year1_ref=1979
+year2_ref=2016
+# NB: this is a folder structure used in my local machine
+# it is not used when you use ECMWF=1
 INDIR_REF=/home/paolo/work/DATA/CMIP5/${dataset_ref}/HIST/r1/day/Z500
-if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || [ "${dataset_ref}" == MERRA  ] ; then
+if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || [
+"${dataset_ref}" == MERRA  ] ; then
         INDIR_REF=/home/paolo/work/DATA/${dataset_ref}/day/Z500
 fi
 
@@ -66,7 +81,7 @@ output_file_type="pdf"
 map_projection="azequalarea"
 
 #config name: create your own config file for your machine.
-config=sansone
+config=ecmwf
 
 
 ###############################################
@@ -101,7 +116,7 @@ fi
 if [[ ${std_clim} -eq 1 ]] ; then
         dataset_ref="ERAINTERIM"
         year1_ref=1979
-        year2_ref=2014
+        year2_ref=2016
         REFDIR=$PROGDIR/clim
         exps=$dataset_exp
 else
@@ -134,11 +149,16 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
+	if [ $ECMWF -eq 0 ] ; then
+		time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
+	else
+		time . $PROGDIR/script/ecmwf_z500_prepare.sh $exp $year1 $year2 $z500filename
+	fi
+
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+		time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
 		time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
@@ -161,7 +181,7 @@ for season in $seasons ; do
 done
 
 
-
+done
 
 
 
