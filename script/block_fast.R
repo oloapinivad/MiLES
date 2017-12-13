@@ -2,14 +2,18 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(exp,year1,year2,season,z500filename,FILESDIR)
+miles.block.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR)
 {
 
 #t0
 t0<-proc.time()
 
 #setting up main variables
-BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
+if (ens=="NO") {
+	BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season) 
+	} else {
+	BLOCKDIR=file.path(FILESDIR,exp,ens,"Block",paste0(year1,"_",year2),season) 
+}
 dir.create(BLOCKDIR,recursive=T)
 
 #setting up time domain
@@ -191,8 +195,13 @@ print(tf)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc")
+if (ens=="NO") { 
+	savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
+	savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc")
+	} else {
+	savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+    savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+}
 
 #which fieds to plot/save
 fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
@@ -297,7 +306,7 @@ nc_close(ncfile2)
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","season","z500filename","FILESDIR","PROGDIR")
+name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -309,6 +318,6 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.block.fast(exp,year1,year2,season,z500filename,FILESDIR)
+        miles.block.fast(exp,ens,year1,year2,season,z500filename,FILESDIR)
     }
 }

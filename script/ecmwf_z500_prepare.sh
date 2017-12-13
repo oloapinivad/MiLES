@@ -6,36 +6,44 @@
 
 #define experiment and years
 exp=$1
-year1=$2
-year2=$3
-z500filename=$4
+ens=$2
+year1=$3
+year2=$4
+z500filename=$5
 
 #extract dataset and ensemble for expname
-dataset=$(echo $exp | cut -d_ -f1)
-ensemble=$(echo $exp | cut -d"s" -f2)
+#dataset=$(echo $exp | cut -d_ -f1)
+#ensemble=$(echo $exp | cut -d"s" -f2)
+dataset=$exp
+ensemble=$ens
 
-if [ ${dataset} == "ERA5" ] ; then
+echo $dataset
+echo $ensemble
+
+if [ "${dataset}" == "ERA5" ] ; then
     INDIR=/scratch/rd/nedd/regimes/ERA5_daily
     expected_input_name=*ERA5*${ensemble}.grb
 fi
 
-if [ ${dataset} == "ERAI" ] |  [ ${dataset} == "ERAINTERIM" ] ; then
+if [ "${dataset}" == "ERAI" ] ; then
     INDIR=/scratch/rd/nedd/regimes/ERAI_daily
     expected_input_name=*ERAI*.grb
 fi
 
-if [ ${dataset} == "S4" ] ; then
+if [ "${dataset}" == "S4" ] ; then
     INDIR=/home/ms/it/ccpd/regimes/S4_daily_nov
     expected_input_name=*/*S4*_${ensemble}.grb
 fi
 
-if [ ${dataset} == "S5" ] ; then
+if [ "${dataset}" == "S5" ] ; then
     INDIR=/scratch/rd/nedd/regimes/S5_24h_nov
     expected_input_name=*/*S5*_${ensemble}.grb
 fi
 
+echo $INDIR
+
 DATADIR=$(dirname $z500filename)
-TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
+TEMPDIR=$DATADIR/tempdir_${exp}_${ens}_$RANDOM
 mkdir -p $TEMPDIR
 
 if [ ! -f $z500filename ] ; then

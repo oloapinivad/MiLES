@@ -5,21 +5,33 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.block.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
+miles.block.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
 {
-
+print(ens_ref)
 #figures configuration files
 source(CFGSCRIPT)
 
 #set main paths
-BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
-FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
+if (ens=="NO") {
+	BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
+	FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
+	} else {
+	BLOCKDIR=file.path(FILESDIR,exp,ens,"Block",paste0(year1,"_",year2),season)
+    FIGDIRBLOCK=file.path(FIGDIR,exp,ens,"Block",paste0(year1,"_",year2),season)
+	}
 dir.create(FIGDIRBLOCK,recursive=T)
 
 #check path for reference dataset
 #if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
-if (REFDIR!=FILESDIR)
-        {REFDIR=file.path(REFDIR,"Block")} else {REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")}
+if (REFDIR!=FILESDIR) {
+		REFDIR=file.path(REFDIR,"Block")
+		} else {
+		if (ens_ref=="NO") {
+			REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
+		} else {
+			REFDIR=paste(FILESDIR,"/",dataset_ref,"/",ens_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")			
+		}
+}
 
 #which fieds to load/plot
 fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
@@ -29,19 +41,26 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 ##########################################################
 
 #open reference field
-for (field in fieldlist) 
-	{
+for (field in fieldlist) {	
+	if (ens=="NO") {
         nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-        field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
-        assign(paste(field,"_exp",sep=""),field_exp)
+	} else {
+		nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+	}
+    field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
+    assign(paste(field,"_exp",sep=""),field_exp)
 }
 
+print(ens_ref)
 #open reference field
-for (field in fieldlist) 
-	{
+for (field in fieldlist) {	
+	if (ens_ref=="NO") {
      	nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-     	field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
-     	assign(paste(field,"_ref",sep=""),field_ref)
+	} else {
+		nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",ens_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+	}
+    field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
+    assign(paste(field,"_ref",sep=""),field_ref)
 }
 
 ##########################################################
@@ -49,8 +68,8 @@ for (field in fieldlist)
 ##########################################################
 
 #standard properties
-info_exp=paste(exp,year1,"-",year2,season)
-info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+info_exp=paste(exp,ens,year1,"-",year2,season)
+info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)
 
 #loop on fields
 for (field in fieldlist) {
@@ -123,13 +142,16 @@ for (field in fieldlist) {
         field_ref=get(paste(field,"_ref",sep=""))
         field_exp=get(paste(field,"_exp",sep=""))
 
-
+	#final plot production
+    if (ens=="NO") {
+		figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+		} else {
+		figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+		}
+    print(figname)
 
 	#special treatment for TM90: it is a 1D field!
 	if (field=="TM90") {
-		#final plot production
-	        figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-        	print(figname)
 
         	# Chose output format for figure - by JvH
         	if (tolower(output_file_type) == "png") {
@@ -174,10 +196,6 @@ for (field in fieldlist) {
 	nlev_field=length(lev_field)-1
 	nlev_diff=length(lev_diff)-1
 
-	#final plot production
-	figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-	print(figname)
-	
 	# Chose output format for figure - by JvH
         if (tolower(output_file_type) == "png") {
            png(filename = figname, width=png_width, height=png_height)
@@ -218,7 +236,7 @@ for (field in fieldlist) {
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
+name_args=c("exp","ens","year1","year2","dataset_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -230,7 +248,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
 	for (k in 1:req_args) {assign(name_args[k],args[k])}
 	source(paste0(PROGDIR,"/script/basis_functions.R"))
-	miles.block.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
+	miles.block.figures(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
     }
 }
 

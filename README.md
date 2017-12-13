@@ -74,7 +74,7 @@ in case you use the 2D blocking index in any publication.
 ## SOFTWARE REQUIREMENTS
 
 * a. R version >3.0
-* b. CDO version > 1.6.5, compiled with netCDF4
+* b. CDO version > 1.6.5 (1.8 at least for GRIB support), compiled with netCDF4
 * c. Compiling environment (gcc)
 
 IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.

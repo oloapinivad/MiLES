@@ -23,20 +23,22 @@ ECMWF=1
 # set also years 
 
 #loop to create the ensembles
-#for ens in $(seq -f "%02g" 0 0 ) ; do
+#for ens in $(seq -f "%02g" 0 10 ) ; do
 #	dataset_list=$(echo $dataset_list S5_ens$ens)
 #done 
-dataset_list="S5_ens00"
-for dataset_exp in ${dataset_list} ; do
+#datiaset_list="S5_ens00"
+#for dataset_exp in ${dataset_list} ; do
 year1_exp=1982
 year2_exp=2016
+dataset_exp="S4"
+ens_list=$(seq -f "%02g" 0 9 )
+#ens_list="NO"
 
 # INDIR_EXP ->data folder: all the geopotential height data should be here
 # NB: this is a folder structure used in my local machine
 # it is not used when you use ECMWF=1
 INDIR_EXP=/home/paolo/work/DATA/CMIP5/${dataset_exp}/HIST/r1/day/Z500
-if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || [
-"${dataset_exp}" == MERRA  ] ; then
+if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || ["${dataset_exp}" == MERRA  ] ; then
     INDIR_EXP=/home/paolo/work/DATA/${dataset_exp}/day/Z500
 fi
 
@@ -44,17 +46,17 @@ fi
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=1
+std_clim=0
 
 # only valid if std_clim=0
-dataset_ref="S4_ens00"
-year1_ref=1979
+dataset_ref=S5
+ens_ref=mean
+year1_ref=1982
 year2_ref=2016
 # NB: this is a folder structure used in my local machine
 # it is not used when you use ECMWF=1
 INDIR_REF=/home/paolo/work/DATA/CMIP5/${dataset_ref}/HIST/r1/day/Z500
-if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || [
-"${dataset_ref}" == MERRA  ] ; then
+if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || ["${dataset_ref}" == MERRA  ] ; then
         INDIR_REF=/home/paolo/work/DATA/${dataset_ref}/day/Z500
 fi
 
@@ -119,6 +121,7 @@ if [[ ${std_clim} -eq 1 ]] ; then
         year2_ref=2016
         REFDIR=$PROGDIR/clim
         exps=$dataset_exp
+		ens_ref="NO"
 else
         REFDIR=$FILESDIR
         exps=$(echo ${dataset_exp} ${dataset_ref})
@@ -129,40 +132,48 @@ fi
 #-------------Computation----------------------#
 ################################################
 
+#ensemble loop
+for ens_exp in ${ens_list} ; do
+
 # loop to produce data: on experiment and - if needed - reference
 for exp in $exps ; do
 
 	# select for experiment
 	if [[ $exp == $dataset_exp ]] ; then
-		year1=${year1_exp}; year2=${year2_exp}; INDIR=${INDIR_EXP}
+		year1=${year1_exp}; year2=${year2_exp}; INDIR=${INDIR_EXP}; ens=${ens_exp}
 	fi
 
 	# select for reference
 	if [[ $exp == $dataset_ref ]] ; then
-	        year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}
+			if [ "${ens_ref}" == "mean" ] ; then continue ; fi
+	        year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}; ens=${ens_ref}
 	fi
 
 	#definition of the fullfile name
 	ZDIR=$OUTPUTDIR/Z500/$exp
 	mkdir -p $ZDIR
-	z500filename=$ZDIR/Z500_${exp}_fullfile.nc
+	if [ "$ens" == "NO" ] ; then
+		z500filename=$ZDIR/Z500_${exp}_fullfile.nc
+	else
+		z500filename=$ZDIR/${ens}/Z500_${exp}_${ens}_fullfile.nc
+	fi
 	echo $z500filename
 
 	#fullfile prepare
 	if [ $ECMWF -eq 0 ] ; then
 		time . $PROGDIR/script/z500_prepare.sh $exp $year1 $year2 $INDIR $z500filename
 	else
-		time . $PROGDIR/script/ecmwf_z500_prepare.sh $exp $year1 $year2 $z500filename
+		time . $PROGDIR/script/ecmwf_z500_prepare.sh $exp $ens $year1 $year2 $z500filename
 	fi
 
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
-		time $Rscript "$PROGDIR/script/block_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
-		time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done
 
 done
@@ -173,15 +184,31 @@ done
 for season in $seasons ; do
 	echo $season
 	# EOFs figures
-	time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+	#time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
 	# blocking figures
-	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	# regimes figures
-	time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+	#time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
-
 done
 
+################################################
+#--------------Ensemble mean-------------------#
+################################################
 
+if [ "${ens_list}" != "NO" ] ; then
+
+	echo $FILESDIR
+	for season in $seasons ; do
+		MEANBLOCKDIR=$FILESDIR/${dataset_exp}/mean/Block/${year1}_${year2}/$season
+		rm -rf $MEANBLOCKDIR; mkdir -p $MEANBLOCKDIR
+		$cdo cat $FILESDIR/${dataset_exp}/*/Block/${year1}_${year2}/$season/BlockClim*.nc $MEANBLOCKDIR/full.nc
+		$cdo timmean $MEANBLOCKDIR/full.nc $MEANBLOCKDIR/BlockClim_${dataset_exp}_mean_${year1}_${year2}_${season}.nc
+		time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp mean $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR		
+
+	done
+fi
+
+	
 
