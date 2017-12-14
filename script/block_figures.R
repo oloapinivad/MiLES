@@ -109,7 +109,7 @@ for (field in fieldlist) {
 	if (field=="NumberEvents") {
                 color_field=palette0; color_diff=palette2
                 lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5)
-                legend_unit=""; title_name="Number of Blocking Events:";
+                legend_unit="#"; title_name="Number of Blocking Events:";
         }
 
 	if (field=="Z500") {

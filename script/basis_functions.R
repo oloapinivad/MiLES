@@ -33,23 +33,62 @@ whicher<-function(axis,number)
 }
 
 #produce a 2d matrix of area weight
-area.weight<-function(ics,ipsilon,root=T)
-{
-field=array(NA,dim=c(length(ics),length(ipsilon)))
-if (root==T)
-{
-        for (j in 1:length(ipsilon))
-        {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
-}
+area.weight<-function(ics,ipsilon,root=T) {
+	field=array(NA,dim=c(length(ics),length(ipsilon)))
+	if (root==T) {
+        for (j in 1:length(ipsilon)) {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
+	}
 
-if (root==F)
-{
-        for (j in 1:length(ipsilon))
-        {field[,j]=cos(pi/180*ipsilon[j])}
-}
+	if (root==F) {
+        for (j in 1:length(ipsilon)) {field[,j]=cos(pi/180*ipsilon[j])}
+	}
 return(field)
-
 }
+
+sector.details<-function(SECTOR) {
+
+    if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
+    if (SECTOR=="Azores") {lons=c(-60,-20); lats=c(30,40); namesec="Central Atlantic"}
+    if (SECTOR=="Greenland") {lons=c(-65,-15); lats=c(62.5,72.5); namesec="Greenland"}
+    if (SECTOR=="FullPacific") {lons=c(130,-150); lats=c(60,75); namesec="North Pacific"}
+    if (SECTOR=="FullPacific2") {lons=c(130,210); lats=c(60,75); namesec="North Pacific"}
+
+    left1=which.min(abs(ics-lons[1]))
+    right1=which.min(abs(ics-lons[2]))
+    low1=which.min(abs(ipsilon-lats[1]))
+    high1=which.min(abs(ipsilon-lats[2]))
+
+    latssel=low1:high1
+    if (SECTOR=="FullPacific") {
+        lonssel=c(left1:length(ics),1:right1)
+        } else {
+        lonssel=left1:right1
+    }
+out=list(lons=lons,lonssel=lonssel,lats=lats,latssel=latssel,name=namesec)
+return(out)
+}
+
+weighted.cor<-function(x,y,w) {
+    w.mean.x=sum(w*x)/sum(w)
+    w.mean.y=sum(w*y)/sum(w)
+
+    w.cov.xy=sum(w*(x-w.mean.x)*(y-w.mean.y))/sum(w)
+    w.var.y=sum(w*(y-w.mean.y)*(y-w.mean.y))/sum(w)
+    w.var.x=sum(w*(x-w.mean.x)*(x-w.mean.x))/sum(w)
+
+    corr=w.cov.xy/sqrt(w.var.x*w.var.y)
+    return(corr)
+}
+
+weighted.sd<-function(x,w) {
+    w.mean=sum(w*x)/sum(w)
+    v1=sum(w)
+    v2=sum(w^2)
+    var=v1/(v1^2-v2)*sum(w*(x-w.mean)^2)
+    sdd=sqrt(var)
+    return(sdd)
+}
+
 
 ##########################################################
 #--------------Time Based functions----------------------#
