@@ -30,6 +30,11 @@ if [ "${dataset}" == "ERAI" ] ; then
     expected_input_name=*ERAI*.grb
 fi
 
+if [ "${dataset}" == "S3" ] ; then
+    INDIR=/home/ms/it/ccpd/regimes/S3_24h_nov
+    expected_input_name=*/*S3*_${ensemble}.grb
+fi
+
 if [ "${dataset}" == "S4" ] ; then
     INDIR=/home/ms/it/ccpd/regimes/S4_daily_nov
     expected_input_name=*/*S4*_${ensemble}.grb
@@ -37,6 +42,12 @@ fi
 
 if [ "${dataset}" == "S5" ] ; then
     INDIR=/scratch/rd/nedd/regimes/S5_24h_nov
+    expected_input_name=*/*S5*_${ensemble}.grb
+fi
+
+
+if [ "${dataset}" == "S5LR" ] ; then
+    INDIR=/scratch/rd/nedd/regimes/S5_24h_nov_lowres
     expected_input_name=*/*S5*_${ensemble}.grb
 fi
 

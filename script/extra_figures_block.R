@@ -18,19 +18,6 @@ filebuilder<-function(DATADIR,dataset,ens,year1,year2,season) {
 	return(paste0(filedir,"/",filename))
 }
 
-area.weight2<-function(ics,ipsilon) {
-		field=array(NA,dim=c(length(ics),length(ipsilon)))
-        re=6371220
-        for (j in 2:length(ipsilon)) {
-			dx=(ics[2]-ics[1])*re*pi/180*cos(pi/180*ipsilon[j])
-    		dy=(ipsilon[j]-ipsilon[j-1])*re*pi/180
-   			field[,j]=dy*dx
-	}
-    field[,1]=field[,length(ipsilon)]
-	return(field)
-
-}
-
 field.details<-function(field) {
    
 	if (field=="BlockEvents") {
@@ -62,7 +49,7 @@ ensfinder<-function(dataset) {
 	    enslist=c("NO")
 	}
 
-	if (dataset=="S4" | dataset=="S5") {
+	if (dataset=="S3" | dataset=="S4" | dataset=="S5" | dataset=="S5LR") {
 	    enslist=c("00","01","02","03","04","05","06","07","08","09")
 	}
 
@@ -70,12 +57,12 @@ return(enslist)
 }
 	
 year1=1982
-year2=2016
+year2=2011
 season="DJF"
 dataset_ref="ERAI"
-datasets=c(dataset_ref,"S4","S5")
+datasets=c(dataset_ref,"S3","S4","S5")
 SECTORS=c("Euro","Azores","Greenland","FullPacific")
-variables=c("BlockEvents","DurationEvents")
+variables=c("BlockEvents","DurationEvents","NumberEvents")
 KOL=c("black","darkgreen","blue","darkorange","red","violet","grey50","black")
 
 for (variable in variables) {
@@ -107,7 +94,7 @@ lettering=c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(l)")
 
 name=paste(FIGDIR,"/",variable,"_MultiModelComparison_",year1,"_",year2,"_",season,".pdf",sep="")
 pdf(file=name,width=5*length(datasets)*2,height=10*2,onefile=T,bg="white",family='Helvetica')
-par(mfrow=c(2,length(datasets)),mar=c(6,6,6,6),oma=c(1,1,5,8),mgp=c(4,1,0),cex.main=6)
+par(mfrow=c(2,length(datasets)),mar=c(6,6,6,6),oma=c(1,1,6,8),mgp=c(4,1,0),cex.main=6)
 
 for (dataset in datasets) {
 	field=apply(get(paste(variable,dataset,sep="_")),c(1,2),mean,na.rm=T)
