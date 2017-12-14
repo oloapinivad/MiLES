@@ -4,12 +4,18 @@
 
 #CDO
 #if you CDO is not equipped of NetCDF4 compression change "cdo4" command here
-cdo=/usr/local/apps/cdo/1.8.2/bin/cdo
+#Rscript is the script-launcher by R
+
+if [ "$(hostname)" == "lorenzo" ] ; then 
+	cdo=/usr/local/apps/cdo/1.8.2/bin/cdo
+	Rscript=/usr/local/apps/R/3.1.1/bin/Rscript
+else
+	cdo=/usr/local/apps/cdo/1.7.2/bin/cdo
+	Rscript=/usr/local/apps/R/3.3.1/bin/Rscript
+fi
+
 cdonc="$cdo -f nc"
 cdo4="$cdo -f nc4 -z zip"
-
-#Rscript is the script-launcher by R
-Rscript=/usr/local/apps/R/3.1.1/bin/Rscript
 
 #program folder where MiLES is placed
 export PROGDIR=$(pwd)

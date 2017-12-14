@@ -3,8 +3,7 @@ source("/home/ms/it/ccpd/MiLES/config/config.R")
 source("/home/ms/it/ccpd/MiLES/script/basis_functions.R")
 BASEDIR="/home/ms/it/ccpd/scratch/miles"
 DATADIR=file.path(BASEDIR,"files")
-FIGDIR=file.path(BASEDIR,"figures","ExtraMultiModel")
-dir.create(FIGDIR,recursive=T)
+FIGDIR0=file.path(BASEDIR,"figures","ExtraMultiModel")
 
 
 filebuilder<-function(DATADIR,dataset,ens,year1,year2,season) {
@@ -28,7 +27,7 @@ field.details<-function(field) {
 
     if (field=="DurationEvents") {
         color_field=palette0; color_diff=palette2
-        lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2); lev_hist=c(0,8) 
+        lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2); lev_hist=c(6,8) 
         legend_unit="Duration (days)"; title_name="Duration of Blocking Events:";
     }
 
@@ -50,7 +49,7 @@ ensfinder<-function(dataset) {
 	}
 
 	if (dataset=="S3" | dataset=="S4" | dataset=="S5" | dataset=="S5LR") {
-	    enslist=c("00","01","02","03","04","05","06","07","08","09")
+	    enslist=c("00","01","02","03","04","05","06","07","08","09",seq(11,24))
 	}
 
 return(enslist)
@@ -60,10 +59,13 @@ year1=1982
 year2=2011
 season="DJF"
 dataset_ref="ERAI"
-datasets=c(dataset_ref,"S3","S4","S5")
+datasets=c(dataset_ref,"S3","S4","S5LR","S5")
 SECTORS=c("Euro","Azores","Greenland","FullPacific")
 variables=c("BlockEvents","DurationEvents","NumberEvents")
 KOL=c("black","darkgreen","blue","darkorange","red","violet","grey50","black")
+
+FIGDIR=file.path(FIGDIR0,paste0(year1,"_",year2),season)
+dir.create(FIGDIR,recursive=T)
 
 for (variable in variables) {
 
@@ -156,7 +158,7 @@ for (SECTOR in SECTORS) {
 name=paste(FIGDIR,"/",variable,"_RegionalBlocking_",year1,"_",year2,"_",season,".pdf",sep="")
 pdf(file=name,width=20,height=20,onefile=T)
 par(mfrow=c(2,2),mar=c(8,6,6,6),oma=c(6,1,5,1),cex.axis=2.5,cex.main=4.5,cex.lab=2.5,mgp=c(4,1,0))
-spacing=c(0.5,0.2,0.2)
+spacing=c(rep(0.5,length(datasets)))
 for (k in 1:length(SECTORS)) {
 	v=sector.details(SECTORS[k])
 	barplot(regional[k,],names.arg=datasets,col=KOL,main=paste(v$name),density=100,space=spacing,las=3,ylim=fp$lev_hist,ylab=fp$legend_unit)
@@ -280,7 +282,7 @@ for (SECTOR in SECTORS) {
                 {
                 EV=mean(evfield[v$lonssel,v$latssel,ens],na.rm=T)
                 DUR=mean(durfield[v$lonssel,v$latssel,ens],na.rm=T)
-                points(DUR,EV,cex=3,pch=PCH,col=KOL[which(dataset==datasets)],bg=KOL[which(dataset==datasets)])
+                points(DUR,EV,cex=1.5,pch=PCH,col=KOL[which(dataset==datasets)],bg=KOL[which(dataset==datasets)])
                 }
 		EV=mean(evfield[v$lonssel,v$latssel,],na.rm=T)
         DUR=mean(durfield[v$lonssel,v$latssel,],na.rm=T)

@@ -23,15 +23,10 @@ ECMWF=1
 # set also years 
 
 #loop to create the ensembles
-#for ens in $(seq -f "%02g" 0 10 ) ; do
-#	dataset_list=$(echo $dataset_list S5_ens$ens)
-#done 
-#datiaset_list="S5_ens00"
-#for dataset_exp in ${dataset_list} ; do
 year1_exp=1982
-year2_exp=2016
+year2_exp=2011
 dataset_exp="S4"
-ens_list=$(seq -f "%02g" 0 9 )
+ens_list=$(seq -f "%02g" 18 24 )
 #ens_list="NO"
 
 # INDIR_EXP ->data folder: all the geopotential height data should be here
@@ -46,7 +41,7 @@ fi
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=0
+std_clim=1
 
 # only valid if std_clim=0
 dataset_ref=S5
