@@ -13,6 +13,9 @@ library("PCICt")
 #check if fast linear fit is operative (after R 3.1): 3x faster than lm.fit, 36x faster than lm
 if (exists(".lm.fit")) {lin.fit=.lm.fit} else {lin.fit=lm.fit}
 
+#check R version as numeric
+R_version=as.numeric(R.Version()$major)+as.numeric(R.Version()$minor)/10
+
 ##########################################################
 #-----------------Basic functions------------------------#
 ##########################################################
@@ -101,7 +104,13 @@ file.builder<-function(DATADIR,dir_name,file_name,dataset,ens,year1,year2,season
         filedir=file.path(DATADIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
         filename=paste0(file_name,"_",dataset,"_",ens,"_",year1,"_",year2,"_",season,".nc")
     }
-    if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+
+	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
+	if (exists("dir.exists")) {
+		if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+	} else {
+		dir.create(filedir,recursive=T,showWarnings=F)
+	}
     return(paste0(filedir,"/",filename))
 }
 
