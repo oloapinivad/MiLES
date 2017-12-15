@@ -26,7 +26,7 @@ ECMWF=1
 year1_exp=1982
 year2_exp=2011
 dataset_exp="S4"
-ens_list=$(seq -f "%02g" 18 24 )
+ens_list=$(seq -f "%02g" 24 24 )
 #ens_list="NO"
 
 # INDIR_EXP ->data folder: all the geopotential height data should be here
@@ -166,7 +166,7 @@ for exp in $exps ; do
 		# EOFs
 		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
-		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+		#time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
 		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done

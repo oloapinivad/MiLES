@@ -27,8 +27,9 @@ af=1
 # Type of projection ("no" for standard plotting")
 # All projection from mapproj package should be supported
 # but error may arise for non-polar plots
+# DEFAULT IS POLAR PLOT
 map_projection=Sys.getenv(c("map_projection"))
-if (nchar(map_projection)==0) {map_projection="no"}
+if (nchar(map_projection)==0) {map_projection="azequalarea"}
 print(paste(map_projection,"projection is chosen"))
 
 #Number of panels per figure (rows and column)
@@ -45,9 +46,12 @@ if (map_projection!="no") {
 	panels=rev(panels)
 }
 
+
 # Custom paramteres for plots
 zero<-par(mfrow=panels,cex.main=2.5,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,5,7),oma=c(1,1,3,2))
 plotpar<-par(no.readonly=T)
+dev.off()
+
 
 #color palette to be used
 #palette0 is taken from tim.colors of field to avoid library dependencies...
@@ -67,5 +71,8 @@ palette0=colorRampPalette(c("#00008F", "#00009F", "#0000AF", "#0000BF", "#0000CF
 palette1=colorRampPalette(c("white","orange","darkred"))
 palette2=colorRampPalette(c("blue","white","red"))
 palette3=colorRampPalette(c("darkblue","blue","dodgerblue","white","orange","red","darkred"))
+
+#additional color palette used for extradiagnostics histogram
+KOL=c("black","darkgreen","blue","darkorange","red","violet","grey50","black")
 
 

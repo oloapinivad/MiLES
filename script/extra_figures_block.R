@@ -1,89 +1,79 @@
+######################################################
+#------Blocking extra diagnostics for MiLES----------#
+#-------------P. Davini (Dec 17)---------------------#
+######################################################
 
-source("/home/ms/it/ccpd/MiLES/config/config.R")
-source("/home/ms/it/ccpd/MiLES/script/basis_functions.R")
+# Folders to be set: BASEDIR is where data are
+# MILESDIR is where the program is.
 BASEDIR="/home/ms/it/ccpd/scratch/miles"
-DATADIR=file.path(BASEDIR,"files")
-FIGDIR0=file.path(BASEDIR,"figures","ExtraMultiModel")
+MILESDIR="/home/ms/it/ccpd/MiLES"
 
-
-filebuilder<-function(DATADIR,dataset,ens,year1,year2,season) {
-	if (ens=="NO") {
-		filedir=file.path(DATADIR,dataset,"Block",paste0(year1,"_",year2),season)
-		filename=paste0("BlockClim_",dataset,"_",year1,"_",year2,"_",season,".nc")	
-	} else {
-		filedir=file.path(DATADIR,dataset,ens,"Block",paste0(year1,"_",year2),season)
-		filename=paste0("BlockClim_",dataset,"_",ens,"_",year1,"_",year2,"_",season,".nc")
-	}
-	return(paste0(filedir,"/",filename))
-}
-
-field.details<-function(field) {
-   
-	if (field=="BlockEvents") {
-        color_field=palette1; color_diff=palette2
-        lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1); lev_hist=c(0,16)
-        legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:";
-    }
-
-    if (field=="DurationEvents") {
-        color_field=palette0; color_diff=palette2
-        lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2); lev_hist=c(6,8) 
-        legend_unit="Duration (days)"; title_name="Duration of Blocking Events:";
-    }
-
-    if (field=="NumberEvents") {
-        color_field=palette0; color_diff=palette2
-        lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5); lev_hist=c(0,60)
-        legend_unit=""; title_name="Number of Blocking Events:";
-    }
-
-out=list(color_field=color_field,color_diff=color_diff,lev_field=lev_field,lev_diff=lev_diff,lev_hist=lev_hist,legend_unit=legend_unit,title_name=title_name)
-return(out)
-}
-
-
-
-ensfinder<-function(dataset) {
-	if (dataset=="ERAI") {
-	    enslist=c("NO")
-	}
-
-	if (dataset=="S3" | dataset=="S4" | dataset=="S5" | dataset=="S5LR") {
-	    enslist=c("00","01","02","03","04","05","06","07","08","09",seq(11,24))
-	}
-
-return(enslist)
-}
-	
+# This is the main block that you should use to gather together
+# MiLES-generated blocking data: the program opens data according to the MiLES
+# file structure: you need to specify years, datasets, season, and reference dataset
+# years and seasons should be the same for all the datasets
 year1=1982
 year2=2011
 season="DJF"
 dataset_ref="ERAI"
 datasets=c(dataset_ref,"S3","S4","S5LR","S5")
+
+# Also, using the ensfinder function you may set how many and which ensemble members you have
+# Remember that enslist="NO" means that there is no memberes (this is the default)  
+ensfinder<-function(dataset) {
+	
+	#default
+	enslist="NO"
+	
+	#example cases for ECMWG data
+    if (dataset=="S3" | dataset=="S4" | dataset=="S5" | dataset=="S5LR") {
+        enslist=c("00","01","02","03","04","05","06","07","08","09",seq(11,24))
+    }
+return(enslist)
+}
+
+#you can also change sectors and variables, although is not reccommended. 
 SECTORS=c("Euro","Azores","Greenland","FullPacific")
 variables=c("BlockEvents","DurationEvents","NumberEvents")
-KOL=c("black","darkgreen","blue","darkorange","red","violet","grey50","black")
 
-FIGDIR=file.path(FIGDIR0,paste0(year1,"_",year2),season)
+##########################################################
+#----------No Need to Touch below this line--------------#
+##########################################################
+
+#source of config and functions
+source(paste0(MILESDIR,"/config/config.R"))
+source(paste0(MILESDIR,"/script/basis_functions.R"))
+
+#create folders
+DATADIR=file.path(BASEDIR,"files")
+FIGDIR=file.path(BASEDIR,"figures","ExtraMultiModel",paste0(year1,"_",year2),season)
 dir.create(FIGDIR,recursive=T)
 
+#loop on variables
 for (variable in variables) {
 
+	#get plotting details for each field
 	fp=field.details(variable)
 
+#loop on datasets
 for (dataset in datasets) {
 
+	#check which members are avaialable
 	enslist=ensfinder(dataset)
 	freq_full=array(NA,dim=c(144,37,length(enslist)))
 	for (ens in enslist) {
 
+		#load climatological blocking files for each variable and each ensemble and each dataset
 		print(paste(dataset,ens,variable))
-		freq=ncdf.opener(filebuilder(DATADIR,dataset,ens,year1,year2,season),namevar=variable,namelon="Lon",namelat="Lat",rotate="no")
+		freq=ncdf.opener(file.builder(DATADIR,"Block","BlockClim",dataset,ens,year1,year2,season),namevar=variable,namelon="Lon",namelat="Lat",rotate="no")
+
+		#put them together in 3d array
 		freq_full[,,which(ens==enslist)]=freq
 	}
 	assign(paste(variable,dataset,sep="_"),freq_full)
 	
 }
+
 
 
 print("2D polar plots...")
@@ -262,6 +252,8 @@ legend(xminplot+0.05,ymaxplot-aspdisp,toupper(datasets),pch=PCHS,col=KOL,bg="whi
 
 dev.off()
 
+if (any(variables=="DurationEvents") & any(variables=="NumberEvents")) {
+
 name=paste(FIGDIR,"/","Duration_vs_events_",year1,"_",year2,"_",season,".pdf",sep="")
 pdf(file=name,width=20,height=20,onefile=T)
 par(mar=c(6,6,6,6),oma=c(1,1,5,1),mfrow=c(2,2),cex.lab=3,cex.main=3.5,cex.axis=3,mgp=c(4,1,0))
@@ -292,4 +284,5 @@ for (SECTOR in SECTORS) {
 
 }
 dev.off()
+}
 

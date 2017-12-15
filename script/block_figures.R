@@ -7,31 +7,16 @@
 
 miles.block.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
 {
-print(ens_ref)
 #figures configuration files
 source(CFGSCRIPT)
 
 #set main paths
 if (ens=="NO") {
-	BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
 	FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
 	} else {
-	BLOCKDIR=file.path(FILESDIR,exp,ens,"Block",paste0(year1,"_",year2),season)
     FIGDIRBLOCK=file.path(FIGDIR,exp,ens,"Block",paste0(year1,"_",year2),season)
 	}
 dir.create(FIGDIRBLOCK,recursive=T)
-
-#check path for reference dataset
-#if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
-if (REFDIR!=FILESDIR) {
-		REFDIR=file.path(REFDIR,"Block")
-		} else {
-		if (ens_ref=="NO") {
-			REFDIR=paste(FILESDIR,"/",dataset_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")
-		} else {
-			REFDIR=paste(FILESDIR,"/",dataset_ref,"/",ens_ref,"/Block/",year1_ref,"_",year2_ref,"/",season,"/",sep="")			
-		}
-}
 
 #which fieds to load/plot
 fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
@@ -42,24 +27,26 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 
 #open reference field
 for (field in fieldlist) {	
-	if (ens=="NO") {
-        nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-	} else {
-		nomefile=paste0(BLOCKDIR,"/BlockClim_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
-	}
+
+	#use file.builder function
+	nomefile=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
     field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
     assign(paste(field,"_exp",sep=""),field_exp)
 }
 
-print(ens_ref)
 #open reference field
-for (field in fieldlist) {	
-	if (ens_ref=="NO") {
-     	nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-	} else {
-		nomefile=paste0(REFDIR,"/BlockClim_",dataset_ref,"_",ens_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+for (field in fieldlist) {
+	
+	# check for REFDIR==FILESDIR, i.e. if we are using the climatology provided by MiLES or another dataset MiLES-generated	
+	if (REFDIR!=FILESDIR) {
+		nomefile_ref=paste0(file.path(REFDIR,"Block"),"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+	} else { 
+		
+		#use file.builder to create the path of the blocking files
+		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",dataset_ref,ens_ref,year1_ref,year2_ref,season)
 	}
-    field_ref=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
+    
+	field_ref=ncdf.opener(nomefile_ref,field,"Lon","Lat",rotate="no")
     assign(paste(field,"_ref",sep=""),field_ref)
 }
 
@@ -74,73 +61,12 @@ info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)
 #loop on fields
 for (field in fieldlist) {
 	
-	legend_distance=3
 	#define field-dependent properties
-	if (field=="InstBlock") {
-		color_field=palette1; color_diff=palette2
-		lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
-		legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:"; 
-	}
-
-	if (field=="ExtraBlock") {
-                color_field=palette1; color_diff=palette2
-                lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
-                legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency (GHGS2 condition):"; 
-        }
-
-	if (field=="BlockEvents") {
-                color_field=palette1; color_diff=palette2
-                lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1)
-                legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:"; 
-	}
-
-	if (field=="LongBlockEvents") {
-                color_field=palette1; color_diff=palette2
-                lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1)
-                legend_unit="Blocked Days (%)"; title_name="10-day Blocking Events frequency:";
-    }
+	fp=field.details(field)
 	
-	if (field=="DurationEvents") {
-                color_field=palette0; color_diff=palette2
-                lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2)
-                legend_unit="Duration (days)"; title_name="Duration of Blocking Events:";
-        }
-	
-	if (field=="NumberEvents") {
-                color_field=palette0; color_diff=palette2
-                lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5)
-                legend_unit="#"; title_name="Number of Blocking Events:";
-        }
-
-	if (field=="Z500") {
-                color_field=palette0; color_diff=palette2
-                lev_field=seq(4800,6000,50); lev_diff=seq(-310,310,20)
-                legend_unit="Geopotential Height (m)"; title_name="Z500:" ; legend_distance=4
-        }
-
-	if (field=="BI") {
-                color_field=palette0; color_diff=palette2
-                lev_field=seq(1,6,0.25); lev_diff=seq(-2.1,2.1,.2)
-                legend_unit="BI index"; title_name="Blocking Intensity (BI):" ;
-        }
-
-	if (field=="MGI") {
-                color_field=palette0; color_diff=palette2
-                lev_field=seq(0,15,1); lev_diff=seq(-5.25,5.25,.5)
-                legend_unit="MGI Index"; title_name="Meridional Gradient Inversion (MGI):" ; 
-        }
-
-	if (field=="ACN" | field=="CN") {
-                if (field=="ACN") {title_name="Anticyclonic Rossby wave breaking frequency:"}
-		if (field=="CN") {title_name="Cyclonic Rossby wave breaking frequency:"}
-                color_field=palette1; color_diff=palette2
-                lev_field=seq(0,20,2); lev_diff=seq(-5.25,5.25,.5)
-                legend_unit="RWB frequency (%)"; 
-        }
-
 	#get fields
-        field_ref=get(paste(field,"_ref",sep=""))
-        field_exp=get(paste(field,"_exp",sep=""))
+    field_ref=get(paste(field,"_ref",sep=""))
+    field_exp=get(paste(field,"_exp",sep=""))
 
 	#final plot production
     if (ens=="NO") {
@@ -174,12 +100,11 @@ for (field in fieldlist) {
 
 		#plot properties
 		lwdline=4
-		title_name="TM90 Instantaneous Blocking"
-		tm90cols=c("dodgerblue","darkred")
-		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=c(0,30),main=paste(title_name),xlab="Longitude",ylab="Blocked Days (%)",col=tm90cols[1])
+		tm90cols=fp$color_field
+		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=fp$lev_field,main=fp$title_name,xlab="Longitude",ylab=fp$legend_unit,col=tm90cols[1])
 		points(ics2,field_ref2,type="l",lwd=lwdline,lty=1,col=tm90cols[2])
 		grid()
-                legend(100,30,legend=c(info_exp,info_ref),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+        legend(100,30,legend=c(info_exp,info_ref),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
 	
 		#par(new=TRUE)	
 		#plot(ics2,field_exp2,type="n",ylim=c(0,90),xlab="",ylab="",axes=F)
@@ -192,10 +117,6 @@ for (field in fieldlist) {
 
 		}
 	
-	#secondary plot properties
-	nlev_field=length(lev_field)-1
-	nlev_diff=length(lev_diff)-1
-
 	# Chose output format for figure - by JvH
         if (tolower(output_file_type) == "png") {
            png(filename = figname, width=png_width, height=png_height)
@@ -211,21 +132,21 @@ for (field in fieldlist) {
 
 	#main experiment plot
 	im=plot.prepare(ics,ipsilon,field_exp,proj=map_projection,lat_lim=lat_lim)
-	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
-	mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=fp$lev_field,color.palette=fp$color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+	mtext(fp$title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
 	proj.addland(proj=map_projection)
 
 	#reference field plot
 	im=plot.prepare(ics,ipsilon,field_ref,proj=map_projection,lat_lim=lat_lim)
-	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=fp$lev_field,color.palette=fp$color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
 	proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=lev_field,color.palette=color_field,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance)
+	image.scale3(volcano,levels=fp$lev_field,color.palette=fp$color_field,colorbar.label=fp$legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=fp$legend_distance)
 
 	#delta field plot
 	im=plot.prepare(ics,ipsilon,field_exp-field_ref,proj=map_projection,lat_lim=lat_lim)
-	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=lev_diff,color.palette=color_diff,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=fp$lev_diff,color.palette=fp$color_diff,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
 	proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=lev_diff,color.palette=color_diff,colorbar.label=legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=legend_distance)
+	image.scale3(volcano,levels=fp$lev_diff,color.palette=fp$color_diff,colorbar.label=fp$legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=fp$legend_distance)
 
 	dev.off()
 	}
@@ -242,8 +163,8 @@ req_args=length(name_args)
 # print error message if uncorrect number of command 
 if (length(args)!=0) {
     if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-	print(name_args)
+    	print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
+		print(name_args)
     } else {
 # when the number of arguments is ok run the function()
 	for (k in 1:req_args) {assign(name_args[k],args[k])}

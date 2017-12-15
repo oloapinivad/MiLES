@@ -45,6 +45,7 @@ area.weight<-function(ics,ipsilon,root=T) {
 return(field)
 }
 
+#sector details for blocking extra diagnostics
 sector.details<-function(SECTOR) {
 
     if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
@@ -68,6 +69,7 @@ out=list(lons=lons,lonssel=lonssel,lats=lats,latssel=latssel,name=namesec)
 return(out)
 }
 
+#weighted correlation
 weighted.cor<-function(x,y,w) {
     w.mean.x=sum(w*x)/sum(w)
     w.mean.y=sum(w*y)/sum(w)
@@ -80,6 +82,7 @@ weighted.cor<-function(x,y,w) {
     return(corr)
 }
 
+#weighted standard deviations
 weighted.sd<-function(x,w) {
     w.mean=sum(w*x)/sum(w)
     v1=sum(w)
@@ -88,6 +91,20 @@ weighted.sd<-function(x,w) {
     sdd=sqrt(var)
     return(sdd)
 }
+
+#basic switch to create NetCDF file names and folders
+file.builder<-function(DATADIR,dir_name,file_name,dataset,ens,year1,year2,season) {
+    if (ens=="NO") {
+        filedir=file.path(DATADIR,dataset,dir_name,paste0(year1,"_",year2),season)
+        filename=paste0(file_name,"_",dataset,"_",year1,"_",year2,"_",season,".nc")
+    } else {
+        filedir=file.path(DATADIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
+        filename=paste0(file_name,"_",dataset,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+    }
+    if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+    return(paste0(filedir,"/",filename))
+}
+
 
 
 ##########################################################
@@ -669,6 +686,86 @@ plot.prepare<-function(ics,ipsilon,field,proj,lat_lim) {
 	return(outfile)
 }
 
+#function that provides labels and names for Blocking Plots
+field.details<-function(field) {
+
+	# default value 
+	legend_distance=3
+	lev_hist=NULL
+
+	#case specific
+	if (field=="TM90") {
+        color_field=c("dodgerblue","darkred"); color_diff=NULL
+        lev_field=c(0,30); lev_diff=NULL
+        legend_unit="Blocked Days (%)"; title_name="TM90 Instantaneous Blocking"
+    }
+
+	if (field=="InstBlock") {
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
+        legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:";
+    }
+
+    if (field=="ExtraBlock") {
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
+        legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency (GHGS2 condition):";
+    }
+
+    if (field=="BlockEvents") {
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1); lev_hist=c(0,16)
+        legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:";
+    }
+
+	if (field=="LongBlockEvents") {
+         color_field=palette1; color_diff=palette2
+         lev_field=seq(0,16,2); lev_diff=seq(-5.25,5.25,.5)
+         legend_unit="Blocked Days (%)"; title_name="10-day Blocking Events frequency:";
+    }
+
+    if (field=="DurationEvents") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2); lev_hist=c(6,8)
+        legend_unit="Duration (days)"; title_name="Duration of Blocking Events:";
+    }
+
+    if (field=="NumberEvents") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5); lev_hist=c(0,60)
+        legend_unit=""; title_name="Number of Blocking Events:";
+    }
+
+	if (field=="Z500") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(4800,6000,50); lev_diff=seq(-310,310,20)
+        legend_unit="Geopotential Height (m)"; title_name="Z500:" ; legend_distance=4
+    }
+
+    if (field=="BI") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(1,6,0.25); lev_diff=seq(-2.1,2.1,.2)
+        legend_unit="BI index"; title_name="Blocking Intensity (BI):" ;
+    }
+
+    if (field=="MGI") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(0,15,1); lev_diff=seq(-5.25,5.25,.5)
+        legend_unit="MGI Index"; title_name="Meridional Gradient Inversion (MGI):" ;
+    }
+
+    if (field=="ACN" | field=="CN") {
+        if (field=="ACN") {title_name="Anticyclonic Rossby wave breaking frequency:"}
+        if (field=="CN") {title_name="Cyclonic Rossby wave breaking frequency:"}
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,20,2); lev_diff=seq(-5.25,5.25,.5)
+        legend_unit="RWB frequency (%)";
+    }
+
+
+out=list(color_field=color_field,color_diff=color_diff,lev_field=lev_field,lev_diff=lev_diff,lev_hist=lev_hist,legend_unit=legend_unit,legend_distance=legend_distance,title_name=title_name)
+return(out)
+}
 
 ##########################################################
 #------------Blocking Tracking Functions-----------------#

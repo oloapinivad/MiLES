@@ -8,14 +8,6 @@ miles.block.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR)
 #t0
 t0<-proc.time()
 
-#setting up main variables
-if (ens=="NO") {
-	BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season) 
-	} else {
-	BLOCKDIR=file.path(FILESDIR,exp,ens,"Block",paste0(year1,"_",year2),season) 
-}
-dir.create(BLOCKDIR,recursive=T)
-
 #setting up time domain
 years=year1:year2
 timeseason=season2timeseason(season)
@@ -195,13 +187,10 @@ print(tf)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-if (ens=="NO") { 
-	savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-	savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc")
-	} else {
-	savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
-    savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
-}
+
+#define folders using file.builder function (takes care of ensembles)
+savefile1=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
 
 #which fieds to plot/save
 fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
@@ -227,29 +216,30 @@ t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T)
 for (var in fieldlist)
 {
         #name of the var
-	if (var=="TM90")
-                {longvar="TibaldiMolteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90}
-        if (var=="InstBlock")
+	if (var=="TM90") {
+		longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90
+	}
+    if (var=="InstBlock")
                 {longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
-        if (var=="ExtraBlock")
+    if (var=="ExtraBlock")
                 {longvar="Instantaneous Blocking frequency (GHGS2)"; unit="%"; field=frequency2; full_field=totblocked2}
-        if (var=="Z500")
+    if (var=="Z500")
                 {longvar="Geopotential Height"; unit="m"; field=Z500mean; full_field=Z500}
-        if (var=="BI")
+    if (var=="BI")
                 {longvar="BI index"; unit=""; field=BI; full_field=totBI}
-        if (var=="MGI")
+    if (var=="MGI")
                 {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
-        if (var=="ACN")
+    if (var=="ACN")
                 {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
-        if (var=="CN")
+    if (var=="CN")
                 {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
-        if (var=="BlockEvents")
+    if (var=="BlockEvents")
                 {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
-		if (var=="LongBlockEvents")
+	if (var=="LongBlockEvents")
                 {longvar="10-day Blocking Events frequency"; unit="%"; field=longblock$percentage; full_field=longblock$track}
-        if (var=="DurationEvents")
+    if (var=="DurationEvents")
                 {longvar="Blocking Events duration"; unit="days"; field=block$duration}
-        if (var=="NumberEvents")
+    if (var=="NumberEvents")
                 {longvar="Blocking Events number"; unit=""; field=block$nevents}
 
 	#fix eventual NaN	
