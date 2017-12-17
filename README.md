@@ -116,6 +116,7 @@ can specified at this stage: here below a list of the commands that can be set u
 - "ECMWF" -> this is to call the preprocessing of Z500 ad hoc for ECMWF data structure
 - "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths: if you have multiple ensemble members you should
   distinguish them from here
+- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. Ensemble "mean" will be produced by the wrapper.
 - "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. 
 - "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
 - "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
@@ -146,11 +147,16 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
 It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
+* "extra_figures_block.R". This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
+
 ------------
 
 ## HISTORY
 
 *v0.42 - Dec 2017*
+- Inclusion of extra blocking diagnostics (Taylor diagrams, Duration-Events plots, histograms, etc.)
+- Ensemble mean for blocking outputs
+- Ensemble member support for blocking routine
 - Bug fixing for calendar handling 
 - 10-day blocking events as new output
 - ECMWF data structure support
