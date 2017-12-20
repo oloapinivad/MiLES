@@ -114,6 +114,27 @@ file.builder<-function(DATADIR,dir_name,file_name,dataset,ens,year1,year2,season
     return(paste0(filedir,"/",filename))
 }
 
+#basic switch to create figures names and folders
+fig.builder<-function(FIGDIR,dir_name,file_name,dataset,ens,year1,year2,season,output_file_type) {
+        if (ens=="NO") {
+                filedir=file.path(FIGDIR,dataset,dir_name,paste0(year1,"_",year2),season)
+                figname=paste(file_name,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+        } else {
+                filedir=file.path(FIGDIR,dataset,dir_name,paste0(year1,"_",year2),season)
+                figname=paste(file_name,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+        }
+
+  #actually dir.exists is in devtools only for R < 3.2, then is included in base package
+        if (exists("dir.exists")) {
+                if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+        } else {
+                dir.create(filedir,recursive=T,showWarnings=F)
+        }
+
+return(paste0(filedir,"/",figname))
+}
+
+
 
 
 ##########################################################
@@ -401,6 +422,7 @@ if (any(is.na(timeline))) {
 lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
 lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-",number.days.month(lastday_base)),cal=caldata,format="%Y-%m-%d")
 firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
+
 
 #print(max(timeline)); print(lastday); print(min(timeline)); print(firstday)
 

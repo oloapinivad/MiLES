@@ -10,14 +10,6 @@ miles.block.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,
 #figures configuration files
 source(CFGSCRIPT)
 
-#set main paths
-if (ens=="NO") {
-	FIGDIRBLOCK=file.path(FIGDIR,exp,"Block",paste0(year1,"_",year2),season)
-	} else {
-    FIGDIRBLOCK=file.path(FIGDIR,exp,ens,"Block",paste0(year1,"_",year2),season)
-	}
-dir.create(FIGDIRBLOCK,recursive=T)
-
 #which fieds to load/plot
 fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
 
@@ -28,7 +20,7 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 #open reference field
 for (field in fieldlist) {	
 
-	#use file.builder function
+    #use file.builder function
 	nomefile=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
     field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
     assign(paste(field,"_exp",sep=""),field_exp)
@@ -68,12 +60,8 @@ for (field in fieldlist) {
     field_ref=get(paste(field,"_ref",sep=""))
     field_exp=get(paste(field,"_exp",sep=""))
 
-	#final plot production
-    if (ens=="NO") {
-		figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-		} else {
-		figname=paste(FIGDIRBLOCK,"/",field,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-		}
+    #create figure names with ad-hoc function
+    figname=fig.builder(FIGDIR,"Block",field,exp,ens,year1,year2,season,output_file_type)
     print(figname)
 
 	#special treatment for TM90: it is a 1D field!
@@ -90,7 +78,7 @@ for (field in fieldlist) {
         	}
 
 		#panels option
-        	par(cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,3),oma=c(0,0,0,0))
+        par(cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,3),oma=c(0,0,0,0))
 
 		#rotation to simplify the view (90 deg to the west)
 		n=(-length(ics)/4)
@@ -150,6 +138,8 @@ for (field in fieldlist) {
 
 	dev.off()
 	}
+
+
 }
 
 # REAL EXECUTION OF THE SCRIPT 

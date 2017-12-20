@@ -12,13 +12,10 @@
 #- ------user configurations variables---------#
 ################################################
 
-#config name: create your own config file for your machine.
-config=sansone
-
 # flag specific for ECMWF data structure
 # it is used to call a specific preprocessing tool that follows 
 # ensemble structure and folder at ECMWF
-ECMWF=0
+ECMWF=1
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
@@ -26,17 +23,17 @@ ECMWF=0
 # set also years 
 
 #loop to create the ensembles
-year1_exp=1980
-year2_exp=2010
-dataset_exp="ERAINTERIM"
-#ens_list=$(seq -f "%02g" 24 24 )
-ens_list="NO"
+year1_exp=1982
+year2_exp=2011
+dataset_exp="S4"
+ens_list=$(seq -f "%02g" 24 24 )
+#ens_list="NO"
 
 # INDIR_EXP ->data folder: all the geopotential height data should be here
 # NB: this is a folder structure used in my local machine
 # it is not used when you use ECMWF=1
 INDIR_EXP=/home/paolo/work/DATA/CMIP5/${dataset_exp}/HIST/r1/day/Z500
-if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || [ "${dataset_exp}" == MERRA  ] ; then
+if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || ["${dataset_exp}" == MERRA  ] ; then
     INDIR_EXP=/home/paolo/work/DATA/${dataset_exp}/day/Z500
 fi
 
@@ -47,14 +44,14 @@ fi
 std_clim=1
 
 # only valid if std_clim=0
-dataset_ref="S5"
+dataset_ref=S5
 ens_ref=mean
 year1_ref=1982
 year2_ref=2016
 # NB: this is a folder structure used in my local machine
 # it is not used when you use ECMWF=1
 INDIR_REF=/home/paolo/work/DATA/CMIP5/${dataset_ref}/HIST/r1/day/Z500
-if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || [ "${dataset_ref}" == MERRA  ] ; then
+if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || ["${dataset_ref}" == MERRA  ] ; then
         INDIR_REF=/home/paolo/work/DATA/${dataset_ref}/day/Z500
 fi
 
@@ -80,6 +77,8 @@ output_file_type="pdf"
 #map_projection="no"
 map_projection="azequalarea"
 
+#config name: create your own config file for your machine.
+config=ecmwf
 
 
 ###############################################
@@ -117,7 +116,7 @@ if [[ ${std_clim} -eq 1 ]] ; then
         year2_ref=2016
         REFDIR=$PROGDIR/clim
         exps=$dataset_exp
-	ens_ref="NO"
+		ens_ref="NO"
 else
         REFDIR=$FILESDIR
         exps=$(echo ${dataset_exp} ${dataset_ref})
@@ -131,12 +130,8 @@ fi
 #ensemble loop
 for ens_exp in ${ens_list} ; do
 
-echo ${ens_exp}
-echo $exps
-
 # loop to produce data: on experiment and - if needed - reference
 for exp in $exps ; do
-
 
 	# select for experiment
 	if [[ $exp == $dataset_exp ]] ; then
@@ -145,15 +140,9 @@ for exp in $exps ; do
 
 	# select for reference
 	if [[ $exp == $dataset_ref ]] ; then
-		if [ "${ens_ref}" == "mean" ] ; then continue ; fi
-		if [ ${std_clim} -eq 1 ] ; then
- 			echo "skip!"
-		else
-	        	year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}; ens=${ens_ref}
-		fi
+			if [ "${ens_ref}" == "mean" ] ; then continue ; fi
+	        year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}; ens=${ens_ref}
 	fi
-	
-	echo $exp $year1 $year2
 
 	#definition of the fullfile name
 	ZDIR=$OUTPUTDIR/Z500/$exp
@@ -175,11 +164,11 @@ for exp in $exps ; do
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
-		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+		#time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
-		time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done
 
 done
@@ -190,12 +179,11 @@ done
 for season in $seasons ; do
 	echo $season
 	# EOFs figures
-	time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+	#time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
 	# blocking figures
 	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	# regimes figures
-	time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
-    rm $PROGDIR/Rplots.pdf #remove sporious file creation by R
+	#time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 done
