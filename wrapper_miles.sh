@@ -112,11 +112,11 @@ fi
 
 # if we are using standard climatology
 if [[ ${std_clim} -eq 1 ]] ; then
-        dataset_ref="ERAINTERIM"
-        year1_ref=1979
-        year2_ref=2016
-        REFDIR=$PROGDIR/clim
-        exps=$dataset_exp
+    dataset_ref="ERAINTERIM"
+    year1_ref=1979
+    year2_ref=2016
+    REFDIR=$PROGDIR/clim
+    exps=$dataset_exp
 	ens_ref="NO"
 else
         REFDIR=$FILESDIR
@@ -195,7 +195,6 @@ for season in $seasons ; do
 	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	# regimes figures
 	time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
-    rm $PROGDIR/Rplots.pdf #remove sporious file creation by R
 done
 
 done
@@ -217,5 +216,5 @@ if [ "${ens_list}" != "NO" ] ; then
 	done
 fi
 
-	
+rm $PROGDIR/Rplots.pdf #remove sporious file creation by R	
 

@@ -29,14 +29,6 @@ dataset_exp="S4"
 ens_list=$(seq -f "%02g" 24 24 )
 #ens_list="NO"
 
-# INDIR_EXP ->data folder: all the geopotential height data should be here
-# NB: this is a folder structure used in my local machine
-# it is not used when you use ECMWF=1
-INDIR_EXP=/home/paolo/work/DATA/CMIP5/${dataset_exp}/HIST/r1/day/Z500
-if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || ["${dataset_exp}" == MERRA  ] ; then
-    INDIR_EXP=/home/paolo/work/DATA/${dataset_exp}/day/Z500
-fi
-
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
@@ -48,12 +40,6 @@ dataset_ref=S5
 ens_ref=mean
 year1_ref=1982
 year2_ref=2016
-# NB: this is a folder structure used in my local machine
-# it is not used when you use ECMWF=1
-INDIR_REF=/home/paolo/work/DATA/CMIP5/${dataset_ref}/HIST/r1/day/Z500
-if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset_ref}" == ERAINTERIM  ] || ["${dataset_ref}" == MERRA  ] ; then
-        INDIR_REF=/home/paolo/work/DATA/${dataset_ref}/day/Z500
-fi
 
 # please specify one or more of the 4 standard seasons using 3 characters
 #seasons="DJF MAM SON JJA"
@@ -166,7 +152,7 @@ for exp in $exps ; do
 		# EOFs
 		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
-		#time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
 		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done
@@ -184,6 +170,7 @@ for season in $seasons ; do
 	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	# regimes figures
 	#time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+
 done
 
 done
@@ -201,9 +188,11 @@ if [ "${ens_list}" != "NO" ] ; then
 		$cdo cat $FILESDIR/${dataset_exp}/*/Block/${year1}_${year2}/$season/BlockClim*.nc $MEANBLOCKDIR/full.nc
 		$cdo timmean $MEANBLOCKDIR/full.nc $MEANBLOCKDIR/BlockClim_${dataset_exp}_mean_${year1}_${year2}_${season}.nc
 		time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp mean $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR		
-
+	
 	done
 fi
 
+#clean spourious plots
+rm -f $PROGDIR/Rplots.pdf
 	
 
