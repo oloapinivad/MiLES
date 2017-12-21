@@ -66,12 +66,10 @@ variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
 ##########################################################
 
 #plot properties
-info_exp=paste(exp,year1,"-",year2,season)
-info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+if (ens=="NO") {info_exp=paste(exp,year1,"-",year2,season)} else {info_exp=paste(exp,ens,year1,"-",year2,season)}
+if (ens_ref=="NO") {info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)} else {info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)}
 lev_field=seq(-150,150,20)
 lev_diff=seq(-95,95,10)
-nlev_field=length(lev_field)-1
-nlev_diff=length(lev_diff)-1
 
 #loop on number of EOFs
 for (neof in 1:neofs) {

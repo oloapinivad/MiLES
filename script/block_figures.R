@@ -47,13 +47,8 @@ for (field in fieldlist) {
 ##########################################################
 
 #standard properties
-if (ens=="NO") { 
-    info_exp=paste(exp,year1,"-",year2,season)
-    info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
-} else {
-    info_exp=paste(exp,ens,year1,"-",year2,season)
-    info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)
-}
+if (ens=="NO") {info_exp=paste(exp,year1,"-",year2,season)} else {info_exp=paste(exp,ens,year1,"-",year2,season)}
+if (ens_ref=="NO") {info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)} else {info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)}
 
 #loop on fields
 for (field in fieldlist) {

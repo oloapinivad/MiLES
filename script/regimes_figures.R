@@ -69,8 +69,9 @@ assign(paste0("names_",ii),names)
 #plot properties
 lev_field=seq(-250,250,20)
 lev_diff=seq(-150,150,20)
-info_exp=paste(exp,year1,"-",year2,season)
-info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+#standard properties
+if (ens=="NO") {info_exp=paste(exp,year1,"-",year2,season)} else {info_exp=paste(exp,ens,year1,"-",year2,season)}
+if (ens_ref=="NO") {info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)} else {info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)}
 
 kk0=1
 # loop on regimes
