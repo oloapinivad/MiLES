@@ -122,14 +122,7 @@ for (neof in 1:neofs) {
 	print(figname)
 
 	# Chose output format for figure - by JvH
-        if (tolower(output_file_type) == "png") {
-           png(filename = figname, width=png_width, height=png_height)
-        } else if (tolower(output_file_type) == "pdf") {
-            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
-        } else if (tolower(output_file_type) == "eps") {
-            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
-            postscript(figname)
-        }
+    open.plot.device(figname,output_file_type,CFGSCRIPT)
 
 	#plot properties
 	par(plotpar)

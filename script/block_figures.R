@@ -47,8 +47,13 @@ for (field in fieldlist) {
 ##########################################################
 
 #standard properties
-info_exp=paste(exp,ens,year1,"-",year2,season)
-info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)
+if (ens=="NO") { 
+    info_exp=paste(exp,year1,"-",year2,season)
+    info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+} else {
+    info_exp=paste(exp,ens,year1,"-",year2,season)
+    info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)
+}
 
 #loop on fields
 for (field in fieldlist) {
@@ -67,15 +72,7 @@ for (field in fieldlist) {
 	#special treatment for TM90: it is a 1D field!
 	if (field=="TM90") {
 
-        	# Chose output format for figure - by JvH
-        	if (tolower(output_file_type) == "png") {
-        	   png(filename = figname, width=png_width/af, height=png_height*af/2)
-        	} else if (tolower(output_file_type) == "pdf") {
-        	    pdf(file=figname,width=pdf_width/af,height=pdf_height*af/2,onefile=T)
-        	} else if (tolower(output_file_type) == "eps") {
-        	    setEPS(width=pdf_width/af,height=pdf_height*af/2,onefile=T,paper="special")
-        	    postscript(figname)
-        	}
+        open.plot.device(figname,output_file_type,CFGSCRIPT,special=TRUE)
 
 		#panels option
         par(cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,3),oma=c(0,0,0,0))
@@ -106,14 +103,7 @@ for (field in fieldlist) {
 		}
 	
 	# Chose output format for figure - by JvH
-        if (tolower(output_file_type) == "png") {
-           png(filename = figname, width=png_width, height=png_height)
-        } else if (tolower(output_file_type) == "pdf") {
-            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
-        } else if (tolower(output_file_type) == "eps") {
-            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
-            postscript(figname)
-        }
+    open.plot.device(figname,output_file_type,CFGSCRIPT)
 
 	#plot options	
 	par(plotpar)

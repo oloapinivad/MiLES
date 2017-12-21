@@ -85,22 +85,14 @@ for (name in names_ref)
 	if (length(ii)==0) {ii=which(setdiff(names_exp,names_ref)[kk0]==names_exp); kk0=kk0+1}
 	print(name)
 
-        #final plot production
-        figname=fig.builder(FIGDIR,"Regimes",paste0("Regime",ii),exp,ens,year1,year2,season,output_file_type)
-        #figname=paste(FIGDIRREGIMES,"/Regime",ii,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-        print(figname)
+    #final plot production
+    figname=fig.builder(FIGDIR,"Regimes",paste0("Regime",ii),exp,ens,year1,year2,season,output_file_type)
+    print(figname)
+    
+    # Chose output format for figure - by JvH
+    open.plot.device(figname,output_file_type,CFGSCRIPT)
 
-        # Chose output format for figure - by JvH
-        if (tolower(output_file_type) == "png") {
-           png(filename = figname, width=png_width, height=png_height)
-        } else if (tolower(output_file_type) == "pdf") {
-            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
-        } else if (tolower(output_file_type) == "eps") {
-            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
-            postscript(figname)
-        }
-
-        #plot properties
+    #plot properties
 	par(plotpar)
 
 	im=plot.prepare(ics,ipsilon,regimes_exp[,,ii],proj=map_projection,lat_lim=lat_lim)
