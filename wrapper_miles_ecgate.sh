@@ -12,6 +12,9 @@
 #- ------user configurations variables---------#
 ################################################
 
+#config name: create your own config file for your machine.
+config=ecmwf
+
 # flag specific for ECMWF data structure
 # it is used to call a specific preprocessing tool that follows 
 # ensemble structure and folder at ECMWF
@@ -62,9 +65,6 @@ output_file_type="pdf"
 # these are suggested: any other polar plot by "mapproj" R package are supported
 #map_projection="no"
 map_projection="azequalarea"
-
-#config name: create your own config file for your machine.
-config=ecmwf
 
 
 ###############################################
@@ -122,13 +122,16 @@ for exp in $exps ; do
 	# select for experiment
 	if [[ $exp == $dataset_exp ]] ; then
 		year1=${year1_exp}; year2=${year2_exp}; INDIR=${INDIR_EXP}; ens=${ens_exp}
-	fi
+	fi  
 
-	# select for reference
-	if [[ $exp == $dataset_ref ]] ; then
-			if [ "${ens_ref}" == "mean" ] ; then continue ; fi
-	        year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}; ens=${ens_ref}
-	fi
+    # select for reference
+    if [[ $exp == $dataset_ref ]] ; then
+        if [ "${ens_ref}" == "mean" ] ; then continue ; fi
+        if [ ${std_clim} -eq 1 ] ; then
+            echo "skip!"
+        else
+                year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}; ens=${ens_ref}
+        fi
 
 	#definition of the fullfile name
 	ZDIR=$OUTPUTDIR/Z500/$exp
@@ -147,15 +150,15 @@ for exp in $exps ; do
 		time . $PROGDIR/script/ecmwf_z500_prepare.sh $exp $ens $year1 $year2 $z500filename
 	fi
 
-	for season in $seasons ; do
-		echo $season
-		# EOFs
-		#time . $PROGDIR/script/eof_fast.sh $exp $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
-		# blocking
-		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
-		# regimes
-		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
-	done
+   for season in $seasons ; do
+        echo $season
+        # EOFs
+        #time . $PROGDIR/script/eof_fast.sh $exp $ens $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+        # blocking
+        time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+        # regimes
+        #time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+    done
 
 done
 ################################################
@@ -163,20 +166,20 @@ done
 ################################################
 
 for season in $seasons ; do
-	echo $season
-	# EOFs figures
-	#time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
-	# blocking figures
-	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
-	# regimes figures
-	#time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $year1_exp $year2_exp $dataset_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
-
+    echo $season
+    # EOFs figures
+    #time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+    # blocking figures
+    time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+    # regimes figures
+    #time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 done
+
 
 ################################################
-#--------------Ensemble mean-------------------#
+#-------------Blocking Ensemble mean-----------#
 ################################################
 
 if [ "${ens_list}" != "NO" ] ; then

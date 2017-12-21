@@ -17,7 +17,7 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 #-----------------Loading datasets-----------------------#
 ##########################################################
 
-#open reference field
+#open field
 for (field in fieldlist) {	
 
     #use file.builder function

@@ -3,7 +3,7 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(exp,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters)
+miles.regimes.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters)
 {
 
 #t0
@@ -21,8 +21,8 @@ ylim=c(30,87.5)
 
 
 #setting up main variables
-REGIMESDIR=file.path(FILESDIR,exp,"Regimes",paste0(year1,"_",year2),season)
-dir.create(REGIMESDIR,recursive=T)
+#REGIMESDIR=file.path(FILESDIR,exp,"Regimes",paste0(year1,"_",year2),season)
+#dir.create(REGIMESDIR,recursive=T)
 
 #setting up time domain
 years=year1:year2
@@ -77,7 +77,8 @@ print(t1)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-savefile1=paste(REGIMESDIR,"/RegimesPattern_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+#savefile1=paste(REGIMESDIR,"/RegimesPattern_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
+savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
 
 # dimensions definition
 TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
@@ -111,7 +112,7 @@ nc_close(ncfile1)
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters")
+name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -123,7 +124,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.fast(exp,year1,year2,season,z500filename,FILESDIR,nclusters)
+        miles.regimes.fast(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters)
     }
 }
 
