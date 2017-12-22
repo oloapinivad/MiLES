@@ -21,8 +21,10 @@ if (web==1)
 packages=c("maps","ncdf4","PCICt","akima","mapproj")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 
-if (as.numeric(substr(packageDescription("maps")$Version,1,3))<3) {
-	new.packages=c(new.packages,"maps")
+if (any(new.packages=="maps")==FALSE) { 
+	if (as.numeric(substr(packageDescription("maps")$Version,1,3))<3) {
+		new.packages=c(new.packages,"maps")
+	}
 } 
 
 if (length(new.packages)==0) {print("All packages are there, no need to install anything")}
@@ -34,11 +36,6 @@ print(paste("Installing... ",pack))
 install.packages(pack,RLIBLOC,repos="http://cran.irsn.fr",type="source")
 }
 
-#for (pack in packages)
-#{
-#print(paste("Installing... ",pack))
-#new.packages(pack,repos="http://cran.irsn.fr",type="source")
-#}
 }
 
 
@@ -54,4 +51,11 @@ packageinstall=paste(R_PACKDIR,"/",pack,sep="")
 install.packages(packageinstall,repos=NULL,type="source")
 }
 }
+
+for (pack in new.packages) {
+	if (pack %in% installed.packages()[,"Package"]==FALSE) {
+		stop("SOME PACKAGE HAS NOT BEEN INSTALLED, ABORTING...") 
+	}
+}
+
 
