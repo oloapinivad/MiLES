@@ -306,8 +306,12 @@ return(field) }
 print(paste("opening file:",namefile))
 a=nc_open(namefile)
 
-#load axis
-naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+#load axis: old version, loading the variable dimensions with a max of 4 dimensions 
+#it showed some issues with the time_bnds variable appearing in some NetCDF file
+#naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+
+#load axis: updated version, looking for dimension directly stored inside the variable
+naxis=unlist(lapply(a$var[[namevar]]$dim,function (x) x["name"] ))
 for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
 
 print("selecting years and months")
