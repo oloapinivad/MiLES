@@ -120,7 +120,7 @@ fig.builder<-function(FIGDIR,dir_name,file_name,dataset,ens,year1,year2,season,o
                 filedir=file.path(FIGDIR,dataset,dir_name,paste0(year1,"_",year2),season)
                 figname=paste(file_name,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
         } else {
-                filedir=file.path(FIGDIR,dataset,dir_name,paste0(year1,"_",year2),season)
+                filedir=file.path(FIGDIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
                 figname=paste(file_name,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
         }
 

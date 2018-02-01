@@ -25,8 +25,8 @@ ECMWF=1
 #loop to create the ensembles
 year1_exp=1982
 year2_exp=2011
-dataset_exp="S4"
-ens_list=$(seq -f "%02g" 24 24 )
+dataset_exp="S5AMIP"
+ens_list=$(seq -f "%02g" 10 24 )
 #ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results

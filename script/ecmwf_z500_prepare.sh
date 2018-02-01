@@ -45,10 +45,20 @@ if [ "${dataset}" == "S5" ] ; then
     expected_input_name=*/*S5*_${ensemble}.grb
 fi
 
+if [ "${dataset}" == "S4AMIP" ] ; then
+    INDIR=/gpfs/scratch/ms/it/ccpd/mars/${dataset}
+    expected_input_name=*/*S0*_${ensemble}.grb
+fi
+
 
 if [ "${dataset}" == "S5LR" ] ; then
     INDIR=/scratch/rd/nedd/regimes/S5_24h_nov_lowres
     expected_input_name=*/*S5*_${ensemble}.grb
+fi
+
+if [ "${dataset}" == "S5AMIP" ] ; then
+    INDIR=/gpfs/scratch/ms/it/ccpd/mars/${dataset}
+    expected_input_name=*/*S0*_${ensemble}.grb
 fi
 
 echo $INDIR

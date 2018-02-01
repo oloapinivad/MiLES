@@ -16,7 +16,7 @@ year1=1982
 year2=2011
 season="DJF"
 dataset_ref="ERAI"
-datasets=c(dataset_ref,"S3","S4","S5LR","S5")
+datasets=c(dataset_ref,"S3","S4","S4AMIP","S5LR","S5")
 
 # Also, using the ensfinder function you may set how many and which ensemble members you have
 # Remember that enslist="NO" means that there is no memberes (this is the default)  
@@ -26,7 +26,7 @@ ensfinder<-function(dataset) {
 	enslist="NO"
 	
 	#example cases for ECMWG data
-    if (dataset=="S3" | dataset=="S4" | dataset=="S5" | dataset=="S5LR") {
+    if (dataset=="S3" | dataset=="S4" | dataset=="S4AMIP" | dataset=="S5" | dataset=="S5LR") {
         enslist=c("00","01","02","03","04","05","06","07","08","09",seq(11,24))
     }
 return(enslist)

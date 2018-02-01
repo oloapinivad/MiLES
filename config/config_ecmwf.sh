@@ -10,7 +10,7 @@ if [ "$(hostname)" == "lorenzo" ] ; then
 	cdo=/usr/local/apps/cdo/1.8.2/bin/cdo
 	Rscript=/usr/local/apps/R/3.1.1/bin/Rscript
 else
-	cdo=/usr/local/apps/cdo/1.7.2/bin/cdo
+	cdo=/usr/local/apps/cdo/1.8.2/bin/cdo
 	Rscript=/usr/local/apps/R/3.3.1/bin/Rscript
 fi
 
