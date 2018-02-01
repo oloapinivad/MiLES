@@ -16,7 +16,7 @@ year1=1982
 year2=2011
 season="DJF"
 dataset_ref="ERAI"
-datasets=c(dataset_ref,"S3","S4","S4AMIP","S5LR","S5")
+datasets=c(dataset_ref,"S3","S4","S4AMIP","S5LR","S5","S5AMIP","S5AMIP_ERAI")
 
 # Also, using the ensfinder function you may set how many and which ensemble members you have
 # Remember that enslist="NO" means that there is no memberes (this is the default)  
@@ -25,16 +25,21 @@ ensfinder<-function(dataset) {
 	#default
 	enslist="NO"
 	
-	#example cases for ECMWG data
-    if (dataset=="S3" | dataset=="S4" | dataset=="S4AMIP" | dataset=="S5" | dataset=="S5LR") {
+	#example cases for ECMWF data
+    if (dataset=="S3" | dataset=="S4" | dataset=="S4AMIP" | dataset=="S5" | dataset=="S5LR" | dataset=="S5AMIP") {
         enslist=c("00","01","02","03","04","05","06","07","08","09",seq(11,24))
     }
+	
+	if (dataset=="S5AMIP_ERAI") {
+		enslist=c("00","01","02","03","04")
+	}
+
 return(enslist)
 }
 
 #you can also change sectors and variables, although is not reccommended. 
 SECTORS=c("Euro","Azores","Greenland","FullPacific")
-variables=c("BlockEvents","DurationEvents","NumberEvents")
+variables=c("CN","ACN","BlockEvents","DurationEvents","NumberEvents")
 
 ##########################################################
 #----------No Need to Touch below this line--------------#
@@ -43,6 +48,7 @@ variables=c("BlockEvents","DurationEvents","NumberEvents")
 #source of config and functions
 source(paste0(MILESDIR,"/config/config.R"))
 source(paste0(MILESDIR,"/script/basis_functions.R"))
+KOL=palette0(length(datasets))
 
 #create folders
 DATADIR=file.path(BASEDIR,"files")
@@ -84,9 +90,11 @@ PROJ="azequalarea"
 ORIENT=c(90,0,0)
 lettering=c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(l)")
 
+if (length(datasets)<=5) {shape_fig=c(length(datasets),2)} else {shape_fig=c(ceiling(length(datasets)/2),4)}
+
 name=paste(FIGDIR,"/",variable,"_MultiModelComparison_",year1,"_",year2,"_",season,".pdf",sep="")
-pdf(file=name,width=5*length(datasets)*2,height=10*2,onefile=T,bg="white",family='Helvetica')
-par(mfrow=c(2,length(datasets)),mar=c(6,6,6,6),oma=c(1,1,6,8),mgp=c(4,1,0),cex.main=6)
+pdf(file=name,width=10*shape_fig[1],height=10*shape_fig[2],onefile=T,bg="white",family='Helvetica')
+par(mfrow=c(shape_fig[2],shape_fig[1]),mar=c(6,6,6,6),oma=c(1,1,6,8),mgp=c(4,1,0),cex.main=6)
 
 for (dataset in datasets) {
 	field=apply(get(paste(variable,dataset,sep="_")),c(1,2),mean,na.rm=T)

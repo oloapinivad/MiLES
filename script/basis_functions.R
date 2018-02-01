@@ -52,7 +52,7 @@ return(field)
 sector.details<-function(SECTOR) {
 
     if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
-    if (SECTOR=="Azores") {lons=c(-60,-20); lats=c(30,40); namesec="Central Atlantic"}
+    if (SECTOR=="Azores") {lons=c(-70,-10); lats=c(30,40); namesec="Central Atlantic"}
     if (SECTOR=="Greenland") {lons=c(-65,-15); lats=c(62.5,72.5); namesec="Greenland"}
     if (SECTOR=="FullPacific") {lons=c(130,-150); lats=c(60,75); namesec="North Pacific"}
     if (SECTOR=="FullPacific2") {lons=c(130,210); lats=c(60,75); namesec="North Pacific"}

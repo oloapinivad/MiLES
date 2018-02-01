@@ -75,4 +75,3 @@ palette3=colorRampPalette(c("darkblue","blue","dodgerblue","white","orange","red
 #additional color palette used for extradiagnostics histogram
 KOL=c("black","darkgreen","blue","darkorange","red","violet","grey50","black")
 
-

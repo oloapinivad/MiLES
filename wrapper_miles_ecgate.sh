@@ -28,8 +28,8 @@ ECMWF=1
 #loop to create the ensembles
 year1_exp=1982
 year2_exp=2011
-dataset_exp="S5AMIP"
-ens_list=$(seq -f "%02g" 10 24 )
+dataset_exp="S5AMIP_ERAI"
+ens_list=$(seq -f "%02g" 0 4 )
 #ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results
@@ -132,6 +132,9 @@ for exp in $exps ; do
         else
                 year1=${year1_ref}; year2=${year2_ref}; INDIR=${INDIR_REF}; ens=${ens_ref}
         fi
+	fi
+	
+	echo $exp $year1 $year2
 
 	#definition of the fullfile name
 	ZDIR=$OUTPUTDIR/Z500/$exp
@@ -161,6 +164,7 @@ for exp in $exps ; do
     done
 
 done
+
 ################################################
 #-----------------Figures----------------------#
 ################################################
@@ -194,6 +198,7 @@ if [ "${ens_list}" != "NO" ] ; then
 	
 	done
 fi
+
 
 #clean spourious plots
 rm -f $PROGDIR/Rplots.pdf
