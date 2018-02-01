@@ -12,6 +12,15 @@ t0<-proc.time()
 years=year1:year2
 timeseason=season2timeseason(season)
 
+#define folders using file.builder function (takes care of ensembles)
+savefile1=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
+
+#check if data is already there to avoid re-run
+if (file.exists(savefile1) & file.exists(savefile2)) {
+	stop("Actually requested blocking data is already there! Skipping... Remove data if you want to re-run!") 
+}
+
 #new file opening
 nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
@@ -187,10 +196,6 @@ print(tf)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-
-#define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
-savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
 
 #which fieds to plot/save
 fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")

@@ -5,22 +5,43 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.eof.figures<-function(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
+miles.eof.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
 {
 
 #R configuration file 
 source(CFGSCRIPT)
 
 #correct folder to experiment dependent
-EOFDIR=file.path(FILESDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
-FIGDIREOF=file.path(FIGDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
+if (ens=="NO") {
+    EOFDIR=file.path(FILESDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
+    FIGDIREOF=file.path(FIGDIR,exp,"EOFs",tele,paste0(year1,"_",year2),season)
+    nomefile_anomalies=paste0(EOFDIR,"/Z500_monthly_anomalies_",exp,"_",year1,"_",year2,"_",season,".nc")
+    nomefile_variance=paste0(EOFDIR,"/",tele,"_Z500_eigenvalues_",exp,"_",year1,"_",year2,"_",season,".nc")
+} else {
+    EOFDIR=file.path(FILESDIR,exp,ens,"EOFs",tele,paste0(year1,"_",year2),season)
+    FIGDIREOF=file.path(FIGDIR,exp,ens,"EOFs",tele,paste0(year1,"_",year2),season)
+    nomefile_anomalies=paste0(EOFDIR,"/Z500_monthly_anomalies_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+    nomefile_variance=paste0(EOFDIR,"/",tele,"_Z500_eigenvalues_",exp,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+}
 dir.create(FIGDIREOF,recursive=T)
 
 #check path for reference dataset
 #if (dataset_ref=="ERAINTERIM" & year1_ref=="1979" & year2_ref=="2014")
-if (REFDIR!=FILESDIR) 
- 	{REFDIR=file.path(REFDIR,"EOFs",tele,season) } else {REFDIR=file.path(FILESDIR,dataset_ref,"EOFs",tele,paste0(year1_ref,"_",year2_ref),season)}
-
+if (REFDIR!=FILESDIR) {
+    REFDIR=file.path(REFDIR,"EOFs",tele,season) 
+    nomefile_ref_anomalies=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+    nomefile_ref_variance=paste0(REFDIR,"/",tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+} else {
+    if (ens=="NO") {
+    REFDIR=file.path(FILESDIR,dataset_ref,"EOFs",tele,paste0(year1_ref,"_",year2_ref),season)
+    nomefile_ref_anomalies=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+    nomefile_ref_variance=paste0(REFDIR,"/",tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+    } else {
+    REFDIR=file.path(FILESDIR,dataset_ref,ens_ref,"EOFs",tele,paste0(year1_ref,"_",year2_ref),season)
+    nomefile_ref_anomalies=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",ens_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+    nomefile_ref_variance=paste0(REFDIR,"/",tele,"_Z500_eigenvalues_",dataset_ref,"_",ens_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+    }
+}
 
 #EOFs to plot (depends on how many computed by CDO!)
 neofs=4
@@ -30,17 +51,13 @@ neofs=4
 ##########################################################
 
 #loading anomalies and variances of experiment
-nomefile=paste0(EOFDIR,"/Z500_monthly_anomalies_",exp,"_",year1,"_",year2,"_",season,".nc")
-anomalies_exp=ncdf.opener(nomefile,"zg","lon","lat",rotate="full")
-nomefile=paste0(EOFDIR,"/",tele,"_Z500_eigenvalues_",exp,"_",year1,"_",year2,"_",season,".nc")
-variance=ncdf.opener(nomefile,"zg")
+anomalies_exp=ncdf.opener(nomefile_anomalies,"zg","lon","lat",rotate="full")
+variance=ncdf.opener(nomefile_variance,"zg")
 variance_exp=round(variance[1:neofs]/sum(variance)*100,1)
 
 #loading reference field
-nomefile=paste0(REFDIR,"/Z500_monthly_anomalies_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-anomalies_ref=ncdf.opener(nomefile,"zg","lon","lat",rotate="full")
-nomefile=paste0(REFDIR,"/",tele,"_Z500_eigenvalues_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
-variance=ncdf.opener(nomefile,"zg")
+anomalies_ref=ncdf.opener(nomefile_ref_anomalies,"zg","lon","lat",rotate="full")
+variance=ncdf.opener(nomefile_ref_variance,"zg")
 variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
 
 
@@ -49,18 +66,20 @@ variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
 ##########################################################
 
 #plot properties
-info_exp=paste(exp,year1,"-",year2,season)
-info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
+if (ens=="NO") {info_exp=paste(exp,year1,"-",year2,season)} else {info_exp=paste(exp,ens,year1,"-",year2,season)}
+if (ens_ref=="NO") {info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)} else {info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)}
 lev_field=seq(-150,150,20)
 lev_diff=seq(-95,95,10)
-nlev_field=length(lev_field)-1
-nlev_diff=length(lev_diff)-1
 
 #loop on number of EOFs
 for (neof in 1:neofs) {
 
 	#loading PCs of experiment and normalize
-	nomefile=paste(EOFDIR,"/",tele,"_monthly_timeseries_",exp,"_",year1,"_",year2,"_",season,"_0000",neof-1,".nc",sep="")
+    if (ens=="NO") {
+        nomefile=paste(EOFDIR,"/",tele,"_monthly_timeseries_",exp,"_",year1,"_",year2,"_",season,"_0000",neof-1,".nc",sep="")
+    } else {
+        nomefile=paste(EOFDIR,"/",tele,"_monthly_timeseries_",exp,"_",ens,"_",year1,"_",year2,"_",season,"_0000",neof-1,".nc",sep="")
+    }
 	timeseries_exp0=ncdf.opener(nomefile,"zg")
 	timeseries_exp=standardize(timeseries_exp0)
 
@@ -69,7 +88,11 @@ for (neof in 1:neofs) {
 	linear_exp=apply(anomalies_exp,c(1,2),function(linreg) lin.fit(as.matrix(timeseries_exp,ncol=1),linreg)$coefficients)
 	
 	#loading PC of reference and normalize
-	nomefile=paste(REFDIR,"/",tele,"_monthly_timeseries_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
+    if (ens=="NO") {
+	    nomefile=paste(REFDIR,"/",tele,"_monthly_timeseries_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
+    } else {
+        nomefile=paste(REFDIR,"/",tele,"_monthly_timeseries_",dataset_ref,"_",ens_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
+    }
 	timeseries_ref0=ncdf.opener(nomefile,"zg")
 	timeseries_ref=standardize(timeseries_ref0)
 
@@ -89,18 +112,15 @@ for (neof in 1:neofs) {
 	title_name=paste0(region," EOF",neof)
 
 	#final plot production
-	figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type)
+    if (ens=="NO") {
+	    figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type)
+    } else {
+        figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type)
+    }
 	print(figname)
 
 	# Chose output format for figure - by JvH
-        if (tolower(output_file_type) == "png") {
-           png(filename = figname, width=png_width, height=png_height)
-        } else if (tolower(output_file_type) == "pdf") {
-            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
-        } else if (tolower(output_file_type) == "eps") {
-            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
-            postscript(figname)
-        }
+    open.plot.device(figname,output_file_type,CFGSCRIPT)
 
 	#plot properties
 	par(plotpar)
@@ -135,7 +155,7 @@ for (neof in 1:neofs) {
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","dataset_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","tele")
+name_args=c("exp","ens","year1","year2","dataset_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","tele")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -148,7 +168,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.eof.figures(exp,year1,year2,dataset_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
+        miles.eof.figures(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
      }
 }
 

@@ -510,6 +510,34 @@ return(mget(c("field",naxis)))
 #--------------Plotting functions------------------------#
 ##########################################################
 
+# function to open devices
+open.plot.device <- function(figname,output_file_type,CFGSCRIPT,special=FALSE) {
+    # Chose output format for figure - by JvH
+    source(CFGSCRIPT)
+    if (special==FALSE) {
+     if (tolower(output_file_type) == "png") {
+           png(filename = figname, width=png_width, height=png_height)
+        } else if (tolower(output_file_type) == "pdf") {
+            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
+        } else if (tolower(output_file_type) == "eps") {
+            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
+            postscript(figname)
+        }
+    }
+    
+    # special case for TM90 
+    if (special==TRUE) {
+        if (tolower(output_file_type) == "png") {
+            png(filename = figname, width=png_width/af, height=png_height*af/2)
+        } else if (tolower(output_file_type) == "pdf") {
+            pdf(file=figname,width=pdf_width/af,height=pdf_height*af/2,onefile=T)
+        } else if (tolower(output_file_type) == "eps") {
+            setEPS(width=pdf_width/af,height=pdf_height*af/2,onefile=T,paper="special")
+            postscript(figname)
+        }
+    }
+}
+
 
 #extensive filled.contour function 
 filled.contour3 <-

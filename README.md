@@ -25,8 +25,8 @@ other MiLES-generated data
 Current version includes:
 
 1. 	**1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere.
-        Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
-        Full timeseries and climatologies are provided in NetCDF4 Zip format.
+    Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
+    Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
 2. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
@@ -91,9 +91,12 @@ Packages are also included in **MiLES** and can be installed offline.
 
 If you are aware of other way to implement this 5 passages without using those packages, please contact me.
 
-The installation of some packages requires specifically gfortran-4.8: there is an issue known on 
-Mac OS X (10.11 and later at least) which requires a few turnarounds. See here for help:
-http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on-gfortran-4-8
+There are some issues on Mac Os X (10.11 and later at least) related to gfortran. It may happen that 
+some packages requires specifically gfortran-4.8 (see here for help:
+http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on-gfortran-4-8)
+and that you may find some issue if you install gfortran via MacPorts (see here for help: 
+https://stackoverflow.com/questions/29992066/rcpp-warning-directory-not-found-for-option-l-usr-local-cellar-gfortran-4-8)
+
 
 -----------------
 

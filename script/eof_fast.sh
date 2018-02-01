@@ -8,15 +8,16 @@
 # -----------------------------------------------#
 
 exp=$1
-year1=$2
-year2=$3
-seasons=$4
-teles=$5
-z500filename=$6
-FILESDIR=$7
+ens=$2
+year1=$3
+year2=$4
+seasons=$5
+teles=$6
+z500filename=$7
+FILESDIR=$8
 
 DATADIR=$(dirname $z500filename)
-TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
+TEMPDIR=$DATADIR/tempdir_${exp}_${ens}_$RANDOM
 mkdir -p $TEMPDIR
 
 #number of EOFs
@@ -30,9 +31,15 @@ for season in $seasons ; do
 	echo $season
 
 	#fix folders and file names
-	EOFDIR=$FILESDIR/$exp/EOFs/${tele}/${year1}_${year2}/${season}
-	mkdir -p $EOFDIR
+    if [ "${ens}" == "NO" ] ; then
+	    EOFDIR=$FILESDIR/$exp/EOFs/${tele}/${year1}_${year2}/${season}
         suffix=${exp}_${year1}_${year2}_${season}
+    else 
+        EOFDIR=$FILESDIR/$exp/$ens/EOFs/${tele}/${year1}_${year2}/${season}
+        suffix=${exp}_${ens}_${year1}_${year2}_${season}
+    fi
+
+	mkdir -p $EOFDIR
 
 	#select seasons, compute monthly anomalies
         $cdonc selseas,$season $TEMPDIR/monthly_file.nc $TEMPDIR/season_monthly.nc
@@ -102,7 +109,7 @@ for season in $seasons ; do
 
 	# evalute grid area weights (implicitely used in eofs) and compute principal components
 	$cdonc gridweights $TEMPDIR/box_anomalies_monthly.nc $TEMPDIR/ww.nc
-        $cdo4 -r eofcoeff $EOFDIR/${tele}_Z500_pattern_${suffix}.nc -mul $TEMPDIR/ww.nc $TEMPDIR/box_anomalies_monthly.nc $EOFDIR/${tele}_monthly_timeseries_${suffix}_
+    $cdo4 -r eofcoeff $EOFDIR/${tele}_Z500_pattern_${suffix}.nc -mul $TEMPDIR/ww.nc $TEMPDIR/box_anomalies_monthly.nc $EOFDIR/${tele}_monthly_timeseries_${suffix}_
 
 done
 done
