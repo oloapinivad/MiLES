@@ -373,14 +373,16 @@ if (dimensions>1)
 	if (is.null(namelon)) {
 		xlist=c("lon","Lon","longitude","Longitude")
 		if (any(xlist %in% naxis))  {
-			  ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
+			#ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
+            ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {stop("No lon found")} 
 		} else {
 		ics=ncvar_get(a,namelon)
 		}
 	if (is.null(namelat)) {
 		ylist=c("lat","Lat","latitude","Latitude")
 		if (any(ylist %in% naxis))  {
-			ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")}
+			#ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")} 
+            ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {stop("No lat found")}
 		} else {
 		ipsilon=ncvar_get(a,namelat)
 		}
@@ -395,8 +397,11 @@ if (dimensions>1)
         #exporting variables to the main program
         assign("ics",ics, envir = .GlobalEnv)
         assign("ipsilon",ipsilon, envir = .GlobalEnv)
-	assign(names(a$dim[which(naxis %in% xlist)]),ics)
-	assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
+        assign(naxis[naxis %in% xlist],ics)
+        assign(naxis[naxis %in% ylist],ipsilon)
+	    #assign(names(a$dim[which(naxis %in% xlist)]),ics)
+	    #assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
+        
 
 }
 
