@@ -53,8 +53,12 @@ if (tele=="NAO") {xlim=c(-90,40); ylim=c(20,85)}
 if (tele=="AO") {xlim=c(0,360); ylim=c(20,85)}
 
 #computed EOFs
-EOFS=eofs(ics,ipsilon,Z500anom,neof=neofs,xlim,ylim,method="SVD",do_standardize=T,do_regression=F)
+EOFS=eofs(ics,ipsilon,Z500anom,neof=neofs,xlim,ylim,method="SVD",do_standardize=T,do_regression=T)
 COEFF=eofs.coeff(ics,ipsilon,Z500anom,EOFS,do_standardize=T)
+
+#expand EOF pattern to save it
+expanded_pattern=EOFS$regression*NA
+expanded_pattern[whicher(ics,xlim[1]):whicher(ics,xlim[2]),whicher(ipsilon,ylim[1]):whicher(ipsilon,ylim[2]),]=EOFS$pattern$z
 
 t1=proc.time()-t0
 print(t1)
@@ -81,23 +85,27 @@ TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 monthtime=as.numeric(etime$data[etime$day==15])
 
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees", EOFS$pattern$x)
-#x0 <- ncdim_def( "Lon0", "degrees", 0)
-y <- ncdim_def( "Lat", "degrees", EOFS$pattern$y)
-#y0 <- ncdim_def( "Lat0", "degrees", 0)
+x <- ncdim_def( "Lon", "degrees", ics)
+y <- ncdim_def( "Lat", "degrees", ipsilon)
 z <- ncdim_def( "Lev", "Pa", LEVEL)
 ef <- ncdim_def( "PC", "-", 1:neofs)
 t <- ncdim_def( "Time", TIME, monthtime,unlim=T)
 
-unit="m"; longvar="EOFs pattern"
+unit="m"; longvar="EOFs Loading Pattern"
 pattern_ncdf=ncvar_def("Patterns",unit,list(x,y,z,ef),-999,longname=longvar,prec="single",compression=1)
+
+unit="m"; longvar="EOFs Linear Regressions"
+regression_ncdf=ncvar_def("Regressions",unit,list(x,y,z,ef),-999,longname=longvar,prec="single",compression=1)
+
 unit=paste0("0-",neofs); longvar="PCs timeseries"
 pc_ncdf=ncvar_def("PCs",unit,list(ef,t),-999,longname=longvar,prec="single",compression=1)
+
 unit="%"; longvar="EOFs variance"
 variance_ncdf=ncvar_def("Variances",unit,list(ef),-999,longname=longvar,prec="single",compression=1)
 
-ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf))
-ncvar_put(ncfile1, "Patterns", EOFS$pattern$z, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf))
+ncvar_put(ncfile1, "Patterns", expanded_pattern, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+ncvar_put(ncfile1, "Regressions", EOFS$regression, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
 ncvar_put(ncfile1, "Variances", EOFS$variance, start = c(1),  count = c(-1))
 nc_close(ncfile1)
