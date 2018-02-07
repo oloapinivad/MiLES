@@ -1078,6 +1078,39 @@ out=list(pattern=pattern,coeff=coefficient,variance=variance,regression=regressi
 return(out)
 }
 
+eofs.coeff<-function(lon,lat,field,eof_object,do_standardize=F)
+{
+# Computes expansion coefficient (i.e. PCs) of a given dataset on the 
+# loading pattern of EOF previously computed
+# Works only on eof_object obtained with "eofs" function
+
+# Area weighting, based on the root of cosine
+print("Area Weighting...")
+ww=area.weight(lon,lat,root=T)
+wwfield=sweep(field,c(1,2),ww,"*")
+
+#selection of the box
+xlim=c(min(eof_object$pattern$x),max(eof_object$pattern$x));
+ylim=c(min(eof_object$pattern$y),max(eof_object$pattern$y))
+box=wwfield[whicher(lon,xlim[1]):whicher(lon,xlim[2]),whicher(lat,ylim[1]):whicher(lat,ylim[2]),]
+
+#transform 3D field in a matrix
+new_box=array(box,dim=c(dim(box)[1]*dim(box)[2],dim(box)[3]))
+new_pattern=array(eof_object$pattern$z,dim=c(dim(eof_object$pattern$z)[1]*dim(eof_object$pattern$z)[2],dim(eof_object$pattern$z)[3]))
+
+#projects the coefficients
+coef=(t(new_box)%*%new_pattern)
+
+#standardize
+if (do_standardize)
+                { coefficient=apply(coef,c(2),standardize) }
+                else
+                { coefficient=coef }
+
+print("Finalize...")
+return(coefficient)
+}
+
 
 regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim,alg="Hartigan-Wong")
 {

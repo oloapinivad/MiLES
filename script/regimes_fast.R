@@ -81,9 +81,14 @@ print("saving NetCDF climatologies...")
 savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
 
 # dimensions definition
-TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-LEVEL=50000
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+print(fulltime[2])
+#temporary check for seconds/days TO BE FIXED
+if (fulltime[2]==1) {tunit="days"}
+if (fulltime[2]==86400) {tunit="seconds"}
+TIME=paste(tunit, " since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+
+LEVEL=50000
 x <- ncdim_def( "Lon", "degrees", ics)
 x0 <- ncdim_def( "Lon0", "degrees", 0)
 y <- ncdim_def( "Lat", "degrees", ipsilon)
@@ -94,7 +99,7 @@ t <- ncdim_def( "Time", TIME, fulltime,unlim=T)
 
 unit="m"; longvar="Weather Regimes Pattern"
 pattern_ncdf=ncvar_def("Regimes",unit,list(x,y,z,cl),-999,longname=longvar,prec="single",compression=1)
-unit=paste0("0-",nclusters); longvar="Weather Regimes Cluster Undex"
+unit=paste0("0-",nclusters); longvar="Weather Regimes Cluster Index"
 cluster_ncdf=ncvar_def("Indices",unit,list(x0,y0,z,t),-999,longname=longvar,prec="single",compression=1)
 unit="%"; longvar="Weather Regimes Frequencies"
 frequencies_ncdf=ncvar_def("Frequencies",unit,list(cl),-999,longname=longvar,prec="single",compression=1)

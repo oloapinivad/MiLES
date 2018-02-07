@@ -1,0 +1,137 @@
+######################################################
+#-----EOFs routines computation for MiLES--------#
+#-------------P. Davini (Feb 2018)-------------------#
+######################################################
+miles.eofs.fast<-function(exp,ens,year1,year2,season,tele,z500filename,FILESDIR)
+{
+
+#standard defined 4 EOFs
+neofs=4
+
+#t0
+t0<-proc.time()
+
+#setting up time domain
+years=year1:year2
+timeseason=season2timeseason(season)
+
+#define folders using file.builder function (takes care of ensembles)
+savefile1=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",exp,ens,year1,year2,season)
+
+#check if data is already there to avoid re-run
+#if (file.exists(savefile1)) {
+#	stop("Actually requested EOFs data is already there! Skipping... Remove data if you want to re-run!") 
+#}
+
+#new file opening
+nomefile=z500filename
+fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
+print(str(fieldlist))
+
+#time array
+datas=fieldlist$time
+etime=power.date.new(datas)
+
+#declare variable
+Z500=fieldlist$field
+
+#monthly averaging
+print("monthly mean...")
+Z500monthly=apply(Z500,c(1,2),by,list(etime$month,etime$year),mean)
+Z500monthly=aperm(Z500monthly,c(2,3,1))
+
+#climatology
+print("climatological mean...")
+Z500clim=apply(Z500monthly,c(1,2),ave,rep(timeseason,length(years)))
+Z500clim=aperm(Z500clim,c(2,3,1))
+
+#monthly anomalies
+Z500anom=Z500monthly-Z500clim
+
+#select teleconnection region
+if (tele=="NAO") {xlim=c(-90,40); ylim=c(20,85)}
+if (tele=="AO") {xlim=c(0,360); ylim=c(20,85)}
+
+#computed EOFs
+EOFS=eofs(ics,ipsilon,Z500anom,neof=neofs,xlim,ylim,method="SVD",do_standardize=T,do_regression=F)
+COEFF=eofs.coeff(ics,ipsilon,Z500anom,EOFS,do_standardize=T)
+
+t1=proc.time()-t0
+print(t1)
+
+
+##########################################################
+#------------------------Save to NetCDF------------------#
+##########################################################
+
+#saving output to netcdf files
+print("saving NetCDF climatologies...")
+
+# dimensions definition
+LEVEL=50000
+fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+
+print(fulltime[2])
+#temporary check for seconds/days TO BE FIXED
+if (fulltime[2]==1) {tunit="days"}
+if (fulltime[2]==86400) {tunit="seconds"}
+TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+
+#monthlu specific time
+monthtime=as.numeric(etime$data[etime$day==15])
+
+LEVEL=50000
+x <- ncdim_def( "Lon", "degrees", EOFS$pattern$x)
+#x0 <- ncdim_def( "Lon0", "degrees", 0)
+y <- ncdim_def( "Lat", "degrees", EOFS$pattern$y)
+#y0 <- ncdim_def( "Lat0", "degrees", 0)
+z <- ncdim_def( "Lev", "Pa", LEVEL)
+ef <- ncdim_def( "PC", "-", 1:neofs)
+t <- ncdim_def( "Time", TIME, monthtime,unlim=T)
+
+unit="m"; longvar="EOFs pattern"
+pattern_ncdf=ncvar_def("Patterns",unit,list(x,y,z,ef),-999,longname=longvar,prec="single",compression=1)
+unit=paste0("0-",neofs); longvar="PCs timeseries"
+pc_ncdf=ncvar_def("PCs",unit,list(ef,t),-999,longname=longvar,prec="single",compression=1)
+unit="%"; longvar="EOFs variance"
+variance_ncdf=ncvar_def("Variances",unit,list(ef),-999,longname=longvar,prec="single",compression=1)
+
+ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf))
+ncvar_put(ncfile1, "Patterns", EOFS$pattern$z, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
+ncvar_put(ncfile1, "Variances", EOFS$variance, start = c(1),  count = c(-1))
+nc_close(ncfile1)
+
+
+}
+
+# REAL EXECUTION OF THE SCRIPT 
+# read command line
+args <- commandArgs(TRUE)
+
+# number of required arguments from command line
+name_args=c("exp","ens","year1","year2","season","tele","z500filename","FILESDIR","PROGDIR")
+req_args=length(name_args)
+
+# print error message if uncorrect number of command 
+if (length(args)!=0) {
+    if (length(args)!=req_args) {
+        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
+        print(name_args)
+    } else {
+# when the number of arguments is ok run the function()
+        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        source(paste0(PROGDIR,"/script/basis_functions.R"))
+        miles.eofs.fast(exp,ens,year1,year2,season,tele,z500filename,FILESDIR)
+    }
+}
+
+
+z500filename="/work/users/paolo/scratch/miles/Z500/ERAINTERIM/Z500_ERAINTERIM_fullfile.nc"
+season="DJF"
+year1=1980
+year2=1990
+tele="NAO"
+ens="NO"
+exp="ERAINTERIM"
+FILESDIR="/home/paolo/scratch/miles/files"

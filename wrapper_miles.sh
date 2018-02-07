@@ -26,16 +26,17 @@ ECMWF=0
 # set also years 
 
 #loop to create the ensembles
-year1_exp=1980
-year2_exp=2010
-dataset_exp="ERAINTERIM"
+year1_exp=1979
+year2_exp=2014
+dataset_exp="CMCC-CM2"
 #ens_list=$(seq -f "%02g" 24 24 )
 ens_list="NO"
 
 # INDIR_EXP ->data folder: all the geopotential height data should be here
 # NB: this is a folder structure used in my local machine
 # it is not used when you use ECMWF=1
-INDIR_EXP=/home/paolo/work/DATA/CMIP5/${dataset_exp}/HIST/r1/day/Z500
+#INDIR_EXP=/home/paolo/work/DATA/CMIP5/${dataset_exp}/HIST/r1/day/Z500
+INDIR_EXP=/home/paolo/scratch/irene
 if [ "${dataset_exp}" == NCEP ] || [ "${dataset_exp}" == ERA40 ] || [ "${dataset_exp}" == ERAINTERIM  ] || [ "${dataset_exp}" == MERRA  ] ; then
     INDIR_EXP=/home/paolo/work/DATA/${dataset_exp}/day/Z500
 fi
@@ -175,11 +176,11 @@ for exp in $exps ; do
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		#time . $PROGDIR/script/eof_fast.sh $exp $ens $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+		time . $PROGDIR/script/eof_fast.sh $exp $ens $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
 		# blocking
-		#time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
-		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+		time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done
 
 done
