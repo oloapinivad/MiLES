@@ -2,7 +2,7 @@
 #-----EOFs routines computation for MiLES--------#
 #-------------P. Davini (Feb 2018)-------------------#
 ######################################################
-miles.eofs.fast<-function(exp,ens,year1,year2,season,tele,z500filename,FILESDIR)
+miles.eofs.fast<-function(exp,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR)
 {
 
 #standard defined 4 EOFs
@@ -134,12 +134,3 @@ if (length(args)!=0) {
     }
 }
 
-
-z500filename="/work/users/paolo/scratch/miles/Z500/ERAINTERIM/Z500_ERAINTERIM_fullfile.nc"
-season="DJF"
-year1=1980
-year2=1990
-tele="NAO"
-ens="NO"
-exp="ERAINTERIM"
-FILESDIR="/home/paolo/scratch/miles/files"

@@ -255,7 +255,7 @@ power.date.30day<-function(season,ANNO1,ANNO2)
 ##########################################################
 
 #function to open ncdf files (much more refined, with CDO-based interpolation)
-ncdf.opener<-function(namefile,namevar=NULL,namelon="lon",namelat="lat",rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
+ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
 {
 #function to open netcdf files. It uses ncdf4 library. support only 1D (t), 2D (x,y) or 3D (x,y,t) data in any netcdf format.
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
@@ -304,27 +304,67 @@ if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
 #check for dimensions (presence or not of time dimension)
 dimensions=length(dim(daily))
 
+#load axis
+naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
+
+
 #if dimensions are multiple, get longitude, latitude
 #if needed, rotate and flip the array
+xlist=c("lon","Lon","longitude","Longitude")
+ylist=c("lat","Lat","latitude","Latitude")
 if (dimensions>1)
 {
-        #read attributes
-        ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
-        
-	#longitute rotation around Greenwich
+    #assign ics and ipsilon 
+    if (is.null(namelon)) {
+        if (any(xlist %in% naxis))  {
+              ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
+        } else {
+        ics=ncvar_get(a,namelon)
+        }
+    if (is.null(namelat)) {
+        if (any(ylist %in% naxis))  {
+            ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")}
+        } else {
+        ipsilon=ncvar_get(a,namelat)
+        }
+
+    print("flipping and rotating")
+        #longitute rotation around Greenwich
         if (rot)     {ics=rotation(ics); daily=rotation(daily) }
-        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
                 if (length(ics)>1)
                 {ipsilon=sort(ipsilon); daily=flipper(daily) }
-                else
-                {ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
 
         #exporting variables to the main program
         assign("ics",ics, envir = .GlobalEnv)
         assign("ipsilon",ipsilon, envir = .GlobalEnv)
+    assign(names(a$dim[which(naxis %in% xlist)]),ics)
+    assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
 
-} 
+}
 
+#if dimensions are multiple, get longitude, latitude
+#if needed, rotate and flip the array
+#if (dimensions>1)
+#{
+        ##read attributes
+        #ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
+        #
+	##longitute rotation around Greenwich
+        #if (rot)     {ics=rotation(ics); daily=rotation(daily) }
+        #if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+                #if (length(ics)>1)
+                #{ipsilon=sort(ipsilon); daily=flipper(daily) }
+                #else
+                #{ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
+#
+        ##exporting variables to the main program
+        #assign("ics",ics, envir = .GlobalEnv)
+        #assign("ipsilon",ipsilon, envir = .GlobalEnv)
+#
+#} 
+#
 if (dimensions>3)
 {stop("This file is more than 3D file")}
 
@@ -455,18 +495,18 @@ dimensions=length(dim(field))
 
 #if dimensions are multiple, get longitude, latitude
 #if needed, rotate and flip the array
+xlist=c("lon","Lon","longitude","Longitude")
+ylist=c("lat","Lat","latitude","Latitude")
 if (dimensions>1)
 {
 	#assign ics and ipsilon 
 	if (is.null(namelon)) {
-		xlist=c("lon","Lon","longitude","Longitude")
 		if (any(xlist %in% naxis))  {
 			  ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
 		} else {
 		ics=ncvar_get(a,namelon)
 		}
 	if (is.null(namelat)) {
-		ylist=c("lat","Lat","latitude","Latitude")
 		if (any(ylist %in% naxis))  {
 			ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")}
 		} else {

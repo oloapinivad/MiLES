@@ -20,7 +20,7 @@ nomefile_exp=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",exp,ens,year
     } else {
 
         #use file.builder to create the path of the blocking files
-        nomefile_ref=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"/EOFs_",dataset_ref,ens_ref,year1_ref,year2_ref,season)
+        nomefile_ref=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",dataset_ref,ens_ref,year1_ref,year2_ref,season)
     }
 
 #EOFs to plot (depends on how many computed by CDO!)
@@ -31,14 +31,12 @@ neofs=4
 ##########################################################
 
 #loading anomalies and variances of experiment
-anomalies_exp=ncdf.opener(nomefile_anomalies,"zg","lon","lat",rotate="full")
-variance=ncdf.opener(nomefile_variance,"zg")
-variance_exp=round(variance[1:neofs]/sum(variance)*100,1)
+variance_exp=ncdf.opener(nomefile_exp,"Variances",rotate="no")
+regressions_exp=ncdf.opener(nomefile_exp,"Regressions",rotate="no")
 
 #loading reference field
-anomalies_ref=ncdf.opener(nomefile_ref_anomalies,"zg","lon","lat",rotate="full")
-variance=ncdf.opener(nomefile_ref_variance,"zg")
-variance_ref=round(variance[1:neofs]/sum(variance)*100,1)
+variance_ref=ncdf.opener(nomefile_ref,"Variances",rotate="no")
+regressions_ref=ncdf.opener(nomefile_ref,"Regressions",rotate="no")
 
 
 ##########################################################
@@ -54,31 +52,8 @@ lev_diff=seq(-95,95,10)
 #loop on number of EOFs
 for (neof in 1:neofs) {
 
-	#loading PCs of experiment and normalize
-    if (ens=="NO") {
-        nomefile=paste(EOFDIR,"/",tele,"_monthly_timeseries_",exp,"_",year1,"_",year2,"_",season,"_0000",neof-1,".nc",sep="")
-    } else {
-        nomefile=paste(EOFDIR,"/",tele,"_monthly_timeseries_",exp,"_",ens,"_",year1,"_",year2,"_",season,"_0000",neof-1,".nc",sep="")
-    }
-	timeseries_exp0=ncdf.opener(nomefile,"zg")
-	timeseries_exp=standardize(timeseries_exp0)
-
-	#linear regression on Z500 anomalies for experiment (faster function)
-	#linear_exp=apply(anomalies_exp,c(1,2),function(linreg) lm(linreg ~ timeseries_exp,na.action=na.exclude)$coef[2])
-	linear_exp=apply(anomalies_exp,c(1,2),function(linreg) lin.fit(as.matrix(timeseries_exp,ncol=1),linreg)$coefficients)
-	
-	#loading PC of reference and normalize
-    if (ens=="NO") {
-	    nomefile=paste(REFDIR,"/",tele,"_monthly_timeseries_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
-    } else {
-        nomefile=paste(REFDIR,"/",tele,"_monthly_timeseries_",dataset_ref,"_",ens_ref,"_",year1_ref,"_",year2_ref,"_",season,"_0000",neof-1,".nc",sep="")
-    }
-	timeseries_ref0=ncdf.opener(nomefile,"zg")
-	timeseries_ref=standardize(timeseries_ref0)
-
-	#linear regression on Z500 anomalies for reference (faster lm.fit function)
-	#linear_ref=apply(anomalies_ref,c(1,2),function(linreg) lm(linreg ~ timeseries_ref,na.action=na.exclude)$coef[2])
-	linear_ref=apply(anomalies_ref,c(1,2),function(linreg) lin.fit(as.matrix(timeseries_ref,ncol=1),linreg)$coefficients)
+    linear_exp=regressions_exp[,,neof]
+    linear_ref=regressions_ref[,,neof]
 
 	#check and flip signs (to be in agreement with reference field)
 	if (cor(c(linear_ref),c(linear_exp))<0) {linear_exp=(-linear_exp)}
@@ -92,11 +67,12 @@ for (neof in 1:neofs) {
 	title_name=paste0(region," EOF",neof)
 
 	#final plot production
-    if (ens=="NO") {
-	    figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type)
-    } else {
-        figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type)
-    }
+    #if (ens=="NO") {
+	#    figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type)
+    #} else {
+    #    figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type)
+    #}
+    figname=fig.builder(FIGDIR,paste0("EOFs_beta/",tele),paste0("EOF",neof),exp,ens,year1,year2,season,output_file_type)
 	print(figname)
 
 	# Chose output format for figure - by JvH
@@ -106,29 +82,30 @@ for (neof in 1:neofs) {
 	par(plotpar)
 
 	im=plot.prepare(ics,ipsilon,linear_exp,proj=map_projection,lat_lim=lat_lim)
-        filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
-        mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
-        proj.addland(proj=map_projection)
+    filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+    mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
+    proj.addland(proj=map_projection)
 	text(120,85,paste("Variance Explained: ",variance_exp[neof],"%",sep=""),cex=2)
 
 	im=plot.prepare(ics,ipsilon,linear_ref,proj=map_projection,lat_lim=lat_lim)
-        filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
-        mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
-        proj.addland(proj=map_projection)
+    filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+    mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
+    proj.addland(proj=map_projection)
 	image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
 	text(120,85 ,paste("Variance Explained: ",variance_ref[neof],"%",sep=""),cex=2)
 
 	#delta field plot
-        im=plot.prepare(ics,ipsilon,linear_exp-linear_ref,proj=map_projection,lat_lim=lat_lim)        
+    im=plot.prepare(ics,ipsilon,linear_exp-linear_ref,proj=map_projection,lat_lim=lat_lim)        
 	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=lev_diff,color.palette=palette2,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
-        proj.addland(proj=map_projection)
-        image.scale3(volcano,levels=lev_diff,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
+    proj.addland(proj=map_projection)
+    image.scale3(volcano,levels=lev_diff,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
 
 	
 	dev.off()
 	}
 
 }
+
 
 # REAL EXECUTION OF THE SCRIPT 
 # read command line
