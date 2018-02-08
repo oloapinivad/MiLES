@@ -49,11 +49,25 @@ etime=power.date.new(datas)
 Z500=fieldlist$field
 
 print("Compute anomalies based on daily mean")
-Z500cycle=apply(Z500,c(1,2),ave,etime$month,etime$day)
+#old clean script with apply and ave, slow
+#Z500cycle=apply(Z500,c(1,2),ave,etime$month,etime$day)
+#if (!smoothing) {
+#    Z500anom=Z500-aperm(Z500cycle,c(2,3,1)) 
+#}
 
-if (!smoothing) {
-	Z500anom=Z500-aperm(Z500cycle,c(2,3,1)) 
+#beta function for daily anomalies, use array predeclaration and rowMeans (40 times faster!)
+daily.anom.mean.beta<-function(ics,ipsilon,field,etime) {
+    condition=paste(etime$day,etime$month)
+    daily=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
+    anom=field*NA
+    for (t in unique(condition)) {
+        daily[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
+        anom[,,which(t==condition)]=sweep(field[,,which(t==condition)],c(1,2),daily[,,which(t==unique(condition))],"-")
+    }
+    return(anom)
 }
+
+Z500anom=daily.anom.mean.beta(ics,ipsilon,Z500,etime)
 
 #if (smoothing) {
 #	print("running mean")
