@@ -27,8 +27,8 @@ ECMWF=0
 
 #loop to create the ensembles
 year1_exp=1980
-year2_exp=2010
-dataset_exp="ERAINTERIM"
+year2_exp=2005
+dataset_exp="CMCC-CMS"
 #ens_list=$(seq -f "%02g" 24 24 )
 ens_list="NO"
 
@@ -45,11 +45,11 @@ fi
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=1
+std_clim=0
 
 # only valid if std_clim=0
-dataset_ref="S5"
-ens_ref=mean
+dataset_ref="ERAINTERIM"
+ens_ref="NO"
 year1_ref=1982
 year2_ref=2016
 # NB: this is a folder structure used in my local machine
@@ -60,15 +60,15 @@ if [ "${dataset_ref}" == NCEP ] || [ "${dataset_ref}" == ERA40 ] || [ "${dataset
 fi
 
 # please specify one or more of the 4 standard seasons using 3 characters
-#seasons="DJF MAM SON JJA"
-seasons="DJF"
+seasons="DJF MAM SON JJA"
+#seasons="DJF"
 
 # select which EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
 # "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to 0!
-tele="NAO"
-#tele="-50_20_10_80"
+#tele="AO"
+tele="-50_20_10_80"
 
 # output file type for figures (pdf, png, eps)
 # pdf are set by default
@@ -176,7 +176,9 @@ for exp in $exps ; do
 	for season in $seasons ; do
 		echo $season
 		# EOFs
-		time . $PROGDIR/script/eof_fast.sh $exp $ens $year1 $year2 "$seasons" $tele $z500filename $FILESDIR
+        #---start deprecated---#
+		#time . $PROGDIR/script/eof_fast.sh $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR
+        #---end deprecated---#
         # Rbased EOFs
         time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR $PROGDIR
 		# blocking
@@ -193,7 +195,9 @@ done
 for season in $seasons ; do
 	echo $season
 	# EOFs figures
-	time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+    #---start deprecated---#
+	#time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+    #---end deprecated---#
 	# EOFs figures
     time $Rscript "$PROGDIR/script/Rbased_eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
     # blocking figures

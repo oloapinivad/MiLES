@@ -88,7 +88,7 @@ for (neof in 1:neofs) {
 	text(120,85,paste("Variance Explained: ",variance_exp[neof],"%",sep=""),cex=2)
 
 	im=plot.prepare(ics,ipsilon,linear_ref,proj=map_projection,lat_lim=lat_lim)
-    filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
+    filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
     mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
     proj.addland(proj=map_projection)
 	image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)

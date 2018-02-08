@@ -62,12 +62,57 @@ Z500clim=aperm(Z500clim,c(2,3,1))
 Z500anom=Z500monthly-Z500clim
 
 #select teleconnection region
-if (tele=="NAO") {xlim=c(-90,40); ylim=c(20,85)}
-if (tele=="AO") {xlim=c(0,360); ylim=c(20,85)}
-
-#computed EOFs
+if (tele=="NAO") {
+    xlim=c(-90,40); ylim=c(20,85)
+} else if (tele=="AO") {
+    xlim=c(-180,180); ylim=c(20,85)
+} else {
+    splitter=as.numeric(strsplit(tele,"_")[[1]])
+    if (length(splitter)==4) {
+        xlim=c(splitter[1],splitter[2])
+        ylim=c(splitter[3],splitter[4])
+    } else {
+        stop("Wrong teleconnection region!")
+    }
+}
+        
+#compute EOFs
+print("EOFs...")
 EOFS=eofs(ics,ipsilon,Z500anom,neof=neofs,xlim,ylim,method="SVD",do_standardize=T,do_regression=T)
 COEFF=eofs.coeff(ics,ipsilon,Z500anom,EOFS,do_standardize=T)
+
+#flip signs of patterns and regressions for NAO and AO
+print("checking signs...")
+for (i in 1:neofs) {
+    posreg=NULL
+
+    # define regions for sign control: boxes where values should be positive
+    if (tele=="NAO") {
+        if (i==1) {posreg=c(-30,30,40,50)}   #NAO
+        if (i==2) {posreg=c(-60,0,40,60)}    #East Atlantic Pattern 
+        if (i==3) {posreg=c(-30,30,50,70)}   #Scandinavian Blocking
+    }
+
+    if (tele=="AO") {
+        if (i==1) {posreg=c(-180,180,20,50)}    #Arctic Oscillation
+        if (i==2) {posreg=c(-120,-60,40,60)} #PNA
+    }
+
+    #if definition of region exists
+    if (!is.null(posreg)) {
+        #convert into indices
+        xbox=whicher(EOFS$pattern$x,posreg[1]):whicher(EOFS$pattern$x,posreg[2])
+        ybox=whicher(EOFS$pattern$y,posreg[3]):whicher(EOFS$pattern$y,posreg[4])
+        valuereg=mean(EOFS$pattern$z[xbox,ybox,i])
+
+        #if negative in the box, flip all signs!
+        if (valuereg<0) {
+            EOFS$pattern$z[,,i]=-EOFS$pattern$z[,,i]
+            COEFF[,i]=-COEFF[,i]
+            EOFS$regression=-EOFS$regression
+        }
+    }
+}
 
 #expand EOF pattern to save it
 expanded_pattern=EOFS$regression*NA
@@ -83,6 +128,7 @@ print(t1)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
+print(savefile1)
 
 # dimensions definition
 LEVEL=50000
