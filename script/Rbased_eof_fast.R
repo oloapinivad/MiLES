@@ -38,9 +38,20 @@ Z500=fieldlist$field
 #monthly averaging
 print("monthly mean...")
 
+#slower cleaner functions
 #Z500monthly=apply(Z500,c(1,2),by,list(etime$month,etime$year),mean)
-Z500monthly=apply(Z500,c(1,2),by,paste(etime$month,etime$year),mean)
-Z500monthly=aperm(Z500monthly,c(2,3,1))
+#Z500monthly=apply(Z500,c(1,2),by,paste(etime$month,etime$year),mean)
+#Z500monthly=aperm(Z500monthly,c(2,3,1))
+
+#beta function for monthly mean, using preallocation and rowMeans
+monthly.mean.beta<-function(ics,ipsilon,field,etime) {
+    condition=paste(etime$month,etime$year)
+    monthly=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
+    for (t in unique(condition)) {monthly[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)} 
+    return(monthly)
+}
+Z500monthly=monthly.mean.beta(ics,ipsilon,Z500,etime)
+
 
 #climatology
 print("climatological mean...")

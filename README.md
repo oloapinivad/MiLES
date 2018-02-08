@@ -156,6 +156,11 @@ It also tries to assign the right weather regimes to its name. However please be
 
 ## HISTORY
 
+*v0.43 - Feb 2018*
+- Various bug fixing
+- Improved function to control path and folders
+- R-based EOFs script beta version: ~1.5 slower than CDO but consistent with the MiLES structure
+
 *v0.42 - Dec 2017*
 - Inclusion of extra blocking diagnostics (Taylor diagrams, Duration-Events plots, histograms, etc.)
 - Ensemble mean for blocking outputs
