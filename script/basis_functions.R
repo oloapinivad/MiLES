@@ -1108,7 +1108,8 @@ if (do_regression)
 {       
         print("Linear Regressions (it can takes a while)... ")
         regression=array(NA,dim=c(length(lon),length(lat),neof))
-        for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) coef(lm(x ~ coefficient[,i]))[2])}
+        #for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) coef(lm(x ~ coefficient[,i]))[2])}
+        for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) lin.fit(as.matrix(coefficient[,i],ncol=1),x)$coefficients)}
 }
 
 #preparing output

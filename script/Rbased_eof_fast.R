@@ -37,7 +37,9 @@ Z500=fieldlist$field
 
 #monthly averaging
 print("monthly mean...")
-Z500monthly=apply(Z500,c(1,2),by,list(etime$month,etime$year),mean)
+
+#Z500monthly=apply(Z500,c(1,2),by,list(etime$month,etime$year),mean)
+Z500monthly=apply(Z500,c(1,2),by,paste(etime$month,etime$year),mean)
 Z500monthly=aperm(Z500monthly,c(2,3,1))
 
 #climatology
