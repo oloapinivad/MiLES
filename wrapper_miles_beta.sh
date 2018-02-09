@@ -15,17 +15,10 @@
 #config name: create your own config file for your machine.
 config=sansone
 
-# flag specific for ECMWF data structure
-# it is used to call a specific preprocessing tool that follows 
-# ensemble structure and folder at ECMWF
-ECMWF=0
-
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-
-#loop to create the ensembles
 year1_exp=1980
 year2_exp=2005
 dataset_exp="IPSL-CM5A-LR"
@@ -52,8 +45,8 @@ seasons="DJF MAM SON JJA"
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
 # "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to 0!
-#tele="AO"
-tele="-50_20_10_80"
+tele="NAO"
+#tele="-50_20_10_80"
 
 # output file type for figures (pdf, png, eps)
 # pdf are set by default
@@ -155,16 +148,12 @@ for exp in $exps ; do
 
 	for season in $seasons ; do
 		echo $season
-		# EOFs
-        #---start deprecated---#
-		#time . $PROGDIR/script/eof_fast.sh $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR
-        #---end deprecated---#
         # Rbased EOFs
-        #time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR $PROGDIR
+        time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR $PROGDIR
 		# blocking
-		#time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+		time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
 		# regimes
-		#time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+		time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
 	done
 
 done
@@ -175,15 +164,11 @@ done
 for season in $seasons ; do
 	echo $season
 	# EOFs figures
-    #---start deprecated---#
-	#time $Rscript "$PROGDIR/script/eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
-    #---end deprecated---#
-	# EOFs figures
-    #time $Rscript "$PROGDIR/script/Rbased_eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+    time $Rscript "$PROGDIR/script/Rbased_eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
     # blocking figures
-	#time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+	time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	# regimes figures
-	#time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+	time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 done
 
 done
