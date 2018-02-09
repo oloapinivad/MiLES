@@ -1,5 +1,30 @@
 #!/bin/bash
 
+####################################
+# ---- folder definition --------- #
+####################################
+
+
+# INDIR ->data folder: all the geopotential height data should be here
+# you must customozie this according to the dataset you analyze and your local file structure
+INDIR=/home/paolo/work/DATA/CMIP5/${dataset}/HIST/r1/day/Z500
+if [ "${dataset}" == NCEP ] || [ "${dataset}" == ERA40 ] || [ "${dataset}" == ERAINTERIM  ] || [ "${dataset}" == MERRA  ] || [ "${dataset}" == 20CR  ] ; then
+        INDIR=/home/paolo/work/DATA/${dataset}/day/Z500
+fi
+
+# to look for some specific file structure
+# otherwise the program will look for all the netcdf or grib files in the folder
+export expected_input_name=*.nc
+
+#program folder where MiLES is placed
+export PROGDIR=$(pwd)
+#data folder where place output (Z500 files, NetCDF files and figures)
+export OUTPUTDIR=/work/users/paolo/scratch/miles
+
+####################################
+# ----  program definition  ------ #
+####################################
+
 #program definition
 
 #CDO
@@ -11,10 +36,6 @@ cdo4="$cdo -f nc4 -z zip"
 #Rscript is the script-launcher by R
 Rscript=/usr/bin/Rscript
 
-#program folder where MiLES is placed
-export PROGDIR=$(pwd)
-#data folder where place output (Z500 files, NetCDF files and figures)
-export OUTPUTDIR=/work/users/paolo/scratch/miles
 
 ####################################
 #no need to change below this line #

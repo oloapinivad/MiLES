@@ -1,12 +1,12 @@
-# MiLES v0.4
+# MiLES v0.43
 ## Mid-Latitude Evaluation System
 
-Aug 2017
+Feb 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
-Contributors: 	
-J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR)
+Acknowledgements to:
+J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 
 ------------------------------
 
@@ -18,15 +18,15 @@ it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
 for the chosen time period (over the for standard 4 seasons) in 3 possible output formats.
 Map projection for plots can specified as well.
-Before performing analhysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
-Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2014) or with any 
+Before performing analysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
+Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2016) or with any 
 other MiLES-generated data
 
 Current version includes:
 
 1. 	**1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere.
-        Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
-        Full timeseries and climatologies are provided in NetCDF4 Zip format.
+    Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
+    Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
 2. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
@@ -37,7 +37,7 @@ Current version includes:
 	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
-3. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
+3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R using SVD.
 	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
 	North Atlantic Oscillation, East Atlantic Pattern, and Arctic Oscillation are thus computed. 
 	Figures showing linear regression of PCs on monthly Z500 are provided.
@@ -74,7 +74,7 @@ in case you use the 2D blocking index in any publication.
 ## SOFTWARE REQUIREMENTS
 
 * a. R version >3.0
-* b. CDO version > 1.6.5, compiled with netCDF4
+* b. CDO version > 1.6.5 (1.8 at least for complete GRIB support), compiled with netCDF4
 * c. Compiling environment (gcc)
 
 IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.
@@ -83,7 +83,7 @@ If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
 - "ncdf4" provides the interface for NetCDF files.
-- "maps" provides the world maps for the plots.
+- "maps" provides the world maps for the plots: (version >= 3.0 )
 - "PCICt" provides the tools to handle 360-days and 365-days calendars (from model data). 
 - "akima" provides the interpolation for map projections.
 - "mapproj" provides a series of map projection that can be used.
@@ -91,9 +91,12 @@ Packages are also included in **MiLES** and can be installed offline.
 
 If you are aware of other way to implement this 5 passages without using those packages, please contact me.
 
-The installation of some packages requires specifically gfortran-4.8: there is an issue known on 
-Mac OS X (10.11 and later at least) which requires a few turnarounds. See here for help:
-http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on-gfortran-4-8
+There are some issues on Mac Os X (10.11 and later at least) related to gfortran. It may happen that 
+some packages requires specifically gfortran-4.8 (see here for help:
+http://stackoverflow.com/questions/23916219/os-x-package-installation-depends-on-gfortran-4-8)
+and that you may find some issue if you install gfortran via MacPorts (see here for help: 
+https://stackoverflow.com/questions/29992066/rcpp-warning-directory-not-found-for-option-l-usr-local-cellar-gfortran-4-8)
+
 
 -----------------
 
@@ -103,8 +106,10 @@ Before running **MiLES** R packages should installed (see above).
 
 Two configuration scripts controls the program options:
 1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
-	It should be set accordingly to your local configuration. 
+	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
+    After v0.43, it includes the directory tree for your NetCDF files and the expected input files format.
+    It's extremely important that you create YOUR OWN config file: in this way it will not be overwritten by further git pull. 
 2.	*config/config.R* controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
@@ -113,10 +118,13 @@ Two configuration scripts controls the program options:
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
-- "std_clim" -> 1 to use standard ERAI 1979-2014 climatology, 0 for custom comparison. 
-- "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
+- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths
+- "year1_exp" and "year2_exp" -> the years on which MiLES will run. 
+- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper.
+- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. if 0, please specify the dataset you want to compare to with "dataset_ref", "year1_ref" and "year2_ref". 
+- "seasons" -> specify one or more of the 4 standard seasons using 3 characters. Otherwise, use 3 character for each month divided by an underscopre to create your own season (beta).
 - "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
-- "output_file_type" -> pdf, eps or png figures format
+- "output_file_type" -> pdf, eps or png figures format.
 - "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plots. All projection from mapproj R package are supported.
 
 
@@ -132,8 +140,8 @@ the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
 
-* "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
-provides the figures with an R script. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
+* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using "eofs" R function by the former script, while the latter
+provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts.
@@ -141,9 +149,34 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
 It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
+* "extra_figures_block.R". This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
+
 ------------
 
 ## HISTORY
+
+*v0.43 - Feb 2018*
+- R-based EOFs script consistent with the MiLES structure
+- Rearrange structure of wrapper and config file: now $INDIR is defined in config files (increase portability!)
+- Beta support for free month and season selection
+- Consistent ensemble members support
+- Various bug fixing for NetCDF access
+- Improved functions to control path and folders
+- Faster daily anomalies for regimes computation
+- Variance is again plotted for EOFs
+
+*v0.42 - Dec 2017*
+- Inclusion of extra blocking diagnostics (Taylor diagrams, Duration-Events plots, histograms, etc.)
+- Ensemble mean for blocking outputs
+- Ensemble member support for blocking routine
+- Bug fixing for calendar handling 
+- 10-day blocking events as new output
+- ECMWF data structure support
+- Updated climatology (1979-2016)
+- Support for Grib files
+
+*v0.41 - Jul 2017*
+- Plot bug fixing
 
 *v0.4 - June 2017*
 - Tibaldi and Molteni (1990) blocking index is now computed by blocking_fast.R

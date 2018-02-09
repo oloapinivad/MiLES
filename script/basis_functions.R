@@ -13,43 +13,127 @@ library("PCICt")
 #check if fast linear fit is operative (after R 3.1): 3x faster than lm.fit, 36x faster than lm
 if (exists(".lm.fit")) {lin.fit=.lm.fit} else {lin.fit=lm.fit}
 
+#check R version as numeric
+R_version=as.numeric(R.Version()$major)+as.numeric(R.Version()$minor)/10
+
 ##########################################################
 #-----------------Basic functions------------------------#
 ##########################################################
 
 #normalize a time series
-standardize<-function(timeseries)
-{
+standardize<-function(timeseries) {
 	out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
 	return(out)
 }
 
 
 #detect ics ipsilon lat-lon
-whicher<-function(axis,number)
-{
+whicher<-function(axis,number) {
 	out=which.min(abs(axis-number))
 	return(out)
 }
 
 #produce a 2d matrix of area weight
-area.weight<-function(ics,ipsilon,root=T)
-{
-field=array(NA,dim=c(length(ics),length(ipsilon)))
-if (root==T)
-{
-        for (j in 1:length(ipsilon))
-        {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
-}
+area.weight<-function(ics,ipsilon,root=T) {
+	field=array(NA,dim=c(length(ics),length(ipsilon)))
+	if (root==T) {
+        for (j in 1:length(ipsilon)) {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
+	}
 
-if (root==F)
-{
-        for (j in 1:length(ipsilon))
-        {field[,j]=cos(pi/180*ipsilon[j])}
-}
+	if (root==F) {
+        for (j in 1:length(ipsilon)) {field[,j]=cos(pi/180*ipsilon[j])}
+	}
 return(field)
-
 }
+
+#sector details for blocking extra diagnostics
+sector.details<-function(SECTOR) {
+
+    if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
+    if (SECTOR=="Azores") {lons=c(-70,-10); lats=c(30,40); namesec="Central Atlantic"}
+    if (SECTOR=="Greenland") {lons=c(-65,-15); lats=c(62.5,72.5); namesec="Greenland"}
+    if (SECTOR=="FullPacific") {lons=c(130,-150); lats=c(60,75); namesec="North Pacific"}
+    if (SECTOR=="FullPacific2") {lons=c(130,210); lats=c(60,75); namesec="North Pacific"}
+
+    left1=which.min(abs(ics-lons[1]))
+    right1=which.min(abs(ics-lons[2]))
+    low1=which.min(abs(ipsilon-lats[1]))
+    high1=which.min(abs(ipsilon-lats[2]))
+
+    latssel=low1:high1
+    if (SECTOR=="FullPacific") {
+        lonssel=c(left1:length(ics),1:right1)
+        } else {
+        lonssel=left1:right1
+    }
+out=list(lons=lons,lonssel=lonssel,lats=lats,latssel=latssel,name=namesec)
+return(out)
+}
+
+#weighted correlation
+weighted.cor<-function(x,y,w) {
+    w.mean.x=sum(w*x)/sum(w)
+    w.mean.y=sum(w*y)/sum(w)
+
+    w.cov.xy=sum(w*(x-w.mean.x)*(y-w.mean.y))/sum(w)
+    w.var.y=sum(w*(y-w.mean.y)*(y-w.mean.y))/sum(w)
+    w.var.x=sum(w*(x-w.mean.x)*(x-w.mean.x))/sum(w)
+
+    corr=w.cov.xy/sqrt(w.var.x*w.var.y)
+    return(corr)
+}
+
+#weighted standard deviations
+weighted.sd<-function(x,w) {
+    w.mean=sum(w*x)/sum(w)
+    v1=sum(w)
+    v2=sum(w^2)
+    var=v1/(v1^2-v2)*sum(w*(x-w.mean)^2)
+    sdd=sqrt(var)
+    return(sdd)
+}
+
+#basic switch to create NetCDF file names and folders
+file.builder<-function(DATADIR,dir_name,file_name,dataset,ens,year1,year2,season) {
+    if (ens=="NO") {
+        filedir=file.path(DATADIR,dataset,dir_name,paste0(year1,"_",year2),season)
+        filename=paste0(file_name,"_",dataset,"_",year1,"_",year2,"_",season,".nc")
+    } else {
+        filedir=file.path(DATADIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
+        filename=paste0(file_name,"_",dataset,"_",ens,"_",year1,"_",year2,"_",season,".nc")
+    }
+
+	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
+	if (exists("dir.exists")) {
+		if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+	} else {
+		dir.create(filedir,recursive=T,showWarnings=F)
+	}
+    return(paste0(filedir,"/",filename))
+}
+
+#basic switch to create figures names and folders
+fig.builder<-function(FIGDIR,dir_name,file_name,dataset,ens,year1,year2,season,output_file_type) {
+        if (ens=="NO") {
+                filedir=file.path(FIGDIR,dataset,dir_name,paste0(year1,"_",year2),season)
+                figname=paste(file_name,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+        } else {
+                filedir=file.path(FIGDIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
+                figname=paste(file_name,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
+        }
+
+  #actually dir.exists is in devtools only for R < 3.2, then is included in base package
+        if (exists("dir.exists")) {
+                if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+        } else {
+                dir.create(filedir,recursive=T,showWarnings=F)
+        }
+
+return(paste0(filedir,"/",figname))
+}
+
+
+
 
 ##########################################################
 #--------------Time Based functions----------------------#
@@ -58,12 +142,25 @@ return(field)
 # to convert season charname to months number
 season2timeseason<-function(season)
 {
-	if (season=="ALL")  {timeseason=1:12}
-	if (season=="JJA")  {timeseason=6:8}
-	if (season=="DJF")  {timeseason=c(1,2,12)}
-	if (season=="MAM")  {timeseason=3:5}
-	if (season=="SON")  {timeseason=9:11}
-	if (!exists("timeseason")) {stop("wrong season selected!")}
+    if (nchar(season)==3 & toupper(season)==season) {
+	    if (season=="ALL")  {timeseason=1:12}
+	    if (season=="JJA")  {timeseason=6:8}
+	    if (season=="DJF")  {timeseason=c(1,2,12)}
+	    if (season=="MAM")  {timeseason=3:5}
+	    if (season=="SON")  {timeseason=9:11}
+    } else {
+        charseason=strsplit(season,"_")[[1]]
+        print(charseason)
+        if (mean(nchar(charseason))==3) {
+            timeseason=which(charseason==month.abb)
+            } else {
+            timeseason=which(charseason==month.name)
+            } 
+    }
+    print(timeseason)
+    if (length(timeseason)==0 |  min(timeseason)<0 | max(timeseason)>13) {
+        stop("wrong season selected!")
+    }
 	return(timeseason)
 }
 
@@ -99,77 +196,77 @@ print(paste("From",datas[1],"to",datas[length(seas)]))
 return(etime)
 }
 
-power.date<-function(season,ANNO1,ANNO2)
-{
+#power.date<-function(season,ANNO1,ANNO2)
+#{
 #evalute the number of days that will analyze in order
 #to create arrays of the needed dimensions
 
 	#create continous calendar
-	p1<-as.Date(paste0(ANNO1,"-01-01"))
-	p2<-as.Date(paste0(ANNO2,"-12-31"))
-	datas=seq(p1,p2,by="day")
+	#p1<-as.Date(paste0(ANNO1,"-01-01"))
+	#p2<-as.Date(paste0(ANNO2,"-12-31"))
+	#datas=seq(p1,p2,by="day")
 
 	#select only days correspondeing to the needed season
-	timeseason=season2timeseason(season)
-	month=as.numeric(format(datas,"%m"))
-	whichdays=which(month %in% timeseason)
+	#timeseason=season2timeseason(season)
+	#month=as.numeric(format(datas,"%m"))
+	#whichdays=which(month %in% timeseason)
 
 	#create a "season" for continuous time, used by persistance tracking
-	seas=whichdays*1; ss=1
-	for (i in 1:(length(whichdays)-1)) 
-		{
-		if (diff(whichdays)[i]>1)  {ss=ss+1}
-		seas[i+1]=ss
-		}
+	#seas=whichdays*1; ss=1
+	#for (i in 1:(length(whichdays)-1)) 
+		#{
+		#if (diff(whichdays)[i]>1)  {ss=ss+1}
+		#seas[i+1]=ss
+		#}
 
 	#produce a final timeseries of dates
-	datas=datas[whichdays]
-	dataline=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),season=seas,data=datas)
-	print("Time Array Built")
-	print(paste("Length:",length(seas),"days for",season,"season"))
-	print(paste("From",datas[1],"to",datas[length(seas)]))
+	#datas=datas[whichdays]
+	#dataline=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),season=seas,data=datas)
+	#print("Time Array Built")
+	#print(paste("Length:",length(seas),"days for",season,"season"))
+	#print(paste("From",datas[1],"to",datas[length(seas)]))
 
-	return(dataline)
-}
+	#return(dataline)
+#}
 
-power.date.no.leap<-function(season,ANNO1,ANNO2)
-{
+#power.date.no.leap<-function(season,ANNO1,ANNO2)
+#{
 	#apply to power.date object to clean out elements for leap years
-	e=power.date(season,ANNO1,ANNO2)
-	leap.days=which(e$month==2 & e$day==29)
-	dataline.leap=list(day=e$day[-leap.days],month=e$month[-leap.days],year=e$year[-leap.days],season=e$season[-leap.days],data=e$data[-leap.days])
-	print("FIXED FOR NO LEAP CALENDAR: Time Array Built")
-	print(paste("Length:",length(dataline.leap$season),"days for",season,"season"))
-	print(paste("From",dataline.leap$data[1],"to",dataline.leap$data[length(dataline.leap$season)]))
-	return(dataline.leap)
-}
+	#e=power.date(season,ANNO1,ANNO2)
+	#leap.days=which(e$month==2 & e$day==29)
+	#dataline.leap=list(day=e$day[-leap.days],month=e$month[-leap.days],year=e$year[-leap.days],season=e$season[-leap.days],data=e$data[-leap.days])
+	#print("FIXED FOR NO LEAP CALENDAR: Time Array Built")
+	#print(paste("Length:",length(dataline.leap$season),"days for",season,"season"))
+	#print(paste("From",dataline.leap$data[1],"to",dataline.leap$data[length(dataline.leap$season)]))
+	#return(dataline.leap)
+#}
 
-power.date.30day<-function(season,ANNO1,ANNO2)
-{
+#power.date.30day<-function(season,ANNO1,ANNO2)
+#{
 	#apply to power.date object to clean out elements for leap years
-	nmonths=length(season2timeseason(season))
-	nyears=as.numeric(ANNO2)-as.numeric(ANNO1)+1
-	dd=rep(seq(1,30),nmonths*nyears)
-	mm=rep(rep(season2timeseason(season),each=30),nyears)
+	#nmonths=length(season2timeseason(season))
+	#nyears=as.numeric(ANNO2)-as.numeric(ANNO1)+1
+	#dd=rep(seq(1,30),nmonths*nyears)
+	#mm=rep(rep(season2timeseason(season),each=30),nyears)
 	#create a "season" for continuous time, used by persistance tracking
-	seas=mm*0+1; ss=1
-	for (i in 1:(length(mm)-1))
-	        {
-	        if (diff(mm)[i]>1)  {ss=ss+1}
-	        seas[i+1]=ss
-	        }
-	dataline.30day=list(day=dd,month=mm,season=seas)
-	print("SIMPLIFIED CALENDAR FOR 30-day CALENDAR: Time Array Built")
-	print(paste("Length:",length(dataline.30day$season),"days for",season,"season"))
-	return(dataline.30day)
-}
+	#seas=mm*0+1; ss=1
+	#for (i in 1:(length(mm)-1))
+	        #{
+	        #if (diff(mm)[i]>1)  {ss=ss+1}
+	        #seas[i+1]=ss
+	        #}
+	#dataline.30day=list(day=dd,month=mm,season=seas)
+	#print("SIMPLIFIED CALENDAR FOR 30-day CALENDAR: Time Array Built")
+	#print(paste("Length:",length(dataline.30day$season),"days for",season,"season"))
+	#return(dataline.30day)
+#}
 
 ##########################################################
 #--------------NetCDF loading function-------------------#
 ##########################################################
 
 #function to open ncdf files (much more refined, with CDO-based interpolation)
-ncdf.opener<-function(namefile,namevar=NULL,namelon="lon",namelat="lat",rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
+ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
 {
 #function to open netcdf files. It uses ncdf4 library. support only 1D (t), 2D (x,y) or 3D (x,y,t) data in any netcdf format.
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
@@ -185,11 +282,11 @@ if (interp2grid)
         {
         print(paste("Remapping with CDO on",grid,"grid"))
         filename=basename(normalizePath(namefile))
-	filedir=dirname(normalizePath(namefile))
-	cdo=Sys.which("cdo")
+	    filedir=dirname(normalizePath(namefile))
+	    cdo=Sys.which("cdo")
         tempfile=paste0(file.path(filedir,paste0("tempfile_",filename)))
         #system(paste0(cdo," ",remap_method,",",grid," ",namefile," ",tempfile))
-	system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
+	    system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
         namefile=tempfile 
         }
 
@@ -218,27 +315,67 @@ if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
 #check for dimensions (presence or not of time dimension)
 dimensions=length(dim(daily))
 
+#load axis
+naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+for (axis in naxis) {assign(axis,ncvar_get(a,axis))}
+
+
 #if dimensions are multiple, get longitude, latitude
 #if needed, rotate and flip the array
+xlist=c("lon","Lon","longitude","Longitude")
+ylist=c("lat","Lat","latitude","Latitude")
 if (dimensions>1)
 {
-        #read attributes
-        ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
-        
-	#longitute rotation around Greenwich
+    #assign ics and ipsilon 
+    if (is.null(namelon)) {
+        if (any(xlist %in% naxis))  {
+              ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
+        } else {
+        ics=ncvar_get(a,namelon)
+        }
+    if (is.null(namelat)) {
+        if (any(ylist %in% naxis))  {
+            ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")}
+        } else {
+        ipsilon=ncvar_get(a,namelat)
+        }
+
+        #print("flipping and rotating")
+        #longitute rotation around Greenwich
         if (rot)     {ics=rotation(ics); daily=rotation(daily) }
-        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
                 if (length(ics)>1)
                 {ipsilon=sort(ipsilon); daily=flipper(daily) }
-                else
-                {ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
 
         #exporting variables to the main program
         assign("ics",ics, envir = .GlobalEnv)
         assign("ipsilon",ipsilon, envir = .GlobalEnv)
+    assign(names(a$dim[which(naxis %in% xlist)]),ics)
+    assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
 
-} 
+}
 
+#if dimensions are multiple, get longitude, latitude
+#if needed, rotate and flip the array
+#if (dimensions>1)
+#{
+        ##read attributes
+        #ics=ncvar_get(a,namelon); ipsilon=ncvar_get(a,namelat)
+        #
+	##longitute rotation around Greenwich
+        #if (rot)     {ics=rotation(ics); daily=rotation(daily) }
+        #if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1)
+                #if (length(ics)>1)
+                #{ipsilon=sort(ipsilon); daily=flipper(daily) }
+                #else
+                #{ipsilon=sort(ipsilon); daily=flipper.zonal(daily) }
+#
+        ##exporting variables to the main program
+        #assign("ics",ics, envir = .GlobalEnv)
+        #assign("ipsilon",ipsilon, envir = .GlobalEnv)
+#
+#} 
+#
 if (dimensions>3)
 {stop("This file is more than 3D file")}
 
@@ -341,6 +478,7 @@ lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month,
 lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-",number.days.month(lastday_base)),cal=caldata,format="%Y-%m-%d")
 firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
 
+
 #print(max(timeline)); print(lastday); print(min(timeline)); print(firstday)
 
 if (max(timeline)<lastday | min(timeline)>firstday) {
@@ -359,19 +497,25 @@ select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(t
 field=field[,,select]
 time=timeline[select]
 
+
 print(paste("This is a",caldata,"calendar"))
 print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
+
+print(paste("Months that have been loaded are.. "))
+print(unique(format(time,"%Y-%m")))
+
 
 #check for dimensions (presence or not of time dimension)
 dimensions=length(dim(field))
 
 #if dimensions are multiple, get longitude, latitude
 #if needed, rotate and flip the array
+xlist=c("lon","Lon","longitude","Longitude")
+ylist=c("lat","Lat","latitude","Latitude")
 if (dimensions>1)
 {
 	#assign ics and ipsilon 
 	if (is.null(namelon)) {
-		xlist=c("lon","Lon","longitude","Longitude")
 		if (any(xlist %in% naxis))  {
 			#ics=get(names(a$dim[which(naxis %in% xlist)]))} else {stop("No lon found")}
             ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {stop("No lon found")} 
@@ -379,7 +523,6 @@ if (dimensions>1)
 		ics=ncvar_get(a,namelon)
 		}
 	if (is.null(namelat)) {
-		ylist=c("lat","Lat","latitude","Latitude")
 		if (any(ylist %in% naxis))  {
 			#ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {stop("No lat found")} 
             ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {stop("No lat found")}
@@ -426,6 +569,34 @@ return(mget(c("field",naxis)))
 ##########################################################
 #--------------Plotting functions------------------------#
 ##########################################################
+
+# function to open devices
+open.plot.device <- function(figname,output_file_type,CFGSCRIPT,special=FALSE) {
+    # Chose output format for figure - by JvH
+    source(CFGSCRIPT)
+    if (special==FALSE) {
+     if (tolower(output_file_type) == "png") {
+           png(filename = figname, width=png_width, height=png_height)
+        } else if (tolower(output_file_type) == "pdf") {
+            pdf(file=figname,width=pdf_width,height=pdf_height,onefile=T)
+        } else if (tolower(output_file_type) == "eps") {
+            setEPS(width=pdf_width,height=pdf_height,onefile=T,paper="special")
+            postscript(figname)
+        }
+    }
+    
+    # special case for TM90 
+    if (special==TRUE) {
+        if (tolower(output_file_type) == "png") {
+            png(filename = figname, width=png_width/af, height=png_height*af/2)
+        } else if (tolower(output_file_type) == "pdf") {
+            pdf(file=figname,width=pdf_width/af,height=pdf_height*af/2,onefile=T)
+        } else if (tolower(output_file_type) == "eps") {
+            setEPS(width=pdf_width/af,height=pdf_height*af/2,onefile=T,paper="special")
+            postscript(figname)
+        }
+    }
+}
 
 
 #extensive filled.contour function 
@@ -634,6 +805,86 @@ plot.prepare<-function(ics,ipsilon,field,proj,lat_lim) {
 	return(outfile)
 }
 
+#function that provides labels and names for Blocking Plots
+field.details<-function(field) {
+
+	# default value 
+	legend_distance=3
+	lev_hist=NULL
+
+	#case specific
+	if (field=="TM90") {
+        color_field=c("dodgerblue","darkred"); color_diff=NULL
+        lev_field=c(0,30); lev_diff=NULL
+        legend_unit="Blocked Days (%)"; title_name="TM90 Instantaneous Blocking"
+    }
+
+	if (field=="InstBlock") {
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
+        legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency:";
+    }
+
+    if (field=="ExtraBlock") {
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,36,3); lev_diff=seq(-10.5,10.5,1)
+        legend_unit="Blocked Days (%)"; title_name="Instantaneous Blocking frequency (GHGS2 condition):";
+    }
+
+    if (field=="BlockEvents") {
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,27,3); lev_diff=seq(-10.5,10.5,1); lev_hist=c(0,16)
+        legend_unit="Blocked Days (%)"; title_name="Blocking Events frequency:";
+    }
+
+	if (field=="LongBlockEvents") {
+         color_field=palette1; color_diff=palette2
+         lev_field=seq(0,16,2); lev_diff=seq(-5.25,5.25,.5)
+         legend_unit="Blocked Days (%)"; title_name="10-day Blocking Events frequency:";
+    }
+
+    if (field=="DurationEvents") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(5,11.5,.5); lev_diff=seq(-2.1,2.1,.2); lev_hist=c(6,8)
+        legend_unit="Duration (days)"; title_name="Duration of Blocking Events:";
+    }
+
+    if (field=="NumberEvents") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(0,100,10); lev_diff=seq(-42.5,42.5,5); lev_hist=c(0,60)
+        legend_unit=""; title_name="Number of Blocking Events:";
+    }
+
+	if (field=="Z500") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(4800,6000,50); lev_diff=seq(-310,310,20)
+        legend_unit="Geopotential Height (m)"; title_name="Z500:" ; legend_distance=4
+    }
+
+    if (field=="BI") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(1,6,0.25); lev_diff=seq(-2.1,2.1,.2)
+        legend_unit="BI index"; title_name="Blocking Intensity (BI):" ;
+    }
+
+    if (field=="MGI") {
+        color_field=palette0; color_diff=palette2
+        lev_field=seq(0,15,1); lev_diff=seq(-5.25,5.25,.5)
+        legend_unit="MGI Index"; title_name="Meridional Gradient Inversion (MGI):" ;
+    }
+
+    if (field=="ACN" | field=="CN") {
+        if (field=="ACN") {title_name="Anticyclonic Rossby wave breaking frequency:"}
+        if (field=="CN") {title_name="Cyclonic Rossby wave breaking frequency:"}
+        color_field=palette1; color_diff=palette2
+        lev_field=seq(0,20,2); lev_diff=seq(-5.25,5.25,.5)
+        legend_unit="RWB frequency (%)";
+    }
+
+
+out=list(color_field=color_field,color_diff=color_diff,lev_field=lev_field,lev_diff=lev_diff,lev_hist=lev_hist,legend_unit=legend_unit,legend_distance=legend_distance,title_name=title_name)
+return(out)
+}
 
 ##########################################################
 #------------Blocking Tracking Functions-----------------#
@@ -650,7 +901,7 @@ return(nn)
 
 
 #blocking 5 days tracking
-blocking.persistence<-function(field,persistence=5,time.array)
+blocking.persistence<-function(field,minduration=5,time.array)
 {
 
 #function for persistence
@@ -679,7 +930,7 @@ return(xx)
 if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
 
 print("Time filtering...")
-newfield=apply(field,c(1,2),function(x) pers2(x,persistence=5,time.array))
+newfield=apply(field,c(1,2),function(x) pers2(x,persistence=minduration,time.array))
 newfield=aperm(newfield,c(2,3,1))
 print("Mean field...")
 meanfield=apply(newfield,c(1,2),mean,na.rm=T)*100
@@ -695,6 +946,8 @@ print("Number of Events...")
 nevents=apply(events,c(1,2),function(x) length(x[!is.na(x)]))
 
 out=list(track=newfield,percentage=meanfield,duration=duration,events=events,nevents=nevents)
+print(quantile(meanfield))
+print(min(duration,na.rm=T))
 return(out)
 }
 
@@ -746,43 +999,43 @@ return(field)
 }
 
 #large scale extension
-largescale.extension2<-function(ics,ipsilon,field)
-{
-print("Large Scale Extension based on fixed angle")
-deltaics=(ics[20]-ics[19])
-deltaips=(ipsilon[20]-ipsilon[19])
-passo=round(5/(ics[20]-ics[19]))
-vertical=round(2.5/(ipsilon[20]-ipsilon[19]))
+#largescale.extension2<-function(ics,ipsilon,field)
+#{
+#print("Large Scale Extension based on fixed angle")
+#deltaics=(ics[20]-ics[19])
+#deltaips=(ipsilon[20]-ipsilon[19])
+#passo=round(5/(ics[20]-ics[19]))
+#vertical=round(2.5/(ipsilon[20]-ipsilon[19]))
 
-print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+#print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+#
+#short<-function(ics,ipsilon,field,passo,vertical)
+#{
+#out=field
+#startipsilon=which.min(abs(ipsilon-30))
+#estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
+#new=rbind(field,field,field)
+#for (i in 1:length(ics))
+#{ii=i+length(ics)
+#for (j in startipsilon:(startipsilon+estension))
+#{
+#control=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
+#if (control>0)
+#{out[i,j]=1}
+#}
+#}
+#return(out)
+#}
 
-short<-function(ics,ipsilon,field,passo,vertical)
-{
-out=field
-startipsilon=which.min(abs(ipsilon-30))
-estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
-new=rbind(field,field,field)
-for (i in 1:length(ics))
-{ii=i+length(ics)
-for (j in startipsilon:(startipsilon+estension))
-{
-control=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
-if (control>0)
-{out[i,j]=1}
-}
-}
-return(out)
-}
-
-for (t in 1:length(field[1,1,]))
-{
-if (any(t==round(seq(0,length(field[1,1,]),,11))))
-        {print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
-if (all(!is.na(field[,,t])))
-{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
-}
-return(field)
-}
+#for (t in 1:length(field[1,1,]))
+#{
+#if (any(t==round(seq(0,length(field[1,1,]),,11))))
+#        {print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
+#if (all(!is.na(field[,,t])))
+#{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
+#}
+#return(field)
+#}
 
 #Longitude filter for minimum extension
 longitude.filter<-function(ics,ipsilon,field)
@@ -875,7 +1128,8 @@ if (do_regression)
 {       
         print("Linear Regressions (it can takes a while)... ")
         regression=array(NA,dim=c(length(lon),length(lat),neof))
-        for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) coef(lm(x ~ coefficient[,i]))[2])}
+        #for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) coef(lm(x ~ coefficient[,i]))[2])}
+        for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) lin.fit(as.matrix(coefficient[,i],ncol=1),x)$coefficients)}
 }
 
 #preparing output
@@ -883,6 +1137,39 @@ print("Finalize...")
 pattern=list(x=slon,y=slat,z=pattern)
 out=list(pattern=pattern,coeff=coefficient,variance=variance,regression=regression)
 return(out)
+}
+
+eofs.coeff<-function(lon,lat,field,eof_object,do_standardize=F)
+{
+# Computes expansion coefficient (i.e. PCs) of a given dataset on the 
+# loading pattern of EOF previously computed
+# Works only on eof_object obtained with "eofs" function
+
+# Area weighting, based on the root of cosine
+print("Area Weighting...")
+ww=area.weight(lon,lat,root=T)
+wwfield=sweep(field,c(1,2),ww,"*")
+
+#selection of the box
+xlim=c(min(eof_object$pattern$x),max(eof_object$pattern$x));
+ylim=c(min(eof_object$pattern$y),max(eof_object$pattern$y))
+box=wwfield[whicher(lon,xlim[1]):whicher(lon,xlim[2]),whicher(lat,ylim[1]):whicher(lat,ylim[2]),]
+
+#transform 3D field in a matrix
+new_box=array(box,dim=c(dim(box)[1]*dim(box)[2],dim(box)[3]))
+new_pattern=array(eof_object$pattern$z,dim=c(dim(eof_object$pattern$z)[1]*dim(eof_object$pattern$z)[2],dim(eof_object$pattern$z)[3]))
+
+#projects the coefficients
+coef=(t(new_box)%*%new_pattern)
+
+#standardize
+if (do_standardize)
+                { coefficient=apply(coef,c(2),standardize) }
+                else
+                { coefficient=coef }
+
+print("Finalize...")
+return(coefficient)
 }
 
 

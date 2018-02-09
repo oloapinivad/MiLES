@@ -2,19 +2,25 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(exp,year1,year2,season,z500filename,FILESDIR)
+miles.block.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR)
 {
 
 #t0
 t0<-proc.time()
 
-#setting up main variables
-BLOCKDIR=file.path(FILESDIR,exp,"Block",paste0(year1,"_",year2),season)
-dir.create(BLOCKDIR,recursive=T)
-
 #setting up time domain
 years=year1:year2
 timeseason=season2timeseason(season)
+
+#define folders using file.builder function (takes care of ensembles)
+savefile1=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
+
+#check if data is already there to avoid re-run
+if (file.exists(savefile1) & file.exists(savefile2)) {
+	print("Actually requested blocking data is already there! Skipping... Remove data if you want to re-run!") 
+	q()
+}
 
 #new file opening
 nomefile=z500filename
@@ -175,8 +181,11 @@ spatial=longitude.filter(ics,ipsilon,totblocked)
 large=largescale.extension.if(ics,ipsilon,spatial)
 #LARGE=apply(large,c(1,2),sum,na.rm=T)/ndays*100
 
-#5 days persistence filter
-block=blocking.persistence(large,persistence=5,time.array=etime)
+#5-day persistence filter
+block=blocking.persistence(large,minduration=5,time.array=etime)
+
+#10-day persistence for extreme long block
+longblock=blocking.persistence(large,minduration=10,time.array=etime)
 
 tf=proc.time()-t1
 print(tf)
@@ -188,17 +197,22 @@ print(tf)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-savefile1=paste0(BLOCKDIR,"/BlockClim_",exp,"_",year1,"_",year2,"_",season,".nc")
-savefile2=paste0(BLOCKDIR,"/BlockFull_",exp,"_",year1,"_",year2,"_",season,".nc")
 
 #which fieds to plot/save
-fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","DurationEvents","NumberEvents")
-full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents")
+fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
+full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents")
 
 # dimensions definition
 TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+
+print(fulltime[2])
+#temporary check for seconds/days TO BE FIXED
+if (fulltime[2]==1) {tunit="days"}
+if (fulltime[2]==86400) {tunit="seconds"}
+TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+
 x <- ncdim_def( "Lon", "degrees", ics)
 y <- ncdim_def( "Lat", "degrees", ipsilon)
 z <- ncdim_def( "Lev", "Pa", LEVEL)
@@ -208,27 +222,30 @@ t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T)
 for (var in fieldlist)
 {
         #name of the var
-	if (var=="TM90")
-                {longvar="TibaldiMolteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90}
-        if (var=="InstBlock")
+	if (var=="TM90") {
+		longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90
+	}
+    if (var=="InstBlock")
                 {longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
-        if (var=="ExtraBlock")
+    if (var=="ExtraBlock")
                 {longvar="Instantaneous Blocking frequency (GHGS2)"; unit="%"; field=frequency2; full_field=totblocked2}
-        if (var=="Z500")
+    if (var=="Z500")
                 {longvar="Geopotential Height"; unit="m"; field=Z500mean; full_field=Z500}
-        if (var=="BI")
+    if (var=="BI")
                 {longvar="BI index"; unit=""; field=BI; full_field=totBI}
-        if (var=="MGI")
+    if (var=="MGI")
                 {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
-        if (var=="ACN")
+    if (var=="ACN")
                 {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
-        if (var=="CN")
+    if (var=="CN")
                 {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
-        if (var=="BlockEvents")
+    if (var=="BlockEvents")
                 {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
-        if (var=="DurationEvents")
+	if (var=="LongBlockEvents")
+                {longvar="10-day Blocking Events frequency"; unit="%"; field=longblock$percentage; full_field=longblock$track}
+    if (var=="DurationEvents")
                 {longvar="Blocking Events duration"; unit="days"; field=block$duration}
-        if (var=="NumberEvents")
+    if (var=="NumberEvents")
                 {longvar="Blocking Events number"; unit=""; field=block$nevents}
 
 	#fix eventual NaN	
@@ -285,7 +302,7 @@ nc_close(ncfile2)
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","year1","year2","season","z500filename","FILESDIR","PROGDIR")
+name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -297,6 +314,6 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.block.fast(exp,year1,year2,season,z500filename,FILESDIR)
+        miles.block.fast(exp,ens,year1,year2,season,z500filename,FILESDIR)
     }
 }
