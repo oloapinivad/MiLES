@@ -18,7 +18,8 @@ savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1) & file.exists(savefile2)) {
-	stop("Actually requested blocking data is already there! Skipping... Remove data if you want to re-run!") 
+	print("Actually requested blocking data is already there! Skipping... Remove data if you want to re-run!") 
+	q()
 }
 
 #new file opening

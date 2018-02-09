@@ -1,5 +1,5 @@
 #!/bin/bash
-##
+set -e
 ################################################
 #--MidLatitude Evaluation System for Ec-Earth--#
 #------------------MiLES v0.4------------------#
@@ -13,17 +13,17 @@
 ################################################
 
 #config name: create your own config file for your machine.
-config=sansone
+config=ecmwf
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1980
-year2_exp=2005
-dataset_exp="IPSL-CM5A-LR"
-#ens_list=$(seq -f "%02g" 24 24 )
-ens_list="NO"
+year1_exp=1982
+year2_exp=2011
+dataset_exp="S5AMIP_ERAI"
+ens_list=$(seq -f "%02g" 0 4 )
+#ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
@@ -32,14 +32,14 @@ ens_list="NO"
 std_clim=0
 
 # only valid if std_clim=0
-dataset_ref="ERAINTERIM"
+dataset_ref="ERAI"
 ens_ref="NO"
 year1_ref=1982
 year2_ref=2016
 
 # please specify one or more of the 4 standard seasons using 3 characters
-seasons="DJF MAM SON JJA"
-#seasons="DJF"
+#seasons="DJF MAM SON JJA"
+seasons="DJF"
 
 # select which EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1

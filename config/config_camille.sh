@@ -1,9 +1,27 @@
 #!/bin/bash
 
-#program definition
+####################################
+# ---- folder definition --------- #
+####################################
+
+# INDIR ->data folder: all the geopotential height data should be here
+# you must customozie this according to the dataset you analyze and your local file structure
+INDIR=/Users/paolo/Desktop/milesdata/$dataset
+
+# to look for some specific file structure
+# if you comment this the program will look for all the netcdf or grib files in the folder
+export expected_input_name=*.nc
+
+#program folder where MiLES is placed
+export PROGDIR=$(pwd)
+#data folder where place output (Z500 files, NetCDF files and figures)
+export OUTPUTDIR=/work/users/paolo/scratch/miles
+
+####################################
+# ----  program definition  ------ #
+####################################
 
 #CDO
-#program definition
 cdo=/opt/local/bin/cdo
 cdonc="$cdo -f nc"
 #if you CDO is not equipped of NetCDF4 compression change options here

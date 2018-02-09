@@ -22,16 +22,18 @@ if [ ! -f $z500filename ] ; then
     # machine dependent script (to call folder locations!)
     . config/config_${config}.sh
 
-	#create a single huge file: not efficient but universal
-	$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
-
 	# step 1: do it for NetCDF
-	#$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
-	# if NetCDF do not exists, check for grib files
-	#if [ $? -ne 0 ] ; then
-	#	echo "perhaps you are using grib files..."
-	#	$cdonc cat $INDIR/*.grb $TEMPDIR/fullfile.nc
-	#fi
+	if [ -z ${expected_input_name} ] ; then 
+		$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
+		# if NetCDF do not exists, check for grib files
+		if [ $? -ne 0 ] ; then
+			echo "perhaps you are using grib files..."
+			$cdonc cat $INDIR/*.grb $TEMPDIR/fullfile.nc
+		fi
+	else
+		#create a single huge file: not efficient but universal
+		$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
+	fi
 	
 	#main operation: setlevel, name, resolution and NH
 	$cdonc sellonlatbox,0,360,0,90 -remapcon2,r144x73 -setlevel,50000 -setname,zg $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
