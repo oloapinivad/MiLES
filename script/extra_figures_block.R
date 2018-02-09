@@ -46,7 +46,7 @@ variables=c("CN","ACN","BlockEvents","DurationEvents","NumberEvents")
 ##########################################################
 
 #source of config and functions
-source(paste0(MILESDIR,"/config/config.R"))
+source(paste0(MILESDIR,"/config/R_config.R"))
 source(paste0(MILESDIR,"/script/basis_functions.R"))
 KOL=palette0(length(datasets))
 

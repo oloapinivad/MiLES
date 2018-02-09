@@ -110,7 +110,7 @@ Two configuration scripts controls the program options:
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
     After v0.43, it includes the directory tree for your NetCDF files and the expected input files format.
     It's extremely important that you create YOUR OWN config file: in this way it will not be overwritten by further git pull. 
-2.	*config/config.R* controls the plot properties. If everything is ok, you should not touch this file.
+2.	*config/R_config.R* controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
 	Figures are extremely basic: they can be produced in pdf, png and eps format.

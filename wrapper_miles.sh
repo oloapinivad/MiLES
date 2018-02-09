@@ -74,7 +74,7 @@ map_projection="azequalarea"
 
 # this script controls some of the graphical parameters
 # as plot resolutions and palettes
-CFGSCRIPT=$PROGDIR/config/config.R
+CFGSCRIPT=$PROGDIR/config/R_config.R
 
 # select how many clusters for k-means over the North Atlantic
 # NB: only 4 clusters supported so far.  
@@ -155,7 +155,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare_beta.sh $exp $ens $year1 $year2 $z500filename $config
+	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $config
 
 	for season in $seasons ; do
 		echo $season
