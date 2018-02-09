@@ -4,30 +4,34 @@
 #interpolation on regolar 2.5x2.5 grid, NH selection, daily averages.
 
 #define experiment and years
-exp=$1
-year1=$2
-year2=$3
-INDIR=$4
+dataset=$1
+ensemble=$2
+year1=$3
+year2=$4
 z500filename=$5
-
-DATADIR=$(dirname $z500filename)
-TEMPDIR=$DATADIR/tempdir_${exp}_$RANDOM
-mkdir -p $TEMPDIR
+config=$6
 
 if [ ! -f $z500filename ] ; then
+    
+    DATADIR=$(dirname $z500filename)
+    TEMPDIR=$DATADIR/tempdir_${dataset}_$RANDOM
+    mkdir -p $TEMPDIR
 
 	echo "Z500 data are missing... full data preparation is performed"
+    
+    # machine dependent script (to call folder locations!)
+    . config/config_${config}.sh
 
 	#create a single huge file: not efficient but universal
-	#$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
+	$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
 
 	# step 1: do it for NetCDF
-	$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
+	#$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
 	# if NetCDF do not exists, check for grib files
-	if [ $? -ne 0 ] ; then
-		echo "perhaps you are using grib files..."
-		$cdonc cat $INDIR/*.grb $TEMPDIR/fullfile.nc
-	fi
+	#if [ $? -ne 0 ] ; then
+	#	echo "perhaps you are using grib files..."
+	#	$cdonc cat $INDIR/*.grb $TEMPDIR/fullfile.nc
+	#fi
 	
 	#main operation: setlevel, name, resolution and NH
 	$cdonc sellonlatbox,0,360,0,90 -remapcon2,r144x73 -setlevel,50000 -setname,zg $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc

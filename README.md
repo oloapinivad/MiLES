@@ -1,12 +1,12 @@
-# MiLES v0.4
+# MiLES v0.43
 ## Mid-Latitude Evaluation System
 
-Dec 2017
+Feb 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
 Contributors: 	
-J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR)
+J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 
 ------------------------------
 
@@ -37,7 +37,7 @@ Current version includes:
 	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
-3. 	**Z500 Empirical Orthogonal Functions**: Based on CDO "eofs" function.
+3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R. 
 	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
 	North Atlantic Oscillation, East Atlantic Pattern, and Arctic Oscillation are thus computed. 
 	Figures showing linear regression of PCs on monthly Z500 are provided.
@@ -157,9 +157,11 @@ It also tries to assign the right weather regimes to its name. However please be
 ## HISTORY
 
 *v0.43 - Feb 2018*
-- Various bug fixing
-- Improved function to control path and folders
-- R-based EOFs script beta version: ~1.5 slower than CDO but consistent with the MiLES structure
+- Rearrange structure of wrapper and config file: now $INDIR is defined in config files (increase portability!)
+- Various bug fixing for NetCDF access
+- Improved functions to control path and folders
+- R-based EOFs script consistent with the MiLES structure
+- Faster daily anomalies for regimes computation
 
 *v0.42 - Dec 2017*
 - Inclusion of extra blocking diagnostics (Taylor diagrams, Duration-Events plots, histograms, etc.)
