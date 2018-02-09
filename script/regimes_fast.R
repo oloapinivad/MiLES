@@ -19,6 +19,15 @@ smoothing=F
 xlim=c(-80,40)
 ylim=c(30,87.5)
 
+#define file where save data
+
+savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
+#check if data is already there to avoid re-run
+if (file.exists(savefile1)) {
+        print("Actually requested weather regimes data is already there! Skipping... Remove data if you want to re-run!")
+        q()
+}
+
 
 #setting up main variables
 #REGIMESDIR=file.path(FILESDIR,exp,"Regimes",paste0(year1,"_",year2),season)
@@ -91,8 +100,6 @@ print(t1)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-#savefile1=paste(REGIMESDIR,"/RegimesPattern_",exp,"_",year1,"_",year2,"_",season,".nc",sep="")
-savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
 
 # dimensions definition
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]

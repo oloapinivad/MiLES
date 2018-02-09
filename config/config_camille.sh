@@ -6,16 +6,16 @@
 
 # INDIR ->data folder: all the geopotential height data should be here
 # you must customozie this according to the dataset you analyze and your local file structure
-INDIR=/Users/paolo/Desktop/milesdata/$dataset
+INDIR=/Users/paolo/Desktop/milesdata/original/$dataset
 
 # to look for some specific file structure
 # if you comment this the program will look for all the netcdf or grib files in the folder
-export expected_input_name=*.nc
+#export expected_input_name=*.nc
 
 #program folder where MiLES is placed
-export PROGDIR=$(pwd)
+export PROGDIR=/Users/paolo/Desktop/MiLES
 #data folder where place output (Z500 files, NetCDF files and figures)
-export OUTPUTDIR=/work/users/paolo/scratch/miles
+export OUTPUTDIR=/Users/paolo/Desktop/milesdata
 
 ####################################
 # ----  program definition  ------ #
@@ -29,11 +29,6 @@ cdo4="$cdo -f nc4 -z zip"
 
 #Rscript is the script-launcher by R
 Rscript=/usr/local/bin/Rscript
-
-#program folder where MiLES is placed
-export PROGDIR=/Users/paolo/Desktop/MiLES
-#data folder where place output (Z500 files, NetCDF files and figures)
-export OUTPUTDIR=/Users/paolo/Desktop/milesdata
 
 ####################################
 #no need to change below this line #

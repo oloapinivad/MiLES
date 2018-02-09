@@ -19,9 +19,10 @@ timeseason=season2timeseason(season)
 savefile1=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",exp,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
-#if (file.exists(savefile1)) {
-#	stop("Actually requested EOFs data is already there! Skipping... Remove data if you want to re-run!") 
-#}
+if (file.exists(savefile1)) {
+        print("Actually requested EOFs data is already there! Skipping... Remove data if you want to re-run!")
+        q()
+}
 
 #new file opening
 nomefile=z500filename

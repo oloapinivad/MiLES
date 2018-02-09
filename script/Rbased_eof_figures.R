@@ -31,11 +31,11 @@ neofs=4
 ##########################################################
 
 #loading anomalies and variances of experiment
-variance_exp=ncdf.opener(nomefile_exp,"Variances",rotate="no")
+variance_exp=ncdf.opener(nomefile_exp,"Variances",rotate="no")*100 #convert to percentage
 regressions_exp=ncdf.opener(nomefile_exp,"Regressions",rotate="no")
 
 #loading reference field
-variance_ref=ncdf.opener(nomefile_ref,"Variances",rotate="no")
+variance_ref=ncdf.opener(nomefile_ref,"Variances",rotate="no")*100 #convert to percentage
 regressions_ref=ncdf.opener(nomefile_ref,"Regressions",rotate="no")
 
 
@@ -78,6 +78,9 @@ for (neof in 1:neofs) {
 	# Chose output format for figure - by JvH
     open.plot.device(figname,output_file_type,CFGSCRIPT)
 
+	# where to plot variances values
+	if (map_projection=="no") {varpoints=c(120,85)} else {varpoints=c(0,0.7)}
+
 	#plot properties
 	par(plotpar)
 
@@ -85,14 +88,14 @@ for (neof in 1:neofs) {
     filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
     mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
     proj.addland(proj=map_projection)
-	text(120,85,paste("Variance Explained: ",variance_exp[neof],"%",sep=""),cex=2)
+	text(varpoints[1],varpoints[2],paste("Variance Explained: ",round(variance_exp[neof],2),"%",sep=""),cex=2)
 
 	im=plot.prepare(ics,ipsilon,linear_ref,proj=map_projection,lat_lim=lat_lim)
     filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
     mtext(title_name,side=3,line=.5,outer=TRUE,cex=2,font=2)
     proj.addland(proj=map_projection)
 	image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
-	text(120,85 ,paste("Variance Explained: ",variance_ref[neof],"%",sep=""),cex=2)
+	text(varpoints[1],varpoints[2],paste("Variance Explained: ",round(variance_ref[neof],2),"%",sep=""),cex=2)
 
 	#delta field plot
     im=plot.prepare(ics,ipsilon,linear_exp-linear_ref,proj=map_projection,lat_lim=lat_lim)        

@@ -13,23 +13,23 @@ set -e
 ################################################
 
 #config name: create your own config file for your machine.
-config=ecmwf
+config=camille
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1982
-year2_exp=2011
-dataset_exp="S5AMIP_ERAI"
-ens_list=$(seq -f "%02g" 0 4 )
-#ens_list="NO"
+year1_exp=1871
+year2_exp=2012
+dataset_exp="20CR"
+#ens_list=$(seq -f "%02g" 0 4 )
+ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=0
+std_clim=1
 
 # only valid if std_clim=0
 dataset_ref="ERAI"
