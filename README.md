@@ -108,6 +108,7 @@ Two configuration scripts controls the program options:
 1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
 	It should be set accordingly to your local configuration. 
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
+    After v0.43, it includes the directory tree for your NetCDF files. 
 2.	*config/config.R* controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
@@ -116,9 +117,8 @@ Two configuration scripts controls the program options:
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
-- "ECMWF" -> this is to call the preprocessing of Z500 ad hoc for ECMWF data structure
 - "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths: if you have multiple ensemble members you should
-  distinguish them from here
+  distinguish them from here.
 - "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. Ensemble "mean" will be produced by the wrapper.
 - "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. 
 - "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
@@ -138,11 +138,9 @@ It produces a single NetCDF4 Zip files with all the data avaialble. A check is p
 the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
-A new version of this file ("ecmwf_z500_prepare.sh") is provided to run with ECMWF data structure: it is clearly evident that you can think about personalize
-this script in order to tailor it on your data structure.
 
-* "eof_fast.sh" and "eof_figure.R". EOFs are computed using CDO in bash environment by the former script, while the latter
-provides the figures with an R script. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
+* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using "eofs" R function by the former script, while the latter
+provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts.
