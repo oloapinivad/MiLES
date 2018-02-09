@@ -8,7 +8,7 @@
 # INDIR ->data folder: all the geopotential height data should be here
 # you must customozie this according to the dataset you analyze and your local file structure
 INDIR=/home/paolo/work/DATA/CMIP5/${dataset}/HIST/r1/day/Z500
-if [ "${dataset}" == NCEP ] || [ "${dataset}" == ERA40 ] || [ "${dataset}" == ERAINTERIM  ] || [ "${dataset}" == MERRA  ] ; then
+if [ "${dataset}" == NCEP ] || [ "${dataset}" == ERA40 ] || [ "${dataset}" == ERAINTERIM  ] || [ "${dataset}" == MERRA  ] || [ "${dataset}" == 20CR  ] ; then
         INDIR=/home/paolo/work/DATA/${dataset}/day/Z500
 fi
 

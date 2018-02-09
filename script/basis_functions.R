@@ -21,16 +21,14 @@ R_version=as.numeric(R.Version()$major)+as.numeric(R.Version()$minor)/10
 ##########################################################
 
 #normalize a time series
-standardize<-function(timeseries)
-{
+standardize<-function(timeseries) {
 	out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
 	return(out)
 }
 
 
 #detect ics ipsilon lat-lon
-whicher<-function(axis,number)
-{
+whicher<-function(axis,number) {
 	out=which.min(abs(axis-number))
 	return(out)
 }
@@ -144,12 +142,25 @@ return(paste0(filedir,"/",figname))
 # to convert season charname to months number
 season2timeseason<-function(season)
 {
-	if (season=="ALL")  {timeseason=1:12}
-	if (season=="JJA")  {timeseason=6:8}
-	if (season=="DJF")  {timeseason=c(1,2,12)}
-	if (season=="MAM")  {timeseason=3:5}
-	if (season=="SON")  {timeseason=9:11}
-	if (!exists("timeseason")) {stop("wrong season selected!")}
+    if (nchar(season)==3 & toupper(season)==season) {
+	    if (season=="ALL")  {timeseason=1:12}
+	    if (season=="JJA")  {timeseason=6:8}
+	    if (season=="DJF")  {timeseason=c(1,2,12)}
+	    if (season=="MAM")  {timeseason=3:5}
+	    if (season=="SON")  {timeseason=9:11}
+    } else {
+        charseason=strsplit(season,"_")[[1]]
+        print(charseason)
+        if (mean(nchar(charseason))==3) {
+            timeseason=which(charseason==month.abb)
+            } else {
+            timeseason=which(charseason==month.name)
+            } 
+    }
+    print(timeseason)
+    if (length(timeseason)==0 |  min(timeseason)<0 | max(timeseason)>13) {
+        stop("wrong season selected!")
+    }
 	return(timeseason)
 }
 
@@ -185,70 +196,70 @@ print(paste("From",datas[1],"to",datas[length(seas)]))
 return(etime)
 }
 
-power.date<-function(season,ANNO1,ANNO2)
-{
+#power.date<-function(season,ANNO1,ANNO2)
+#{
 #evalute the number of days that will analyze in order
 #to create arrays of the needed dimensions
 
 	#create continous calendar
-	p1<-as.Date(paste0(ANNO1,"-01-01"))
-	p2<-as.Date(paste0(ANNO2,"-12-31"))
-	datas=seq(p1,p2,by="day")
+	#p1<-as.Date(paste0(ANNO1,"-01-01"))
+	#p2<-as.Date(paste0(ANNO2,"-12-31"))
+	#datas=seq(p1,p2,by="day")
 
 	#select only days correspondeing to the needed season
-	timeseason=season2timeseason(season)
-	month=as.numeric(format(datas,"%m"))
-	whichdays=which(month %in% timeseason)
+	#timeseason=season2timeseason(season)
+	#month=as.numeric(format(datas,"%m"))
+	#whichdays=which(month %in% timeseason)
 
 	#create a "season" for continuous time, used by persistance tracking
-	seas=whichdays*1; ss=1
-	for (i in 1:(length(whichdays)-1)) 
-		{
-		if (diff(whichdays)[i]>1)  {ss=ss+1}
-		seas[i+1]=ss
-		}
+	#seas=whichdays*1; ss=1
+	#for (i in 1:(length(whichdays)-1)) 
+		#{
+		#if (diff(whichdays)[i]>1)  {ss=ss+1}
+		#seas[i+1]=ss
+		#}
 
 	#produce a final timeseries of dates
-	datas=datas[whichdays]
-	dataline=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),season=seas,data=datas)
-	print("Time Array Built")
-	print(paste("Length:",length(seas),"days for",season,"season"))
-	print(paste("From",datas[1],"to",datas[length(seas)]))
+	#datas=datas[whichdays]
+	#dataline=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),season=seas,data=datas)
+	#print("Time Array Built")
+	#print(paste("Length:",length(seas),"days for",season,"season"))
+	#print(paste("From",datas[1],"to",datas[length(seas)]))
 
-	return(dataline)
-}
+	#return(dataline)
+#}
 
-power.date.no.leap<-function(season,ANNO1,ANNO2)
-{
+#power.date.no.leap<-function(season,ANNO1,ANNO2)
+#{
 	#apply to power.date object to clean out elements for leap years
-	e=power.date(season,ANNO1,ANNO2)
-	leap.days=which(e$month==2 & e$day==29)
-	dataline.leap=list(day=e$day[-leap.days],month=e$month[-leap.days],year=e$year[-leap.days],season=e$season[-leap.days],data=e$data[-leap.days])
-	print("FIXED FOR NO LEAP CALENDAR: Time Array Built")
-	print(paste("Length:",length(dataline.leap$season),"days for",season,"season"))
-	print(paste("From",dataline.leap$data[1],"to",dataline.leap$data[length(dataline.leap$season)]))
-	return(dataline.leap)
-}
+	#e=power.date(season,ANNO1,ANNO2)
+	#leap.days=which(e$month==2 & e$day==29)
+	#dataline.leap=list(day=e$day[-leap.days],month=e$month[-leap.days],year=e$year[-leap.days],season=e$season[-leap.days],data=e$data[-leap.days])
+	#print("FIXED FOR NO LEAP CALENDAR: Time Array Built")
+	#print(paste("Length:",length(dataline.leap$season),"days for",season,"season"))
+	#print(paste("From",dataline.leap$data[1],"to",dataline.leap$data[length(dataline.leap$season)]))
+	#return(dataline.leap)
+#}
 
-power.date.30day<-function(season,ANNO1,ANNO2)
-{
+#power.date.30day<-function(season,ANNO1,ANNO2)
+#{
 	#apply to power.date object to clean out elements for leap years
-	nmonths=length(season2timeseason(season))
-	nyears=as.numeric(ANNO2)-as.numeric(ANNO1)+1
-	dd=rep(seq(1,30),nmonths*nyears)
-	mm=rep(rep(season2timeseason(season),each=30),nyears)
+	#nmonths=length(season2timeseason(season))
+	#nyears=as.numeric(ANNO2)-as.numeric(ANNO1)+1
+	#dd=rep(seq(1,30),nmonths*nyears)
+	#mm=rep(rep(season2timeseason(season),each=30),nyears)
 	#create a "season" for continuous time, used by persistance tracking
-	seas=mm*0+1; ss=1
-	for (i in 1:(length(mm)-1))
-	        {
-	        if (diff(mm)[i]>1)  {ss=ss+1}
-	        seas[i+1]=ss
-	        }
-	dataline.30day=list(day=dd,month=mm,season=seas)
-	print("SIMPLIFIED CALENDAR FOR 30-day CALENDAR: Time Array Built")
-	print(paste("Length:",length(dataline.30day$season),"days for",season,"season"))
-	return(dataline.30day)
-}
+	#seas=mm*0+1; ss=1
+	#for (i in 1:(length(mm)-1))
+	        #{
+	        #if (diff(mm)[i]>1)  {ss=ss+1}
+	        #seas[i+1]=ss
+	        #}
+	#dataline.30day=list(day=dd,month=mm,season=seas)
+	#print("SIMPLIFIED CALENDAR FOR 30-day CALENDAR: Time Array Built")
+	#print(paste("Length:",length(dataline.30day$season),"days for",season,"season"))
+	#return(dataline.30day)
+#}
 
 ##########################################################
 #--------------NetCDF loading function-------------------#
@@ -271,11 +282,11 @@ if (interp2grid)
         {
         print(paste("Remapping with CDO on",grid,"grid"))
         filename=basename(normalizePath(namefile))
-	filedir=dirname(normalizePath(namefile))
-	cdo=Sys.which("cdo")
+	    filedir=dirname(normalizePath(namefile))
+	    cdo=Sys.which("cdo")
         tempfile=paste0(file.path(filedir,paste0("tempfile_",filename)))
         #system(paste0(cdo," ",remap_method,",",grid," ",namefile," ",tempfile))
-	system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
+	    system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
         namefile=tempfile 
         }
 
@@ -306,7 +317,7 @@ dimensions=length(dim(daily))
 
 #load axis
 naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
-for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
+for (axis in naxis) {assign(axis,ncvar_get(a,axis))}
 
 
 #if dimensions are multiple, get longitude, latitude
@@ -329,7 +340,7 @@ if (dimensions>1)
         ipsilon=ncvar_get(a,namelat)
         }
 
-    print("flipping and rotating")
+        #print("flipping and rotating")
         #longitute rotation around Greenwich
         if (rot)     {ics=rotation(ics); daily=rotation(daily) }
         if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
@@ -979,43 +990,43 @@ return(field)
 }
 
 #large scale extension
-largescale.extension2<-function(ics,ipsilon,field)
-{
-print("Large Scale Extension based on fixed angle")
-deltaics=(ics[20]-ics[19])
-deltaips=(ipsilon[20]-ipsilon[19])
-passo=round(5/(ics[20]-ics[19]))
-vertical=round(2.5/(ipsilon[20]-ipsilon[19]))
+#largescale.extension2<-function(ics,ipsilon,field)
+#{
+#print("Large Scale Extension based on fixed angle")
+#deltaics=(ics[20]-ics[19])
+#deltaips=(ipsilon[20]-ipsilon[19])
+#passo=round(5/(ics[20]-ics[19]))
+#vertical=round(2.5/(ipsilon[20]-ipsilon[19]))
 
-print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+#print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+#
+#short<-function(ics,ipsilon,field,passo,vertical)
+#{
+#out=field
+#startipsilon=which.min(abs(ipsilon-30))
+#estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
+#new=rbind(field,field,field)
+#for (i in 1:length(ics))
+#{ii=i+length(ics)
+#for (j in startipsilon:(startipsilon+estension))
+#{
+#control=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
+#if (control>0)
+#{out[i,j]=1}
+#}
+#}
+#return(out)
+#}
 
-short<-function(ics,ipsilon,field,passo,vertical)
-{
-out=field
-startipsilon=which.min(abs(ipsilon-30))
-estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
-new=rbind(field,field,field)
-for (i in 1:length(ics))
-{ii=i+length(ics)
-for (j in startipsilon:(startipsilon+estension))
-{
-control=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
-if (control>0)
-{out[i,j]=1}
-}
-}
-return(out)
-}
-
-for (t in 1:length(field[1,1,]))
-{
-if (any(t==round(seq(0,length(field[1,1,]),,11))))
-        {print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
-if (all(!is.na(field[,,t])))
-{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
-}
-return(field)
-}
+#for (t in 1:length(field[1,1,]))
+#{
+#if (any(t==round(seq(0,length(field[1,1,]),,11))))
+#        {print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
+#if (all(!is.na(field[,,t])))
+#{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
+#}
+#return(field)
+#}
 
 #Longitude filter for minimum extension
 longitude.filter<-function(ics,ipsilon,field)

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 ################################################
-#--MidLatitude Evaluation System for Ec-Earth--#
-#------------------MiLES v0.4------------------#
+#------- MidLatitude Evaluation System --------#
+#------------------MiLES v0.43-----------------#
 #----------Jun 2017, P. Davini, ISAC-CNR-------#
 #
 #
@@ -13,13 +13,13 @@ set -e
 ################################################
 
 #config name: create your own config file for your machine.
-config=camille
+config=sansone
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1871
+year1_exp=1979
 year2_exp=2012
 dataset_exp="20CR"
 #ens_list=$(seq -f "%02g" 0 4 )
@@ -29,15 +29,19 @@ ens_list="NO"
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=1
+std_clim=0
 
 # only valid if std_clim=0
-dataset_ref="ERAI"
+dataset_ref="NCEP"
 ens_ref="NO"
 year1_ref=1982
 year2_ref=2016
 
-# please specify one or more of the 4 standard seasons using 3 characters
+# please specify one or more of the 4 standard seasons using 3 characters. 
+# std_clim is supported for these 4 seasons only. 
+# To analyse the whole year use "ALL"
+# Beta: now you can define your own season putting together 3-character string for each consecutive month you 
+# want to include, for example "Jan_Feb_Mar".
 #seasons="DJF MAM SON JJA"
 seasons="DJF"
 
@@ -83,10 +87,17 @@ nclusters=4
 
 #check if you can compare run with std_clim=1
 if  [ $std_clim -eq 1 ] ; then
+
         if ! { [ "$tele" = NAO ] || [ "$tele" = AO ]; } ; then
                 echo "Error: you cannot use non-standard EOFs region with std_clim=1"
                 exit
         fi
+
+        if ! { [ "$season" = DJF ] || [ "$season" = MAM ] || [ "$season" = SON ] || [ "$season" = JJA ]; } ; then 
+                echo "Error: you cannot use non-standard seasons with std_clim=1"
+                exit
+        fi        
+
 fi
 
 # if we are using standard climatology

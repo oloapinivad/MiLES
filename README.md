@@ -5,7 +5,7 @@ Feb 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
-Contributors: 	
+Acknowledgements to:
 J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 
 ------------------------------
@@ -37,7 +37,7 @@ Current version includes:
 	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
-3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R. 
+3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R using SVD.
 	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
 	North Atlantic Oscillation, East Atlantic Pattern, and Arctic Oscillation are thus computed. 
 	Figures showing linear regression of PCs on monthly Z500 are provided.
@@ -74,7 +74,7 @@ in case you use the 2D blocking index in any publication.
 ## SOFTWARE REQUIREMENTS
 
 * a. R version >3.0
-* b. CDO version > 1.6.5 (1.8 at least for GRIB support), compiled with netCDF4
+* b. CDO version > 1.6.5 (1.8 at least for complete GRIB support), compiled with netCDF4
 * c. Compiling environment (gcc)
 
 IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.
@@ -83,7 +83,7 @@ If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
 - "ncdf4" provides the interface for NetCDF files.
-- "maps" provides the world maps for the plots: it needs to be at least v3.0
+- "maps" provides the world maps for the plots: (version >= 3.0 )
 - "PCICt" provides the tools to handle 360-days and 365-days calendars (from model data). 
 - "akima" provides the interpolation for map projections.
 - "mapproj" provides a series of map projection that can be used.
@@ -106,9 +106,10 @@ Before running **MiLES** R packages should installed (see above).
 
 Two configuration scripts controls the program options:
 1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
-	It should be set accordingly to your local configuration. 
+	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
-    After v0.43, it includes the directory tree for your NetCDF files. 
+    After v0.43, it includes the directory tree for your NetCDF files and the expected input files format.
+    It's extremely important that you create YOUR OWN config file: in this way it will not be overwritten by further git pull. 
 2.	*config/config.R* controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
@@ -117,13 +118,13 @@ Two configuration scripts controls the program options:
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
-- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths: if you have multiple ensemble members you should
-  distinguish them from here.
-- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. Ensemble "mean" will be produced by the wrapper.
-- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. 
-- "seasons" -> specify one or more of the 4 standard seasons using 3 characters 
+- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths
+- "year1_exp" and "year2_exp" -> the years on which MiLES will run. 
+- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper.
+- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. if 0, please specify the dataset you want to compare to with "dataset_ref", "year1_ref" and "year2_ref". 
+- "seasons" -> specify one or more of the 4 standard seasons using 3 characters. Otherwise, use 3 character for each month divided by an underscopre to create your own season (beta).
 - "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
-- "output_file_type" -> pdf, eps or png figures format
+- "output_file_type" -> pdf, eps or png figures format.
 - "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plots. All projection from mapproj R package are supported.
 
 
@@ -155,11 +156,14 @@ It also tries to assign the right weather regimes to its name. However please be
 ## HISTORY
 
 *v0.43 - Feb 2018*
+- R-based EOFs script consistent with the MiLES structure
 - Rearrange structure of wrapper and config file: now $INDIR is defined in config files (increase portability!)
+- Beta support for free month and season selection
+- Consistent ensemble members support
 - Various bug fixing for NetCDF access
 - Improved functions to control path and folders
-- R-based EOFs script consistent with the MiLES structure
 - Faster daily anomalies for regimes computation
+- Variance is again plotted for EOFs
 
 *v0.42 - Dec 2017*
 - Inclusion of extra blocking diagnostics (Taylor diagrams, Duration-Events plots, histograms, etc.)

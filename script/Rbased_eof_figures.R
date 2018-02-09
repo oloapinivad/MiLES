@@ -61,17 +61,12 @@ for (neof in 1:neofs) {
 	#-----plotting-------#
 	
 	#plot properties
-	region=tele
+	region=tele #if it is a box of lonlat
 	if (tele=="NAO") {region="North Atlantic"}
 	if (tele=="AO") {region="Northern Hemisphere"}
 	title_name=paste0(region," EOF",neof)
 
-	#final plot production
-    #if (ens=="NO") {
-	#    figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type)
-    #} else {
-    #    figname=paste0(FIGDIREOF,"/EOF",neof,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type)
-    #}
+    #define figure
     figname=fig.builder(FIGDIR,paste0("EOFs_beta/",tele),paste0("EOF",neof),exp,ens,year1,year2,season,output_file_type)
 	print(figname)
 
