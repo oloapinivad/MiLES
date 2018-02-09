@@ -13,7 +13,7 @@ set -e
 ################################################
 
 #config name: create your own config file for your machine.
-config=sansone
+config=camille
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
@@ -29,7 +29,7 @@ ens_list="NO"
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=0
+std_clim=1
 
 # only valid if std_clim=0
 dataset_ref="NCEP"
@@ -63,8 +63,6 @@ output_file_type="pdf"
 #map_projection="no"
 map_projection="azequalarea"
 
-
-
 ###############################################
 #-------------Configuration scripts------------#
 ################################################
@@ -92,11 +90,12 @@ if  [ $std_clim -eq 1 ] ; then
                 echo "Error: you cannot use non-standard EOFs region with std_clim=1"
                 exit
         fi
-
-        if ! { [ "$season" = DJF ] || [ "$season" = MAM ] || [ "$season" = SON ] || [ "$season" = JJA ]; } ; then 
-                echo "Error: you cannot use non-standard seasons with std_clim=1"
-                exit
-        fi        
+	for season in $seasons ; do
+        	if ! { [ "$season" = DJF ] || [ "$season" = MAM ] || [ "$season" = SON ] || [ "$season" = JJA ]; } ; then 
+                	echo "Error: you cannot use non-standard seasons with std_clim=1"
+                	exit
+        	fi        
+	done
 
 fi
 
