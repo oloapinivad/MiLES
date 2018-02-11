@@ -13,7 +13,7 @@ set -e
 ################################################
 
 #config name: create your own config file for your machine.
-config=camille
+config=sansone
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
