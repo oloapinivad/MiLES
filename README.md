@@ -117,14 +117,14 @@ Two configuration scripts controls the program options:
 The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
-- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths
+- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths structure.
 - "year1_exp" and "year2_exp" -> the years on which MiLES will run. 
-- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper.
-- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. if 0, please specify the dataset you want to compare to with "dataset_ref", "year1_ref" and "year2_ref". 
-- "seasons" -> specify one or more of the 4 standard seasons using 3 characters. Otherwise, use 3 character for each month divided by an underscopre to create your own season (beta).
+- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper only for blocking data.
+- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. If 0, please specify the dataset you want to compare to with "dataset_ref", "year1_ref" and "year2_ref". 
+- "seasons" -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar". This last functionality is under testing.
 - "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
 - "output_file_type" -> pdf, eps or png figures format.
-- "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plots. All projection from mapproj R package are supported.
+- "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plotsi (default). All projection from mapproj R package are supported (but not all of them have been tested).
 
 
 The chain of scripts will be executed as a sequence. You can comment the script you do not need.
