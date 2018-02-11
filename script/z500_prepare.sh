@@ -5,7 +5,7 @@
 
 #define experiment and years
 dataset=$1
-ensemble=$2
+ens=$2
 year1=$3
 year2=$4
 z500filename=$5

@@ -6,31 +6,31 @@
 
 # INDIR ->data folder: all the geopotential height data should be here
 # you must customozie this according to the dataset you analyze and your local file structure
-# dataset and ensemble is called by the z500_prepare script
+# dataset and ens is called by the z500_prepare script
 if [ "${dataset}" == "ERA5" ] |  [ "${dataset}" == "ERAI" ] ; then
     INDIR=/scratch/rd/nedd/regimes/${dataset}_daily
-    expected_input_name=*${dataset}*${ensemble}.grb
+    expected_input_name=*${dataset}*${ens}.grb
 fi
 
 if [ "${dataset}" == "S4" ] ; then
     INDIR=/home/ms/it/ccpd/regimes/S4_daily_nov
-    expected_input_name=*/*S4*_${ensemble}.grb
+    expected_input_name=*/*S4*_${ens}.grb
 fi
 
 if [ "${dataset}" == "S5" ] |[ "${dataset}" == "S3" ] ; then
     INDIR=/scratch/rd/nedd/regimes/${dataset}_24h_nov
-    expected_input_name=*/*${dataset}*_${ensemble}.grb
+    expected_input_name=*/*${dataset}*_${ens}.grb
 fi
 
 if [ "${dataset}" == "S4AMIP" ] | [ "${dataset}" == "S5AMIP" ] | [ "${dataset}" == "S5AMIP_ERAI" ] ; then
     INDIR=/gpfs/scratch/ms/it/ccpd/mars/${dataset}
-    expected_input_name=*/*S0*_${ensemble}.grb
+    expected_input_name=*/*S0*_${ens}.grb
 fi
 
 
 if [ "${dataset}" == "S5LR" ] ; then
     INDIR=/scratch/rd/nedd/regimes/S5_24h_nov_lowres
-    expected_input_name=*/*S5*_${ensemble}.grb
+    expected_input_name=*/*S5*_${ens}.grb
 fi
 
 #program folder where MiLES is placed
