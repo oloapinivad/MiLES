@@ -15,12 +15,11 @@ J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 **MiLES** is a tool for estimating properties of Northern Hemisphere mid-latitude climate in Global Climate Models
 and Reanalysis datasets. It has been originally thought for EC-Earth output and then
 it has been extended to any model data. It is based uniquely on R and CDO.
-It works on daily 500hPa geopotential height data and produces NetCDF4 outputs and climatological figures 
-for the chosen time period (over the for standard 4 seasons) in 3 possible output formats.
-Map projection for plots can specified as well.
+It works on daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs
+and climatological figures for the chosen time period and season.
 Before performing analysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
 Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2016) or with any 
-other MiLES-generated data
+other MiLES-generated data.
 
 Current version includes:
 
@@ -108,8 +107,8 @@ Two configuration scripts controls the program options:
 1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
 	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
-    After v0.43, it includes the directory tree for your NetCDF files and the expected input files format.
-    It's extremely important that you create YOUR OWN config file: in this way it will not be overwritten by further git pull. 
+    This also includes the directory tree for your NetCDF files and the expected input files format.
+    It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull: two .tmpl files for Unix and Mac Os X machines are provided.  
 2.	*config/R_config.R* controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
@@ -135,12 +134,12 @@ R-based script are written as functions and thus can be called inside R if neede
 * "z500_prepare.sh". **MiLES** is based on a pre-processing of data. 
 This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid,
 it selects the NH only and it organizes their structure and their features in order to make them handable by **MiLES**.
-It produces a single NetCDF4 Zip files with all the data avaialble. A check is performed in order to avoid useless run of 
+It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of 
 the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
 
-* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using "eofs" R function by the former script, while the latter
+* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter
 provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
@@ -161,9 +160,10 @@ It also tries to assign the right weather regimes to its name. However please be
 - Beta support for free month and season selection
 - Consistent ensemble members support
 - Various bug fixing for NetCDF access
-- Improved functions to control path and folders
-- Faster daily anomalies for regimes computation
+- Improved functions to control path and folders for NetCDF and figures
+- Faster daily anomalies computation for weather regimes script
 - Variance is again plotted for EOFs
+- Template files are provided for Unix and Mac Os X machines
 
 *v0.42 - Dec 2017*
 - Inclusion of extra blocking diagnostics (Taylor diagrams, Duration-Events plots, histograms, etc.)
