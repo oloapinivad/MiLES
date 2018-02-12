@@ -49,18 +49,18 @@ mkdir -p $ZDIR $FIGDIR $FILESDIR
 
 #safety check
 echo "Check if CDO has been loaded"
-command -v cdo -v >/dev/null 2>&1 || { echo "CDO module is not loaded. Aborting." >&2; exit 1; }
+command -v $cdo -v >/dev/null 2>&1 || { echo "CDO module is not loaded. Aborting." >&2; exit 1; }
 echo "CDO found: proceeding..."
 
 echo "Check if R has been loaded"
-command -v Rscript >/dev/null 2>&1 || { echo "R module is not loaded. Aborting." >&2; exit 1; }
+command -v $Rscript >/dev/null 2>&1 || { echo "R module is not loaded. Aborting." >&2; exit 1; }
 echo "R found: proceeding..."
 
-echo "Check if NetCDF  has been loaded"
-command -v ncdump >/dev/null 2>&1 || { echo "NetCDF module is not loaded. Aborting." >&2; exit 1; }
-echo "NetCDF found: starting...."
+#echo "Check if NetCDF  has been loaded"
+#command -v ncdump >/dev/null 2>&1 || { echo "NetCDF module is not loaded. Aborting." >&2; exit 1; }
+#echo "NetCDF found: starting...."
 
 
 #R check for key packages
-Rscript $PROGDIR/config/installpack.R
+$Rscript $PROGDIR/config/installpack.R
 
