@@ -19,7 +19,7 @@ config=sansone
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1979
+year1_exp=1980
 year2_exp=2012
 dataset_exp="20CR"
 #ens_list=$(seq -f "%02g" 0 4 )
