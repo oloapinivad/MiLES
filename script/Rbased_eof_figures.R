@@ -12,7 +12,7 @@ miles.eof.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,ye
 source(CFGSCRIPT)
 
 #use filebuilding script to access to file
-nomefile_exp=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",exp,ens,year1,year2,season)
+nomefile_exp=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",exp,ens,year1,year2,season)
 
 # check for REFDIR==FILESDIR, i.e. if we are using the climatology provided by MiLES or another dataset MiLES-generated 
     if (REFDIR!=FILESDIR) {
@@ -20,7 +20,7 @@ nomefile_exp=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",exp,ens,year
     } else {
 
         #use file.builder to create the path of the blocking files
-        nomefile_ref=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",dataset_ref,ens_ref,year1_ref,year2_ref,season)
+        nomefile_ref=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",dataset_ref,ens_ref,year1_ref,year2_ref,season)
     }
 
 #EOFs to plot (depends on how many computed by CDO!)
@@ -67,8 +67,8 @@ for (neof in 1:neofs) {
 	title_name=paste0(region," EOF",neof)
 
     #define figure
-    figname=fig.builder(FIGDIR,paste0("EOFs_beta/",tele),paste0("EOF",neof),exp,ens,year1,year2,season,output_file_type)
-	print(figname)
+    figname=fig.builder(FIGDIR,paste0("EOFs/",tele),paste0("EOF",neof),exp,ens,year1,year2,season,output_file_type)
+    print(figname)
 
 	# Chose output format for figure - by JvH
     open.plot.device(figname,output_file_type,CFGSCRIPT)

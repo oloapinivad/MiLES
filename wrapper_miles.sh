@@ -13,15 +13,15 @@ set -e
 ################################################
 
 #config name: create your own config file for your machine.
-config=sansone
+config=wilma
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1980
-year2_exp=2012
-dataset_exp="20CR"
+year1_exp=1979
+year2_exp=1999
+dataset_exp="ERAI"
 #ens_list=$(seq -f "%02g" 0 4 )
 ens_list="NO"
 

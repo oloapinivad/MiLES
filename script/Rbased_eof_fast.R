@@ -16,7 +16,7 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,paste0("EOFs_beta/",tele),"EOFs",exp,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",exp,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {

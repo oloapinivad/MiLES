@@ -1,4 +1,4 @@
-# MiLES v0.43
+# MiLES v0.5
 ## Mid-Latitude Evaluation System
 
 Oct 2014  - Feb 2018
@@ -154,7 +154,12 @@ It also tries to assign the right weather regimes to its name. However please be
 
 ## HISTORY
 
-*v0.43 - Feb 2018*
+*v0.5 - Mar 2018*
+- Command line options for wrapper
+- Cleaning and bug fixing
+- Improving climatologies
+
+*v0.43 - Feb 2018
 - R-based EOFs script consistent with the MiLES structure
 - Rearrange structure of wrapper and config file: now $INDIR is defined in config files (increase portability!)
 - Beta support for free month and season selection
