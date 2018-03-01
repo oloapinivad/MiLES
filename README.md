@@ -1,7 +1,7 @@
 # MiLES v0.5
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Feb 2018
+Oct 2014  - Mar 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
@@ -18,14 +18,14 @@ it has been extended to any model data. It is based uniquely on R and CDO.
 It works on daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs
 and climatological figures for the chosen time period and season.
 Before performing analysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
-Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2016) or with any 
+Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2017) or with any 
 other MiLES-generated data.
 
 Current version includes:
 
 1. 	**1D Atmospheric Blocking**: *Tibaldi and Molteni (1990)* index for Northern Hemisphere.
-    Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
-    Full timeseries and climatologies are provided in NetCDF4 Zip format.
+   	 Computed at fixed latitude of 60N, with delta of -5,-2.5,0,2.5,5 deg, fiN=80N and fiS=40N.
+   	 Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
 2. 	**2D Atmospheric blocking**: following the index by *Davini et al. (2012)*.
 	It is a 2D version of *Tibaldi and Molteni (1990)* for Northern Hemisphere
@@ -53,18 +53,14 @@ Current version includes:
 
 ## MAIN NOTES
 
-Please be aware that this is free tool in continous development, then it may not be 
-free of bugs. Please report any issue at p.davini@isac.cnr.it
+Please be aware that this is free tool in continous development, then it may not be free of bugs. Please report any issue at p.davini AT isac.cnr.it
 
 Please refer to **MiLES** specifing which version has been used in the acknowledgment of any publication.
 
-Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. 
-Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."*
+Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."*
 in case you  use the 1D blocking index in any publication.
 
-Please cite *"Davini, P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012:
-Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking.
-J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."*
+Please cite *"Davini, P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."*
 in case you use the 2D blocking index in any publication.
 
 
@@ -72,20 +68,20 @@ in case you use the 2D blocking index in any publication.
 
 ## SOFTWARE REQUIREMENTS
 
-* a. R version >3.0
-* b. CDO version > 1.6.5 (1.8 at least for complete GRIB support), compiled with netCDF4
-* c. Compiling environment (gcc)
+a. R version >3.0
+b. CDO version > 1.6.5 (1.8 at least for complete GRIB support), compiled with netCDF4
+c. Compiling environment (gcc)
 
 IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.
-You have to run "Rscript config/installpack.R" as first step in order to install the packages.
+You have to run `Rscript config/installpack.R` as first step in order to install the packages.
 If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
-- "ncdf4" provides the interface for NetCDF files.
-- "maps" provides the world maps for the plots: (version >= 3.0 )
-- "PCICt" provides the tools to handle 360-days and 365-days calendars (from model data). 
-- "akima" provides the interpolation for map projections.
-- "mapproj" provides a series of map projection that can be used.
+- `ncdf4` provides the interface for NetCDF files.
+- `maps` provides the world maps for the plots: (version >= 3.0 )
+- `PCICt` provides the tools to handle 360-days and 365-days calendars (from model data). 
+- `akima` provides the interpolation for map projections.
+- `mapproj` provides a series of map projection that can be used.
 
 
 If you are aware of other way to implement this 5 passages without using those packages, please contact me.
@@ -104,46 +100,46 @@ https://stackoverflow.com/questions/29992066/rcpp-warning-directory-not-found-fo
 Before running **MiLES** R packages should installed (see above).
 
 Two configuration scripts controls the program options:
-1. 	*config/config_$MACHINE.sh* controls the properties of your environment. 
+1. 	`config/config_$MACHINE.sh` controls the properties of your environment. 
 	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
-    This also includes the directory tree for your NetCDF files and the expected input files format.
-    It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull: two .tmpl files for Unix and Mac Os X machines are provided.  
-2.	*config/R_config.R* controls the plot properties. If everything is ok, you should not touch this file.
+    	This also includes the directory tree for your NetCDF files and the expected input files format.
+    	It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull: two .tmpl files for Unix and Mac Os X machines are provided.  
+2.	`config/R_config.R` controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
 	Figures are extremely basic: they can be produced in pdf, png and eps format.
 
-The simplest way to run **MiLES** is executing in bash environment "./wrapper_miles.sh". 
+The simplest way to run **MiLES** is executing in bash environment `./wrapper_miles.sh`. 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
 can specified at this stage: here below a list of the commands that can be set up
-- "dataset_exp" -> this is simply an identifier for your experiments used by MiLES to create files and paths structure.
-- "year1_exp" and "year2_exp" -> the years on which MiLES will run. 
-- "ens_list" -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper only for blocking data.
-- "std_clim" -> 1 to use standard ERAI 1979-2016 climatology, 0 for custom comparison. If 0, please specify the dataset you want to compare to with "dataset_ref", "year1_ref" and "year2_ref". 
-- "seasons" -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar". This last functionality is under testing.
-- "tele" -> "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2". 
-- "output_file_type" -> pdf, eps or png figures format.
-- "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plotsi (default). All projection from mapproj R package are supported (but not all of them have been tested).
+- `dataset_exp` -> this is simply an identifier for your experiments used by MiLES to create files and paths structure.
+- `year1_exp` and `year2_exp` -> the years on which MiLES will run. 
+- `ens_list` -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper only for blocking data.
+- `std_clim` -> 1 to use standard ERAI 1979-2017 climatology, 0 for custom comparison. If 0, please specify the dataset you want to compare to with `dataset_ref`, `year1_ref` and `year2_ref`. 
+- `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar". This last functionality is under testing.
+- `teles` -> A list of one or teleconnection patterns. "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2".
+- `output_file_type` -> pdf, eps or png figures format.
+- `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plotsi (default). All projection from mapproj R package are supported (but not all of them have been tested).
 
 The chain of scripts will be executed as a sequence. You can comment the script you do not need.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based script are written as functions and thus can be called inside R if needed.  
 
-* "z500_prepare.sh". **MiLES** is based on a pre-processing of data. 
+* `z500_prepare.sh`. **MiLES** is based on a pre-processing of data. 
 This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid,
 it selects the NH only and it organizes their structure and their features in order to make them handable by **MiLES**.
 It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of 
 the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
-To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
+To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
-* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
+* `Rbased_eof_fast.R` and `Rbased_eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
-* "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
+* `blocking_fast.R` and `blocking_figures.R`. blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts.
 
-* "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
+* `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. The second provides the figures.
 It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
 * `extra_figures_block.R`. This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.

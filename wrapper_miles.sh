@@ -13,7 +13,7 @@ set -eu
 ################################################
 
 #config name: create your own config file for your machine.
-config=wilma
+machine=wilma
 
 #control flags to check which sections should be run
 doeof=true #EOFs section
@@ -78,7 +78,7 @@ map_projection="azequalarea"
 
 # machine dependent script (set above)
 dataset=""; ens="" #declared to avoid problems with set -u
-. config/config_${config}.sh
+. config/config_${machine}.sh
 
 # this script controls some of the graphical parameters
 # as plot resolutions and palettes
@@ -164,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $config $doforce
+	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
 
 	for season in $seasons ; do
 		echo $season
