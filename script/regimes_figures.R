@@ -92,6 +92,9 @@ for (name in names_ref)
     
     # Chose output format for figure - by JvH
     open.plot.device(figname,output_file_type,CFGSCRIPT)
+    
+    # where to plot frequencies values
+    if (map_projection=="no") {varpoints=c(120,85)} else {varpoints=c(0,0.7)}
 
     #plot properties
 	par(plotpar)
@@ -100,12 +103,12 @@ for (name in names_ref)
 	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_exp),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
         mtext(name,side=3,line=.5,outer=TRUE,cex=2,font=2)
         proj.addland(proj=map_projection)
-        text(120,85,paste("Frequencies: ",round(frequencies_exp[ii],2),"%",sep=""),cex=2)
+        text(varpoints[1],varpoints[2],paste("Frequencies: ",round(frequencies_exp[ii],2),"%",sep=""),cex=2)
 
 	im=plot.prepare(ics,ipsilon,regimes_ref[,,ii],proj=map_projection,lat_lim=lat_lim)
         filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
         proj.addland(proj=map_projection)
-        text(120,85,paste("Frequencies: ",round(frequencies_ref[ii],2),"%",sep=""),cex=2)
+        text(varpoints[1],varpoints[2],paste("Frequencies: ",round(frequencies_ref[ii],2),"%",sep=""),cex=2)
         image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
 
         #delta field plot

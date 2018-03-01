@@ -150,16 +150,19 @@ It also tries to assign the right weather regimes to its name. However please be
 
 * "extra_figures_block.R". This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
 
+Execution times assessed for ERA-Interim 1979-2017 are on the order of 10s for EOFs, 120s for Blocking and 60s for Regimes
+
+
 ------------
 
 ## HISTORY
 
 *v0.5 - Mar 2018*
-- Command line options for wrapper
+- Improve wrapper with control function
 - Cleaning and bug fixing
-- Improving climatologies
+- Improving climatologies (ERAI 1979-2017)
 
-*v0.43 - Feb 2018
+*v0.43 - Feb 2018*
 - R-based EOFs script consistent with the MiLES structure
 - Rearrange structure of wrapper and config file: now $INDIR is defined in config files (increase portability!)
 - Beta support for free month and season selection

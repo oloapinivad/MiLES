@@ -72,7 +72,7 @@ export map_projection
 
 
 #creating folders
-mkdir -p $ZDIR $FIGDIR $FILESDIR
+mkdir -p $FIGDIR $FILESDIR
 
 #safety check
 echo "Check if CDO has been loaded"

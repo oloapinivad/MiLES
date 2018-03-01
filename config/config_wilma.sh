@@ -8,10 +8,14 @@
 # INDIR ->data folder: all the geopotential height data should be here
 # you must customozie this according to the dataset you analyze and your local file structure
 INDIR=$WORK/data/${dataset}/day/Z500
-if [ "${dataset}" == NCEP ] || [ "${dataset}" == ERA40 ] || [ "${dataset}" == ERAI  ] || [ "${dataset}" == MERRA  ] || [ "${dataset}" == 20CR  ] ; then
+if [ "${dataset}" == "NCEP" ] || [ "${dataset}" == "ERA40" ] || [ "${dataset}" == "ERAI"  ] || [ "${dataset}" == "MERRA"  ] || [ "${dataset}" == "20CR"  ] ; then
         INDIR=$WORK/data/${dataset}/day/Z500
 
 fi
+
+#if [ "${dataset}" == "ERAI_clim" ] ; then
+#	INDIR=$WORK/data/ERAI/day/Z500
+#fi
 
 # to look for some specific file structure
 # otherwise the program will look for all the netcdf or grib files in the folder
@@ -53,7 +57,7 @@ export map_projection
 
 
 #creating folders
-mkdir -p $ZDIR $FIGDIR $FILESDIR
+mkdir -p $FIGDIR $FILESDIR
 
 #safety check
 echo "Check if R has been loaded"
