@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR)
+miles.block.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce)
 {
 
 #t0
@@ -18,8 +18,12 @@ savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1) & file.exists(savefile2)) {
-	print("Actually requested blocking data is already there! Skipping... Remove data if you want to re-run!") 
-	q()
+	print("Actually requested blocking data is already there!")
+	if (doforce=="true") {
+	 	print("Running with doforce=true... re-run!")
+	} else	{
+	print("Skipping... activate doforce=true if you want to re-run it"); q() 
+	}
 }
 
 #new file opening
@@ -297,12 +301,15 @@ nc_close(ncfile2)
 
 }
 
+#blank line
+cat("\n\n\n")
+
 # REAL EXECUTION OF THE SCRIPT 
 # read command line
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR")
+name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -314,6 +321,6 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.block.fast(exp,ens,year1,year2,season,z500filename,FILESDIR)
+        miles.block.fast(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }

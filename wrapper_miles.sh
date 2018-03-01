@@ -15,12 +15,14 @@ set -eu
 #config name: create your own config file for your machine.
 config=wilma
 
-#control flags to check which section should be run
-doeof=false
-doblock=false
-doregime=true
-dofigs=false
-#doforce=false
+#control flags to check which sections should be run
+doeof=true #EOFs section
+doblock=false #Blocking section 
+doregime=true #Regimes section
+dofigs=true #Do you want figures?
+
+#control flag for re-run of MiLES if files already exists (not reccomendend)
+doforce=false
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
@@ -131,9 +133,6 @@ fi
 #ensemble loop
 for ens_exp in ${ens_list} ; do
 
-echo ${ens_exp}
-echo $exps
-
 # loop to produce data: on experiment and - if needed - reference
 for exp in $exps ; do
 
@@ -165,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $config
+	#time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $config $doforce
 
 	for season in $seasons ; do
 		echo $season
@@ -173,17 +172,17 @@ for exp in $exps ; do
 		# Rbased EOFs
 		if $doeof ; then
 			for tele in $teles ; do
-        			time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR $PROGDIR
+        			time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR $PROGDIR $doforce
 			done
 		fi
 		# blocking
 		if $doblock ; then
-			time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR 
+			time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $doforce
 		fi
 
 		# regimes
 		if [[ $doregime == "true" ]] && [[ $season == DJF ]] ; then
-			time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters
+			time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters $doforce
 		fi
 	done
 

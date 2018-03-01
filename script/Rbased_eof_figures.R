@@ -104,6 +104,8 @@ for (neof in 1:neofs) {
 
 }
 
+#blank line
+cat("\n\n\n")
 
 # REAL EXECUTION OF THE SCRIPT 
 # read command line

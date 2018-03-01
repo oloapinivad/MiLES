@@ -122,6 +122,8 @@ for (name in names_ref)
 
 }
 
+#blank line
+cat("\n\n\n")
 
 # REAL EXECUTION OF THE SCRIPT 
 # read command line

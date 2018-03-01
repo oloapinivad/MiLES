@@ -3,7 +3,7 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters)
+miles.regimes.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters,doforce)
 {
 
 #t0
@@ -24,8 +24,12 @@ ylim=c(30,87.5)
 savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
-        print("Actually requested weather regimes data is already there! Skipping... Remove data if you want to re-run!")
-        q()
+        print("Actually requested weather regimes data is already there!")
+	if (doforce=="true") {
+                print("Running with doforce=true... re-run!")
+        } else  {
+	        print("Skipping... activate doforce=true if you want to re-run it"); q()
+        }
 }
 
 
@@ -133,12 +137,15 @@ nc_close(ncfile1)
 
 }
 
+#blank line
+cat("\n\n\n")
+
 # REAL EXECUTION OF THE SCRIPT 
 # read command line
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters")
+name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters","doforce")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -150,7 +157,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.fast(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters)
+        miles.regimes.fast(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters,doforce)
     }
 }
 

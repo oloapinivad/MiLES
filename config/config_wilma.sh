@@ -13,10 +13,6 @@ if [ "${dataset}" == "NCEP" ] || [ "${dataset}" == "ERA40" ] || [ "${dataset}" =
 
 fi
 
-#if [ "${dataset}" == "ERAI_clim" ] ; then
-#	INDIR=$WORK/data/ERAI/day/Z500
-#fi
-
 # to look for some specific file structure
 # otherwise the program will look for all the netcdf or grib files in the folder
 export expected_input_name=*Z500*.nc
@@ -54,7 +50,6 @@ export FIGDIR=$OUTPUTDIR/figures
 # file type
 export output_file_type
 export map_projection
-
 
 #creating folders
 mkdir -p $FIGDIR $FILESDIR

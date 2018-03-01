@@ -2,7 +2,7 @@
 #-----EOFs routines computation for MiLES--------#
 #-------------P. Davini (Feb 2018)-------------------#
 ######################################################
-miles.eofs.fast<-function(exp,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR)
+miles.eofs.fast<-function(exp,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)
 {
 
 #standard defined 4 EOFs
@@ -20,8 +20,12 @@ savefile1=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",exp,ens,year1,year2,
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
-        print("Actually requested EOFs data is already there! Skipping... Remove data if you want to re-run!")
-        q()
+        print("Actually requested EOFs data is already there!")
+	if (doforce=="true") {
+	        print("Running with doforce=true... re-run!")
+	} else  {
+	        print("Skipping... activate doforce=true if you want to re-run it"); q()
+	}
 }
 
 #new file opening
@@ -173,12 +177,15 @@ nc_close(ncfile1)
 
 }
 
+#blank line
+cat("\n\n\n")
+
 # REAL EXECUTION OF THE SCRIPT 
 # read command line
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","season","tele","z500filename","FILESDIR","PROGDIR")
+name_args=c("exp","ens","year1","year2","season","tele","z500filename","FILESDIR","PROGDIR","doforce")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -190,7 +197,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.eofs.fast(exp,ens,year1,year2,season,tele,z500filename,FILESDIR)
+        miles.eofs.fast(exp,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)
     }
 }
 

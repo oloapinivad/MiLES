@@ -10,17 +10,20 @@ year1=$3
 year2=$4
 z500filename=$5
 config=$6
+doforce=$7
 
-if [ ! -f $z500filename ] ; then
-    
-    DATADIR=$(dirname $z500filename)
-    TEMPDIR=$DATADIR/tempdir_${dataset}_$RANDOM
-    mkdir -p $TEMPDIR
+if [[ ! -f $z500filename ]] || [[ $doforce == "true" ]] ; then
 
-	echo "Z500 data are missing... full data preparation is performed"
-    
-    # machine dependent script (to call folder locations!)
-    . config/config_${config}.sh
+	rm -f $z500filename
+	DATADIR=$(dirname $z500filename)
+    	TEMPDIR=$DATADIR/tempdir_${dataset}_$RANDOM
+    	mkdir -p $TEMPDIR
+
+	echo "Z500 data are missing (or you forcily required a rebuilt!)"
+	echo "... full data preparation is performed"
+    	
+	# machine dependent script (to call folder locations!)
+	. config/config_${config}.sh
 
 	# step 1: do it for NetCDF
 	if [ -z ${expected_input_name} ] ; then 
@@ -54,9 +57,9 @@ if [ ! -f $z500filename ] ; then
 	#copy to final file with absolute time axis
 	$cdo4 -a copy $TEMPDIR/smallfile.nc $z500filename
 
-    #check cleaning
-    rm -f $TEMPDIR/*.nc
-    rmdir $TEMPDIR
+    	#check cleaning
+    	rm -f $TEMPDIR/*.nc
+    	rmdir $TEMPDIR
 
 else
 	echo "Z500 NetCDF data seems there, avoid z500_prepare.sh"
