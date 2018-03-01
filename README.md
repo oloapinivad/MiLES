@@ -126,7 +126,6 @@ can specified at this stage: here below a list of the commands that can be set u
 - "output_file_type" -> pdf, eps or png figures format.
 - "map_projection" -> set "no" for standard plot (fast). Use "azequalarea" for polar plotsi (default). All projection from mapproj R package are supported (but not all of them have been tested).
 
-
 The chain of scripts will be executed as a sequence. You can comment the script you do not need.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based script are written as functions and thus can be called inside R if needed.  
@@ -139,8 +138,7 @@ the script: if your file is corrupted you need to remove it by hand.
 You can use both geopotential or geopotential height data, the former will be automatically converted.   
 To simplify the analysis by R, the CDO "-a" is used to set an absolute time axis in the data.  
 
-* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter
-provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
+* "Rbased_eof_fast.R" and "Rbased_eof_figures.R". EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * "blocking_fast.R" and "blocking_figures.R". blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts.
@@ -158,9 +156,10 @@ Execution times assessed for ERA-Interim 1979-2017 are on the order of 10s for E
 ## HISTORY
 
 *v0.5 - Mar 2018*
-- Improve wrapper with control function
-- Cleaning and bug fixing
-- Improving climatologies (ERAI 1979-2017)
+- Improved wrapper with flags to control each section
+- Frequency is again plotted on regimes
+- Various bug fixing and consolidation
+- Improved climatologies (ERAI 1979-2017)
 
 *v0.43 - Feb 2018*
 - R-based EOFs script consistent with the MiLES structure

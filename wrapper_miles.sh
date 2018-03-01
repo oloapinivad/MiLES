@@ -21,7 +21,7 @@ doblock=false #Blocking section
 doregime=true #Regimes section
 dofigs=true #Do you want figures?
 
-#control flag for re-run of MiLES if files already exists (not reccomendend)
+#control flag for re-run of MiLES if files already exists (not recommendend)
 doforce=false
 
 # exp identificator: it is important for the folder structure.
@@ -77,7 +77,7 @@ map_projection="azequalarea"
 ################################################
 
 # machine dependent script (set above)
-dataset=""; ens=""
+dataset=""; ens="" #declared to avoid problems with set -u
 . config/config_${config}.sh
 
 # this script controls some of the graphical parameters
@@ -164,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	#time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $config $doforce
+	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $config $doforce
 
 	for season in $seasons ; do
 		echo $season
