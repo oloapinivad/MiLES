@@ -146,9 +146,19 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 * "regimes_fast.R" and "regimes_figures.R". Weather regimes analysis is performed by the first R script. The second provides the figures.
 It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
 
-* "extra_figures_block.R". This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
+* @extra_figures_block.R@. This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
 
-Execution times assessed for ERA-Interim 1979-2017 are on the order of 10s for EOFs, 120s for Blocking and 60s for Regimes
+## EXECUTION TIMES
+
+MiLES is pretty fast: on iMac 2017  (MacOS High Sierre 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single seasons take 
+- EOFs: 11 seconds
+- Blocking: 57 seconds
+- Regimes: 25 seconds
+- Figures (together): 20 seconds
+
+Please be aware that issues may ariase with large datasets (i.e. larger than 100 years) where the single file approach may be problematic. 
+It is reccomended in such cases to split files in different subsets. 
+
 
 
 ------------

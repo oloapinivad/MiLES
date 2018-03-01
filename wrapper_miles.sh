@@ -17,7 +17,7 @@ config=wilma
 
 #control flags to check which sections should be run
 doeof=true #EOFs section
-doblock=false #Blocking section 
+doblock=true #Blocking section 
 doregime=true #Regimes section
 dofigs=true #Do you want figures?
 
