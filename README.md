@@ -12,9 +12,10 @@ J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 
 ## WHAT IS MiLES?
 
-**MiLES** is a tool for estimating properties of Northern Hemisphere mid-latitude climate in Global Climate Models and Reanalysis datasets. It has been originally thought for EC-Earth output and then and Reanalysis datasets. It has been originally thought for EC-Earth output and then It works on daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs and climatological figures for the chosen time period and season.
+**MiLES** is a tool for estimating properties of Northern Hemisphere mid-latitude climate in Global Climate Models and Reanalysis datasets. It has been originally thought for EC-Earth output and then it has been extended to any climate model or Reanalysis datasets. 
+It is based on daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs and climatological figures for the chosen time period and season.
 Before performing analysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
-Model data are compared against ECMWF ERA-INTERIM reanalysis for a standard period (1979-2017) or with any other MiLES-generated data.
+Model data are compared against ECMWF ERA-Interim Reanalysis for a standard period (1979-2017) or with any other MiLES-generated data.
 
 Current version includes:
 
@@ -48,15 +49,13 @@ Current version includes:
 
 ## MAIN NOTES
 
-Please be aware that this is free tool in continous development, then it may not be free of bugs. Please report any issue at p.davini AT isac.cnr.it
+Be aware that this is a free scientific tool in continous development, then it may not be free of bugs. Please report any issue at p.davini@isac.cnr.it
 
 Please refer to **MiLES** specifing which version has been used in the acknowledgment of any publication.
 
-Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."*
-in case you  use the 1D blocking index in any publication.
+Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."* in case you  use the 1D blocking index in any publication.
 
-Please cite *"Davini, P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."*
-in case you use the 2D blocking index in any publication.
+Similary, please cite *"Davini, P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."* in case you use the 2D blocking index in any publication.
 
 
 ----------------
@@ -92,14 +91,14 @@ https://stackoverflow.com/questions/29992066/rcpp-warning-directory-not-found-fo
 
 ## HOW TO
 
-Before running **MiLES** R packages should installed (see above).
+Before running **MiLES** the 5 above-mentioned R packages should installed.
 
 Two configuration scripts controls the program options:
 1. 	`config/config_$MACHINE.sh` controls the properties of your environment. 
 	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
     	This also includes the directory tree for your NetCDF files and the expected input files format.
-    	It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull: two .tmpl files for Unix and Mac Os X machines are provided.  
+    	It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull: two `.tmpl` files for Unix and Mac Os X machines are provided.  
 2.	`config/R_config.R` controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
 	Also output file format and map projection can be specified here if you do not use the wrapper (see later).
@@ -112,18 +111,18 @@ can specified at this stage: here below a list of the commands that can be set u
 - `year1_exp` and `year2_exp` -> the years on which MiLES will run. 
 - `ens_list` -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper only for blocking data.
 - `std_clim` -> 1 to use standard ERAI 1979-2017 climatology, 0 for custom comparison. If 0, please specify the dataset you want to compare to with `dataset_ref`, `year1_ref` and `year2_ref`. 
-- `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar". This last functionality is under testing.
+- `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar"). This last functionality is under testing.
 - `teles` -> A list of one or teleconnection patterns. "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2".
 - `output_file_type` -> pdf, eps or png figures format.
 - `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plotsi (default). All projection from mapproj R package are supported (but not all of them have been tested).
 - `doeof`,`doblock`,`doregime` -> set to true or false in order to run some specific section
 
-The chain of scripts will be executed as a sequence. You can comment the script you do not need.
+The chain of scripts will be executed as a sequence.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based script are written as functions and thus can be called inside R if needed.  
 
 * `z500_prepare.sh`. **MiLES** is based on a pre-processing of data. 
-This script expects daily 500hPa geopotential height data in a single folder: it interpolates data on a 2.5x2.5 grid, it selects the NH only and it organizes their structure and their features in order to make them handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` flag to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
+This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it SHOULD be able to identify 500hPa data. The code interpolates data on a 2.5x2.5 grid, it selects the NH only and it organizes their structure and their features in order to make them handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` flag to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
 * `Rbased_eof_fast.R` and `Rbased_eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
@@ -137,20 +136,21 @@ It also tries to assign the right weather regimes to its name. However please be
 
 ## EXECUTION TIMES
 
-MiLES is pretty fast: on iMac 2017  (MacOS High Sierre 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single seasons take:
+MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about
 - EOFs: 11 seconds
 - Blocking: 57 seconds
 - Regimes: 25 seconds
 - Figures (together): 20 seconds
 
-Please be aware that issues may ariase with large datasets (i.e. larger than 100 years) where the single file approach may be problematic. 
-It is reccomended in such cases to split files in different subsets. 
+Please be aware that issues may arise with large datasets (i.e. larger than 100 years) where the single file approach may be problematic. 
+It is reccomended in such cases to split the analysis in different subsets. 
 
 ------------
 
 ## HISTORY
 
 *v0.5 - Mar 2018*
+- Able to detect 500hPa level inside of any geopotential height data
 - Improved wrapper with flags to control each section
 - Frequency is again plotted on regimes
 - Various bug fixing and consolidation

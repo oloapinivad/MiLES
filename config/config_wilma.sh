@@ -7,15 +7,14 @@
 
 # INDIR ->data folder: all the geopotential height data should be here
 # you must customozie this according to the dataset you analyze and your local file structure
-INDIR=$WORK/data/${dataset}/day/Z500
-if [ "${dataset}" == "NCEP" ] || [ "${dataset}" == "ERA40" ] || [ "${dataset}" == "ERAI"  ] || [ "${dataset}" == "MERRA"  ] || [ "${dataset}" == "20CR"  ] ; then
-        INDIR=$WORK/data/${dataset}/day/Z500
-
-fi
+# you can use $dataset and $ens variable
+INDIR=$WORK/data/CMIP5/${dataset}/HIST/${ens}/day/Z500
+if [[ "${dataset}" == "NCEP" ]] || [[ "${dataset}" == "20CRv2c"  ]] ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
+if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] ; then INDIR=$WORK/data/${dataset}/day/Z500 ; fi
 
 # to look for some specific file structure
-# otherwise the program will look for all the netcdf or grib files in the folder
-export expected_input_name=*Z500*.nc
+# if commented the program will look for all the netcdf or grib files in the folder
+#expected_input_name=*.nc
 
 #program folder where MiLES is placed
 export PROGDIR=$HOME/MiLES
@@ -47,9 +46,10 @@ export FILESDIR=$OUTPUTDIR/files
 #figures folder
 export FIGDIR=$OUTPUTDIR/figures
 
-# file type
-export output_file_type
-export map_projection
+# file type and export default
+export output_file_type=${output_file_type:-pdf}
+export map_projection=${map_projection:-azequalarea}
+export expected_file_output=${expected_file_output:-}
 
 #creating folders
 mkdir -p $FIGDIR $FILESDIR

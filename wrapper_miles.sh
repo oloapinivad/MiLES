@@ -16,10 +16,10 @@ set -eu
 machine=wilma
 
 #control flags to check which sections should be run
-doeof=true #EOFs section
+doeof=false #EOFs section
 doblock=true #Blocking section 
 doregime=true #Regimes section
-dofigs=true #Do you want figures?
+dofigs=false #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
 doforce=false
@@ -28,11 +28,11 @@ doforce=false
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1979
-year2_exp=2017
-dataset_exp="ERAI"
+year1_exp=1950
+year2_exp=2005
+dataset_exp="MPI-ESM-P"
 #ens_list=$(seq -f "%02g" 0 4 )
-ens_list="NO"
+ens_list="r1"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
@@ -63,21 +63,21 @@ teles="NAO AO"
 
 # output file type for figures (pdf, png, eps)
 # pdf are set by default
-output_file_type="pdf"
+#output_file_type="pdf"
 
 # map projection that is used for plotting
 # "no": standard lon-lat plotting (fastest)
 # "azequalarea": polar plot with equal area
 # these are suggested: any other polar plot by "mapproj" R package are supported
 #map_projection="no"
-map_projection="azequalarea"
+#map_projection="azequalarea"
 
 ###############################################
 #-------------Configuration scripts------------#
 ################################################
 
 # machine dependent script (set above)
-dataset=""; ens="" #declared to avoid problems with set -u
+dataset=""; ens=""; expected_input_name="" #declared to avoid problems with set -u
 . config/config_${machine}.sh
 
 # this script controls some of the graphical parameters
@@ -220,17 +220,49 @@ done
 #--------------Ensemble mean-------------------#
 ################################################
 
-#ONLY FOR BLOCKING
-if [[ $dofigs ]] && [[ "${ens_list}" != "NO" ]] ; then
+#check how many ensemble you have
+aens=($ens_list); nens=${!ens[@]}
+echo "Ensemble members are $ens_list"
 
-	echo $FILESDIR
-	for season in $seasons ; do
-		MEANBLOCKDIR=$FILESDIR/${dataset_exp}/mean/Block/${year1}_${year2}/$season
-		rm -rf $MEANBLOCKDIR; mkdir -p $MEANBLOCKDIR
-		$cdo cat $FILESDIR/${dataset_exp}/*/Block/${year1}_${year2}/$season/BlockClim*.nc $MEANBLOCKDIR/full.nc
-		$cdo timmean $MEANBLOCKDIR/full.nc $MEANBLOCKDIR/BlockClim_${dataset_exp}_mean_${year1}_${year2}_${season}.nc
-		time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp mean $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR		
+#For blocking only
+if [[ "${ens_list}" == "NO" ]] || [[ ${nens} -eq 0 ]] ; then
+	echo "Only one ensemble member, exiting..."
+else
+	echo "Create ensemble mean... "
+	#create loop using flags
+	kinds=${kinds:-}
+	[[ $doblock == true ]] && kinds="$kinds Block"   
+	#[[ $doeof == true ]] && kinds="$kinds EOF" 
+	#[[ $doregime == true ]] && kinds="$kinds Regimes" 
+	echo $kinds
 
+	for kind in $kinds ; do
+
+		for season in ${seasons} ; do
+		
+			#case for file names
+			case $kind in 
+				Block) 	 
+					MEANFILE=$FILESDIR/${dataset_exp}/mean/${kind}/${year1}_${year2}/$season/BlockClim_${dataset_exp}_mean_${year1}_${year2}_${season}.nc
+					INFILES='$FILESDIR/${dataset_exp}/*/${kind}/${year1}_${year2}/$season/BlockClim_${dataset_exp}_*.nc'
+					ARGS="$dataset_exp mean $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR"
+					SCRIPT=$PROGDIR/script/block_figures.R
+				;;	
+				#Regimes)
+				#        MEANFILE=$FILESDIR/${dataset_exp}/mean/${kind}/${year1}_${year2}/$season/RegimesPattern_${dataset_exp}_mean_${year1}_${year2}_${season}.nc
+				#        INFILES='$FILESDIR/${dataset_exp}/*/${kind}/${year1}_${year2}/$season/RegimesPattern_${dataset_exp}_*.nc'
+				#        ARGS="$dataset_exp mean $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters"
+				#        SCRIPT=$PROGDIR/script/regimes_figures.R
+				#	;;
+			esac
+	
+			#mean and plot
+			MEANDIR=$(dirname $MEANFILE)
+			rm -rf $MEANDIR; mkdir -p $MEANDIR
+			$cdo4 timmean -cat $(eval echo $INFILES) $MEANFILE
+			time $Rscript "$SCRIPT" $ARGS		
+			
+		done
 	done
 fi
 
