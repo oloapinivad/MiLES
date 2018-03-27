@@ -31,11 +31,15 @@ nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
-#time array
-datas=fieldlist$time
+#extract calendar and time unit from the original file
+tcal=attributes(fieldlist$time)$cal
+tunit=attributes(fieldlist$time)$units
+
+#time array to simplify time filtering
+#datas=fieldlist$time
 #etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas)
-etime=power.date.new(datas)
-totdays=length(datas)
+etime=power.date.new(fieldlist$time)
+totdays=length(fieldlist$time)
 
 #declare variable
 Z500=fieldlist$field
@@ -46,7 +50,7 @@ Z500=fieldlist$field
 ##########################################################
 
 print("Tibaldi and Molteni (1990) index...")
-# TM90: parametres for blocking detection (beta)
+# TM90: parametres for blocking detection
 tm90_fi0=60 #central_lat
 tm90_fiN=tm90_fi0+20; tm90_fiS=tm90_fi0-20 #south and north lath
 tm90_central=whicher(ipsilon,tm90_fi0)
@@ -206,50 +210,49 @@ print("saving NetCDF climatologies...")
 fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
 full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents")
 
-# dimensions definition
-TIME=paste("days since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-LEVEL=50000
-fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-
-print(fulltime[2])
+#--deprecated--# 
+#print(fulltime[2])
 #temporary check for seconds/days TO BE FIXED
-if (fulltime[2]==1) {tunit="days"}
-if (fulltime[2]==86400) {tunit="seconds"}
-TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+#if (fulltime[2]==1) {tunit="days"}
+#if (fulltime[2]==86400) {tunit="seconds"}
+#--------------#
 
-x <- ncdim_def( "Lon", "degrees", ics)
-y <- ncdim_def( "Lat", "degrees", ipsilon)
-z <- ncdim_def( "Lev", "Pa", LEVEL)
-t1 <- ncdim_def( "Time", TIME, 1,unlim=T)
-t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T)
+# dimensions definition
+fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+LEVEL=50000
+x <- ncdim_def( "Lon", "degrees_east", ics, longname="Longitude")
+y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="Latitude")
+z <- ncdim_def( "Lev", "Pa", LEVEL, longname="Pressure")
+t1 <- ncdim_def( "Time", TIME, 1, unlim=T, calendar=tcal, longname="Time")
+t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T, calendar=tcal, longname="Time")
 
 for (var in fieldlist)
 {
         #name of the var
-	if (var=="TM90") {
-		longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90
-	}
-    if (var=="InstBlock")
-                {longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
-    if (var=="ExtraBlock")
+	if (var=="TM90") 
+		{longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90}
+   	if (var=="InstBlock")
+        	{longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
+   	if (var=="ExtraBlock")
                 {longvar="Instantaneous Blocking frequency (GHGS2)"; unit="%"; field=frequency2; full_field=totblocked2}
-    if (var=="Z500")
+   	if (var=="Z500")
                 {longvar="Geopotential Height"; unit="m"; field=Z500mean; full_field=Z500}
-    if (var=="BI")
+   	if (var=="BI")
                 {longvar="BI index"; unit=""; field=BI; full_field=totBI}
-    if (var=="MGI")
+   	if (var=="MGI")
                 {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
-    if (var=="ACN")
+   	if (var=="ACN")
                 {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
-    if (var=="CN")
+   	if (var=="CN")
                 {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
-    if (var=="BlockEvents")
+    	if (var=="BlockEvents")
                 {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
 	if (var=="LongBlockEvents")
                 {longvar="10-day Blocking Events frequency"; unit="%"; field=longblock$percentage; full_field=longblock$track}
-    if (var=="DurationEvents")
+	if (var=="DurationEvents")
                 {longvar="Blocking Events duration"; unit="days"; field=block$duration}
-    if (var=="NumberEvents")
+    	if (var=="NumberEvents")
                 {longvar="Blocking Events number"; unit=""; field=block$nevents}
 
 	#fix eventual NaN	
@@ -301,7 +304,7 @@ nc_close(ncfile2)
 
 }
 
-#blank line
+#blank lines
 cat("\n\n\n")
 
 # REAL EXECUTION OF THE SCRIPT 

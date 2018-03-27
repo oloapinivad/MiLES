@@ -54,9 +54,12 @@ timeseason=season2timeseason(season)
 nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
 
+#extract calendar and time unit from the original file
+tcal=attributes(fieldlist$time)$cal
+tunit=attributes(fieldlist$time)$units
+
 #time array
-datas=fieldlist$time
-etime=power.date.new(datas)
+etime=power.date.new(fieldlist$time)
 
 #declare variable
 Z500=fieldlist$field
@@ -105,33 +108,41 @@ print(t1)
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
 
+#--deprecated--# 
+#print(fulltime[2])
+#temporary check for seconds/days TO BE FIXED
+#if (fulltime[2]==1) {tunit="days"}
+#if (fulltime[2]==86400) {tunit="seconds"}
+#--------------#
+
 # dimensions definition
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-print(fulltime[2])
-#temporary check for seconds/days TO BE FIXED
-if (fulltime[2]==1) {tunit="days"}
-if (fulltime[2]==86400) {tunit="seconds"}
-TIME=paste(tunit, " since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-
+TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees", ics)
-x0 <- ncdim_def( "Lon0", "degrees", 0)
-y <- ncdim_def( "Lat", "degrees", ipsilon)
-y0 <- ncdim_def( "Lat0", "degrees", 0)
-z <- ncdim_def( "Lev", "Pa", LEVEL)
-cl <- ncdim_def( "Time0", TIME, 1:nclusters)
-t <- ncdim_def( "Time", TIME, fulltime,unlim=T)
+x <- ncdim_def( "Lon", "degrees_east", ics, longname="Longitude")
+y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="Latitude")
+z <- ncdim_def( "Lev", "Pa", LEVEL, longname="Pressure")
+t <- ncdim_def( "Time", TIME, fulltime,calendar=tcal, longname="Time", unlim=T)
 
+# extra dimensions definition
+x0 <- ncdim_def( "lon", "degrees_east", 0, longname="Longitude")
+y0 <- ncdim_def( "lat", "degrees_north", 0, longname="Longitude")
+cl <- ncdim_def( "Lev", "cluster index", 1:nclusters, longname="Pressure")
+
+#var definition
 unit="m"; longvar="Weather Regimes Pattern"
-pattern_ncdf=ncvar_def("Regimes",unit,list(x,y,z,cl),-999,longname=longvar,prec="single",compression=1)
+pattern_ncdf=ncvar_def("Regimes",unit,list(x,y,cl),-999,longname=longvar,prec="single",compression=1)
+
 unit=paste0("0-",nclusters); longvar="Weather Regimes Cluster Index"
-cluster_ncdf=ncvar_def("Indices",unit,list(x0,y0,z,t),-999,longname=longvar,prec="single",compression=1)
+cluster_ncdf=ncvar_def("Indices",unit,list(t),-999,longname=longvar,prec="single",compression=1)
+
 unit="%"; longvar="Weather Regimes Frequencies"
 frequencies_ncdf=ncvar_def("Frequencies",unit,list(cl),-999,longname=longvar,prec="single",compression=1)
 
+#saving file
 ncfile1 <- nc_create(savefile1,list(pattern_ncdf,cluster_ncdf,frequencies_ncdf))
-ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1),  count = c(-1,-1,-1))
+ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1),  count = c(-1))
 ncvar_put(ncfile1, "Frequencies", weather_regimes$frequencies, start = c(1),  count = c(-1))
 nc_close(ncfile1)
 

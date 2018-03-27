@@ -16,10 +16,10 @@ set -eu
 machine=wilma
 
 #control flags to check which sections should be run
-doeof=false #EOFs section
+doeof=true #EOFs section
 doblock=true #Blocking section 
 doregime=true #Regimes section
-dofigs=false #Do you want figures?
+dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
 doforce=false
@@ -28,11 +28,11 @@ doforce=false
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1950
-year2_exp=2005
-dataset_exp="MPI-ESM-P"
+year1_exp=1979
+year2_exp=1989
+dataset_exp="NCEP"
 #ens_list=$(seq -f "%02g" 0 4 )
-ens_list="r1"
+ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
@@ -69,7 +69,7 @@ teles="NAO AO"
 # "no": standard lon-lat plotting (fastest)
 # "azequalarea": polar plot with equal area
 # these are suggested: any other polar plot by "mapproj" R package are supported
-#map_projection="no"
+# "azequalarea" set by default
 #map_projection="azequalarea"
 
 ###############################################

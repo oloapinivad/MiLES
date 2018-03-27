@@ -33,9 +33,12 @@ nomefile=z500filename
 fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
+#extract calendar and time unit from the original file
+tcal=attributes(fieldlist$time)$cal
+tunit=attributes(fieldlist$time)$units
+
 #time array
-datas=fieldlist$time
-etime=power.date.new(datas)
+etime=power.date.new(fieldlist$time)
 
 #declare variable
 Z500=fieldlist$field
@@ -135,26 +138,26 @@ print(t1)
 print("saving NetCDF climatologies...")
 print(savefile1)
 
-# dimensions definition
-LEVEL=50000
-fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-
-print(fulltime[2])
+#--deprecated--# 
+#print(fulltime[2])
 #temporary check for seconds/days TO BE FIXED
-if (fulltime[2]==1) {tunit="days"}
-if (fulltime[2]==86400) {tunit="seconds"}
-TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+#if (fulltime[2]==1) {tunit="days"}
+#if (fulltime[2]==86400) {tunit="seconds"}
+#--------------#
 
-#monthlu specific time
+#monthly specific time
 monthtime=as.numeric(etime$data[etime$day==15])
 
+# dimensions definition
+TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees", ics)
-y <- ncdim_def( "Lat", "degrees", ipsilon)
-z <- ncdim_def( "Lev", "Pa", LEVEL)
+x <- ncdim_def( "Lon", "degrees_east", ics, longname="Longitude")
+y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="Latitude")
+z <- ncdim_def( "Lev", "Pa", LEVEL, longname="Pressure")
 ef <- ncdim_def( "PC", "-", 1:neofs)
-t <- ncdim_def( "Time", TIME, monthtime,unlim=T)
+t <- ncdim_def( "Time", TIME, monthtime,calendar=tcal, longname="Time", unlim=T)
 
+#defining vars
 unit="m"; longvar="EOFs Loading Pattern"
 pattern_ncdf=ncvar_def("Patterns",unit,list(x,y,z,ef),-999,longname=longvar,prec="single",compression=1)
 
@@ -167,6 +170,7 @@ pc_ncdf=ncvar_def("PCs",unit,list(ef,t),-999,longname=longvar,prec="single",comp
 unit="%"; longvar="EOFs variance"
 variance_ncdf=ncvar_def("Variances",unit,list(ef),-999,longname=longvar,prec="single",compression=1)
 
+#saving files
 ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf))
 ncvar_put(ncfile1, "Patterns", expanded_pattern, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 ncvar_put(ncfile1, "Regressions", EOFS$regression, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
