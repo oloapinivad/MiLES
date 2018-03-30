@@ -20,6 +20,10 @@ R_version=as.numeric(R.Version()$major)+as.numeric(R.Version()$minor)/10
 #-----------------Basic functions------------------------#
 ##########################################################
 
+#constants
+Earth.Radius = 6367500
+g0=9.81
+
 #normalize a time series
 standardize<-function(timeseries) {
 	out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
@@ -1215,4 +1219,10 @@ print("Finalize...")
 out=list(cluster=cluster,frequencies=frequencies[kk],regimes=compose[,,kk],tot.withinss=regimes$tot.withinss)
 return(out)
 }
+
+##########################################################
+#-----------------Meandering functions-------------------#
+##########################################################
+
+
 
