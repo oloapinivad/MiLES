@@ -2,9 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-#miles.meandering<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce)
-#{
-
+#miles.meandering<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,doforc
 PROGDIR="/home/paolo/MiLES"
 source(paste0(PROGDIR,"/script/basis_functions.R"))
 exp="ERAI"
@@ -59,7 +57,7 @@ Z500=fieldlist$field
 ########################################################################################
 
 # list of isohypses on which evaluate the MI
-isolvls=seq(4800,6200,5)
+isolvls=seq(4800,6000,5)
 
 # reference latitude (60N following Di Capua et al., 2016)
 ref_lat=60
@@ -148,68 +146,87 @@ MI_lat_ref <- function (longitudes,latitudes,hgt_field,isolvl,ref_lat=ref_lat,ve
         return(output_list)
 }
 
-#Updated function, cleanup by PD (slower!)
-MI_lat_ref2 <- function (longitudes,latitudes,hgt_field,isolvl,ref_lat=ref_lat,verbose=F) {
-	if (verbose == TRUE) {
-    		#print(paste("latitude of reference",ref_lat,"deg"))
-        	print(paste("isohypse level",isolvl))
-	}
+#Updated function, cleanup by PD (now faster)
+MI_lat_ref_fast <- function (longitudes,latitudes,hgt_field,isolvl,ref_lat=ref_lat,verbose=F) {
+        if (verbose == TRUE) {
+                #print(paste("latitude of reference",ref_lat,"deg"))
+                print(paste("isohypse level",isolvl))
+        }
 
-  	#init values
-  	curv <- 0
-  	curv_lat <- 0
+        #init values
+        curv=NA; curv_lat=NA
 
-	# introduce resolution independet more versatile rotation	
-	# automatic start from no rotation, then try 90 deg every time
-	lon0=1:length(longitudes)
+        # introduce resolution independet more versatile rotation       
+        # automatic start from no rotation, then try 90 deg every time
+        lon0=1:length(longitudes)
         deltas=seq(0,,length(longitudes)/4,4) #this can be further improved
-	lon_translated=lapply(deltas,function(x) {c(tail(lon0,length(lon0)-x),head(lon0,x))}) #use lapply to recursively create list
-	for (ii in 1:length(deltas)) {
+        for (ii in 1:length(deltas)) {
 
-    		# calculate position of the isopleth
-		isopleth = contourLines(longitudes,latitudes,hgt_field[lon_translated[[ii]],],nlevels=1,levels=isolvl) #PD is it correct to use longitudes here?
-      
-      		# longest_iso returns 0 if the isopleth does not exist, 1 if only one isopleth is found or the number of the longest found isopleth 
-      		i_longest_iso <- longest_iso(isopleth)
-     
-		# if isopleth does not exist 
-      		if (i_longest_iso == 0) {
-	        	if (verbose==TRUE) {print("isopleth == 0")}
-			break #exit the loop
+                # avoid translation if it is not necessary
+		if (ii==1) {lon_translated=lon0} else {lon_translated=c(tail(lon0,length(lon0)-deltas[ii]),head(lon0,deltas[ii]))}
 
-		#  # isopleth does exist
-		} else {
+		# calculate position of the isoplet
+                isopleth = contourLines(longitudes,latitudes,hgt_field[lon_translated,],nlevels=1,levels=isolvl) #PD is it correct to use longitudes here?
 
-			longest_isop <- isopleth[[i_longest_iso]]
+                # longest_iso returns 0 if the isopleth does not exist, 1 if only one isopleth is found or the number of the longest found isopleth 
+                i_longest_iso <- longest_iso_fast(isopleth)
+		#i_longest_iso <- longest_iso(isopleth)
 
-			#if the longest_isop is shorter than longitudes it cannot be global, exit!
-			if (length(longest_isop$x) < length(longitudes) ) { break } 
-		
-			# check whether the last and the first point of the isopleth[[i_longest_iso]]y are equal (circular)	
-			if (verbose==TRUE) {print("Check if the isopleth is circular...")}
-                        if (verbose==TRUE) {print(paste("isop[1]",longest_isop$y[1],"isop[last]",longest_isop$y[length(longest_isop$y)] ))}			
+                # if isopleth does not exist 
+                if (i_longest_iso == 0) {
+                        if (verbose==TRUE) {print("isopleth == 0")}
+			curv=0; curv_lat=0
+                        break #exit the loop
 
-			#if isohypse are closed compute the curviness
-			if (abs(longest_isop$y[1]-longest_isop$y[length(longest_isop$y)]) < 3) { #PD: why 3? is this resolution dependent?)
-				
-				#compute curviness
-                        	output <- curviness.ref.lat.function(longitudes, latitudes,hgt_field,longest_isop, isolvl, ref_lat)
+                #  # isopleth does exist
+                } else {
+
+                        longest_isop <- isopleth[[i_longest_iso]]
+
+			# if you find something plot the line!
+                        if (verbose==TRUE) { #add option to avoid plots
+                                contour(longitudes, latitudes,hgt_field[lon_translated,], nlevel=10,levels=seq(4800,6200,100),main=curv)
+                                lines(longest_isop$x,longest_isop$y, col=189,lwd=3)
+				#Sys.sleep(3)
+                                }
+
+                        #if the longest_isop is shorter than longitudes it cannot be global, exit!
+                        if ((min(longest_isop$x) != longitudes[1]) | (max(longest_isop$x) != longitudes[length(longitudes)])) {
+				curv=-1; curv_lat=-1; 
+				if (verbose==TRUE) {print("isopleth doesn't circle the whole globe ")}
+				break
+			}
+			
+			#if isop is outside of the reasonable latitude range, exit!
+			if ((min(longest_isop$y) < ipsilon[2]) | (max(longest_isop$y) > ipsilon[length(ipsilon)-1])) {
+				curv=-2; curv_lat=-2;
+				if (verbose==TRUE) {print("isopleth is outside latitudinal range")}
+			 	break
+			} #PD: why avoid last latitudes??
+
+                        # check whether the last and the first point of the isopleth[[i_longest_iso]]y are equal (circular)     
+                        if (verbose==TRUE) {print("Check if the isopleth is closed around dateline...")}
+                        if (verbose==TRUE) {print(paste("isop[1]",longest_isop$y[1],"isop[last]",longest_isop$y[length(longest_isop$y)] ))}
+
+                        #if isohypse are closed compute the curviness
+                        if (abs(longest_isop$y[1]-longest_isop$y[length(longest_isop$y)]) < 3) { #PD: why 3? is this resolution dependent?)
+
+                                #compute curviness
+                                output <- curviness.ref.lat.function.fast(longitudes, latitudes,hgt_field,longest_isop, isolvl, ref_lat,verbose=verbose)
                                 curv <- output[[1]]
                                 curv_lat <- output[[2]]
-				
-				# if you find something plot the line!
-                                if ( curv!=0 & verbose==TRUE) { #add option to avoid plots
-                                	contour(longitudes, latitudes,hgt_field[lon_translated[[ii]],], nlevel=10,levels=seq(5000,5900,100),main=curv)
-                                        lines(longest_isop$x,longest_isop$y, col=189,lwd=3)
-                                }
-				
-				if (verbose==TRUE) {print("Isohypse found!")}	
-				# you have your isohypse, break the cycle!
+
+                                if (verbose==TRUE) {print("Closed isohypse found!")}
+                                # you have your isohypse, break the cycle!
                                 break
 			}
-		if (verbose==TRUE) {print("going to next rotation...")}
+                if (verbose==TRUE) {print("going to next rotation...")}
                 }
-	}
+        }
+	if (ii==4 && is.na(curv)==TRUE) { 
+		curv=-3; curv_lat=-3 
+		if (verbose==TRUE) {print("No closed hysoipse found...")}
+	} 
         output_list <- list(curv=curv, curv_lat=curv_lat)
         return(output_list)
 }
@@ -219,11 +236,13 @@ MI_lat_ref2 <- function (longitudes,latitudes,hgt_field,isolvl,ref_lat=ref_lat,v
 # script for calculate curviness and curviness at a reference lat
 
 curviness.ref.lat.function <- function(lon, lat,hgt_field, isop_old, isolvl, ref_lat, verbose=FALSE) {
-	#print(isop_old)
-	#print(paste(min(isop_old$x),lon[1],max(isop_old$x),lon[length(lon)]))
+	if (verbose==TRUE) {
+		print(paste(round(min(isop_old$y),2),lat[2],round(max(isop_old$y),2),lat[length(lat)-1]))
+		print(paste(min(isop_old$x),lon[1],max(isop_old$x),lon[length(lon)]))
+	}
 	if ( 
 	# isopleth should not move outside latitudinal range
-	((min(isop_old$y) > lat[2]) & (max(isop_old$y) < lat[length(lat)-1]))
+	((min(isop_old$y) > lat[2]) & (max(isop_old$y) < lat[length(lat)-1])) #PD: why avoid last latitude??
 	&
 	# isopleth should circle whole globe  
 	((min(isop_old$x) == lon[1]) & (max(isop_old$x) == lon[length(lon)]))
@@ -259,7 +278,7 @@ curviness.ref.lat.function <- function(lon, lat,hgt_field, isop_old, isolvl, ref
 		((min(isop_new$x) == lon[1]) & (max(isop_new$x) == lon[length(lon)]))
 		) {
 			curv = calculate.isopleth.curviness(isop_new)
-		} else #PD: weird behaviour here, add to add it
+		} else #PD: weird behaviour here, had to add it
 		{
 			curv <- 0
 			curv_lat <- 0
@@ -276,6 +295,56 @@ curviness.ref.lat.function <- function(lon, lat,hgt_field, isop_old, isolvl, ref
   	return(output)
 }# end function
 
+
+
+#cript for calculate curviness and curviness at a reference lat
+
+curviness.ref.lat.function.fast <- function(lon, lat,hgt_field, isop_old, isolvl, ref_lat, verbose=FALSE) {
+        if (verbose==TRUE) {
+                print(paste(round(min(isop_old$y),2),lat[2],round(max(isop_old$y),2),lat[length(lat)-1]))
+                print(paste(min(isop_old$x),lon[1],max(isop_old$x),lon[length(lon)]))
+		print("calculating curviness at the latitude of reference")
+        }
+        # first, the mean latitude at which the original isopleth is found must be calculated because we need to know the difference between the reference
+        # latitude at which we want to calculate the isopleth
+        lat_or <- mean(isop_old$y)
+        curv_lat <- lat_or
+        # the new translated laditude must be defined (nothing happens to the longitudes)
+        # pay attention: the reference latitude must be negative in the Southern hemisphere
+        if (lat_or > ref_lat) {
+                lat_diff <- abs(lat_or-ref_lat)
+                lat_new <- lat-lat_diff
+        } else if (lat_or < ref_lat) {
+                lat_diff <- abs(lat_or-ref_lat)
+                lat_new <- lat+lat_diff
+        }
+        # calculate isopleth curviness at the reference latitude
+        # the isopleth must be recalculated
+        isopleth_new = contourLines(lon,lat_new,hgt_field,nlevels=1,levels=isolvl)
+
+        # the isopleth could not to exist: control
+        i_longest_iso <- longest_iso_fast(isopleth_new)
+	#i_longest_iso <- longest_iso(isopleth_new)
+        isop_new <- isopleth_new[[i_longest_iso]]
+        if (i_longest_iso == 0) {
+                curv=0; curv_lat=0
+        }
+        
+	if (
+        # isopleth should not move outside latitudinal range
+        ((min(isop_new$y) > lat_new[2]) & (max(isop_new$y) < lat_new[length(lat_new)-1]))
+        &
+        # isopleth should circle whole globe  
+        ((min(isop_new$x) == lon[1]) & (max(isop_new$x) == lon[length(lon)]))
+        ) {
+        	curv = calculate.isopleth.curviness.fast(isop_new)
+        } else #PD: weird behaviour here, add to add it
+        {
+		curv=0; curv_lat=0
+                }
+        output <- list(curv=curv, curv_lat=curv_lat)
+        return(output)
+}
 
 # calculate the isopleth curviness function
 #
@@ -304,6 +373,36 @@ calculate.isopleth.curviness <- function ( isop ) {
 	return( distance / circumference ) # definition of curviness
 }
 
+# calculate the isopleth curviness function
+#
+calculate.isopleth.curviness.fast <- function ( isop ) {
+        #print("calculate.isopleth.curviness")
+        # determine x / y coordinates in [m] for this isopleth
+        x_coor   = isop$x
+        y_coor   = isop$y
+        # check correct order (i.e. from west to east)
+        if (x_coor[1] > x_coor[length(x_coor)]) {
+                # invert coordinate vectors
+                x_coor = rev(x_coor)
+                y_coor = rev(y_coor)
+        }
+        lat_mean = mean(y_coor)
+        # shift to meter-based grid
+        x_coor   = lon2meter( x_coor, lat_mean)
+        y_coor   = lat2meter( y_coor, lat_mean)
+	# No need for duplicate function?
+        ##x_coor = duplicate.dateline.x (x_coor, lat_mean)
+	x_coor = c(x_coor,cos(lat_mean*pi/180)*2*pi*Earth.Radius)
+        #y_coor = duplicate.dateline.y (y_coor)
+	y_coor = c(y_coor,y_coor[1])
+        #plot(x_coor,y_coor)  
+        # calculate distance in meters
+        distance = isoline.distance.fast(x_coor, y_coor)
+        cos_lat       = cos( lat_mean*pi/180. )
+        circumference = 2*pi*Earth.Radius * cos_lat
+        return( distance / circumference ) # definition of curviness
+}
+
 # finde the longest isopleth
 
 longest_iso <- function(isopleth) {
@@ -329,6 +428,19 @@ longest_iso <- function(isopleth) {
   	return(i_longest_iso)
 }
 
+#actually slower, but cleaer!
+longest_iso_fast <- function(isopleth) {
+
+        if (length(isopleth)<2 ) {
+                i_longest_iso = length(isopleth)
+	} else {
+		i_longest_iso = which.max(unlist(lapply(isopleth,function(x) length(x$x))))
+		#i_longest_iso = which.max(unlist(lapply(isopleth,function(x) length(x[[2]]))))
+                }
+        return(i_longest_iso)
+}
+
+
 isoline.distance <- function ( x, y ) {
 	#print("isoline.distance")
 	  
@@ -347,6 +459,23 @@ isoline.distance <- function ( x, y ) {
     # done. return total distance
     return(total_distance)
 }
+
+# vectorization to improve speed
+isoline.distance.fast <- function ( x, y ) {
+
+        # calculates the total eucledian distance along a line given by coordinate vectors x and y
+        # x and y coordinates should come in units of meters
+        # check input:
+        if( length(x) != length(y) ) {
+                stop("Error: isoline.distance: coordinate vectors have unequal size!")
+        }
+	#total_distance=sum(sapply(2:length(x), function(i) {sqrt( (x[i]-x[i-1])^2 + (y[i]-y[i-1])^2 )}))
+	total_distance=sum(sqrt((x[-1]-x[-length(x)])^2+(y[-1]-y[-length(y)])^2))
+	
+    # done. return total distance
+    return(total_distance)
+}
+
 
 lon2meter <- function ( lon, lat ) {
 	#print("lon2meter")
@@ -411,22 +540,65 @@ duplicate.dateline.y <- function ( x ) {
 #MI_list=sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,Z500[,,1],x,60,verbose=F)})
 #MI_list=apply(Z500,c(3),function(y) {sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,y,x,60,verbose=F)})})
 #library("microbenchmark")
-#microbenchmark(sapply(isolvls,function(x) {MI_lat_ref2(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}),sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}))
-
+#library("rbenchmark")
+#p=benchmark(sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}),sapply(isolvls,function(x) {MI_lat_ref_fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}),replications=100)
+#g=microbenchmark(sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}),sapply(isolvls,function(x) {MI_lat_ref_fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}),times=20)
+#print(p)
+#p1=sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+#p3=sapply(isolvls,function(x) {MI_lat_ref3(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+#MI_lat_ref3(ics,ipsilon,Z500[,,t],isolvls[117],ref_lat,verbose=T)
+#isopleth = contourLines(ics,ipsilon,Z500[,,t],nlevels=1,levels=isolvls[117])
+#c1=longest_iso(isopleth)
+#c2=longest_iso_fast(isopleth)
+#g=microbenchmark(longest_iso(isopleth),longest_iso_fast(isopleth),times=100)
+#print(g)
+#output <- curviness.ref.lat.function(ics,ipsilon,Z500[,,t],longest_isop, isolvls[117], ref_lat,verbose=T)
+#print(identical(p1,p3))
+#stop("debug")
 t1=proc.time()-t0
 print(t1)
 
 #Running the real code
-MI_lat=MI_value=1:totdays*NA
+MI_lat=MI_value=1:totdays*0
+MI_lat_fast=MI_value_fast=MI_min_fast=MI_max_fast=1:totdays*NA
 for (t in 1:totdays) {
 	if (any(t==round(seq(0,totdays,,21))))	{
 		print(paste("--->",round(t/totdays*100),"%"))
 	}
 	#sapply on the MI function
-	MI_list=sapply(isolvls,function(x) {MI_lat_ref2(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
-	MI_value[t]=max(unlist(MI_list[1,]))
-	MI_lat[t]=unlist(MI_list[2,])[which.max(unlist(MI_list[1,]))]
+	#MI_list=sapply(isolvls,function(x) {MI_lat_ref(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+	#MI_value[t]=max(unlist(MI_list[1,]))
+	#MI_lat[t]=unlist(MI_list[2,])[which.max(unlist(MI_list[1,]))]
+
+	MI_list=sapply(isolvls,function(x) {MI_lat_ref_fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+        MI_value_fast[t]=max(unlist(MI_list[1,]))
+        MI_lat_fast[t]=unlist(MI_list[2,])[which.max(unlist(MI_list[1,]))]
+	#MI_min_fast[t]=isolvls[which(unlist(MI_list[1,])>0.01)[1]]
+	#MI_max_fast[t]=isolvls[rev(which(unlist(MI_list[1,])>0.01))[1]]
+
+	#for (isolvl in isolvls) {
+	#	MI_list=MI_lat_ref_fast(ics,ipsilon,Z500[,,t],isolvl,ref_lat,verbose=F)
+	#	if (MI_list$curv>MI_value[t]) {
+	#		MI_value[t]=MI_list$curv
+	#		MI_lat[t]=MI_list$curv_lat
+	#	}
+	#}
+
+
 }
+
+#p0=sapply(isolvls,function(x) {MI_lat_ref_fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+#f<-function(x) {MI_lat_ref_fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)$circ}
+#p0=0
+#for (block in seq(min(isolvls),max(isolvls),200)) {
+#	p1=optimize(f,c(block,block+100),maximum=T)
+#	if (p1$objective>p0) {p0=p1$objective}
+#}
+
+#microbenchmark( for (block in seq(min(isolvls),max(isolvls),200)) {
+#		               p1=optimize(f,c(block,block+100),maximum=T)
+#			       if (p1$objective>p0) {p0=p1$objective}
+#	}, sapply(isolvls,function(x) {MI_lat_ref_fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)}))       
 
 
 
