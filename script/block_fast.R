@@ -221,11 +221,11 @@ full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","B
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
 TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees_east", ics, longname="Longitude")
-y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="Latitude")
-z <- ncdim_def( "Lev", "Pa", LEVEL, longname="Pressure")
-t1 <- ncdim_def( "Time", TIME, 1, unlim=T, calendar=tcal, longname="Time")
-t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T, calendar=tcal, longname="Time")
+x <- ncdim_def( "Lon", "degrees_east", ics, longname="longitude")
+y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="latitude")
+z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
+t1 <- ncdim_def( "time", TIME, 1, unlim=T, calendar=tcal, longname="time")
+t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
 
 for (var in fieldlist)
 {

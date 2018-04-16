@@ -151,11 +151,11 @@ monthtime=as.numeric(etime$data[etime$day==15])
 # dimensions definition
 TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees_east", ics, longname="Longitude")
-y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="Latitude")
-z <- ncdim_def( "Lev", "Pa", LEVEL, longname="Pressure")
+x <- ncdim_def( "Lon", "degrees_east", ics, longname="longitude")
+y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="latitude")
+z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
 ef <- ncdim_def( "PC", "-", 1:neofs)
-t <- ncdim_def( "Time", TIME, monthtime,calendar=tcal, longname="Time", unlim=T)
+t <- ncdim_def( "time", TIME, monthtime,calendar=tcal, longname="time", unlim=T)
 
 #defining vars
 unit="m"; longvar="EOFs Loading Pattern"
