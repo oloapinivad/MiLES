@@ -22,7 +22,7 @@ doregime=true #Regimes section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
-doforce=false
+doforce=fasle
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
