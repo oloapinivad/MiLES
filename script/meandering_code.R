@@ -38,7 +38,7 @@ savefile2=file.builder(FILESDIR,"MI","MIFull",exp,ens,year1,year2,season)
 
 #new file opening
 nomefile=z500filename
-fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(nomefile,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
@@ -622,9 +622,9 @@ full_fieldlist=c("MI","MI_lat")
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
 TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees_east", 0, longname="Longitude")
-t1 <- ncdim_def( "Time", TIME, 1, unlim=T, calendar=tcal, longname="Time")
-t2 <- ncdim_def( "Time", TIME, fulltime,unlim=T, calendar=tcal, longname="Time")
+x <- ncdim_def( "lon", "degrees_east", 0, longname="longitude")
+t1 <- ncdim_def( "time", TIME, 1, unlim=T, calendar=tcal, longname="time")
+t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
 
 
 for (var in fieldlist)

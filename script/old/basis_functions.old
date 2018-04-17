@@ -198,21 +198,198 @@ print(paste("From",datas[1],"to",datas[length(seas)]))
 return(etime)
 }
 
+#power.date<-function(season,ANNO1,ANNO2)
+#{
+#evalute the number of days that will analyze in order
+#to create arrays of the needed dimensions
+
+	#create continous calendar
+	#p1<-as.Date(paste0(ANNO1,"-01-01"))
+	#p2<-as.Date(paste0(ANNO2,"-12-31"))
+	#datas=seq(p1,p2,by="day")
+
+	#select only days correspondeing to the needed season
+	#timeseason=season2timeseason(season)
+	#month=as.numeric(format(datas,"%m"))
+	#whichdays=which(month %in% timeseason)
+
+	#create a "season" for continuous time, used by persistance tracking
+	#seas=whichdays*1; ss=1
+	#for (i in 1:(length(whichdays)-1)) 
+		#{
+		#if (diff(whichdays)[i]>1)  {ss=ss+1}
+		#seas[i+1]=ss
+		#}
+
+	#produce a final timeseries of dates
+	#datas=datas[whichdays]
+	#dataline=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),season=seas,data=datas)
+	#print("Time Array Built")
+	#print(paste("Length:",length(seas),"days for",season,"season"))
+	#print(paste("From",datas[1],"to",datas[length(seas)]))
+
+	#return(dataline)
+#}
+
+#power.date.no.leap<-function(season,ANNO1,ANNO2)
+#{
+	#apply to power.date object to clean out elements for leap years
+	#e=power.date(season,ANNO1,ANNO2)
+	#leap.days=which(e$month==2 & e$day==29)
+	#dataline.leap=list(day=e$day[-leap.days],month=e$month[-leap.days],year=e$year[-leap.days],season=e$season[-leap.days],data=e$data[-leap.days])
+	#print("FIXED FOR NO LEAP CALENDAR: Time Array Built")
+	#print(paste("Length:",length(dataline.leap$season),"days for",season,"season"))
+	#print(paste("From",dataline.leap$data[1],"to",dataline.leap$data[length(dataline.leap$season)]))
+	#return(dataline.leap)
+#}
+
+#power.date.30day<-function(season,ANNO1,ANNO2)
+#{
+	#apply to power.date object to clean out elements for leap years
+	#nmonths=length(season2timeseason(season))
+	#nyears=as.numeric(ANNO2)-as.numeric(ANNO1)+1
+	#dd=rep(seq(1,30),nmonths*nyears)
+	#mm=rep(rep(season2timeseason(season),each=30),nyears)
+	#create a "season" for continuous time, used by persistance tracking
+	#seas=mm*0+1; ss=1
+	#for (i in 1:(length(mm)-1))
+	        #{
+	        #if (diff(mm)[i]>1)  {ss=ss+1}
+	        #seas[i+1]=ss
+	        #}
+	#dataline.30day=list(day=dd,month=mm,season=seas)
+	#print("SIMPLIFIED CALENDAR FOR 30-day CALENDAR: Time Array Built")
+	#print(paste("Length:",length(dataline.30day$season),"days for",season,"season"))
+	#return(dataline.30day)
+#}
+
 ##########################################################
 #--------------NetCDF loading function-------------------#
 ##########################################################
 
-#universal function to open a single var 3D (x,y,time) ncdf files: it includes rotation, y-axis filpping, possible time selection and CDO-based interpolation
-#to replace both ncdf.opener.time and ncdf.opener (deprecated and removed)
+#function to open ncdf files (much more refined, with CDO-based interpolation)
+ncdf.opener.old<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
+{
+#function to open netcdf files. It uses ncdf4 library. support only 1D (t), 2D (x,y) or 3D (x,y,t) data in any netcdf format.
 #automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
-#if required (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the target grid name
-#time selection based on package PCICt must be specifed with both "tmonths" and "tyears" flags
-#it returns a list including its own dimensions
+#if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
+require(ncdf4)
+
+if (rotate=="full") {rot=T; move1=move2=1/2} #180 degrees rotation of longitude
+if (rotate=="half") {rot=T; move1=1/4; move2=3/4} #90 degree rotation (useful for TM90)
+if (rotate=="no") {rot=F} #keep as it is, breaking at Greemwich
+
+#interpolation made with CDO: second order conservative remapping
+if (interp2grid)
+        {
+        print(paste("Remapping with CDO on",grid,"grid"))
+        filename=basename(normalizePath(namefile))
+	    filedir=dirname(normalizePath(namefile))
+	    cdo=Sys.which("cdo")
+        tempfile=paste0(file.path(filedir,paste0("tempfile_",filename)))
+        #system(paste0(cdo," ",remap_method,",",grid," ",namefile," ",tempfile))
+	    system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
+        namefile=tempfile 
+        }
+
+#define rotate function (faster than with apply)
+rotation<-function(line) {
+vettore=line; dims=length(dim(vettore))
+if (dims==1) #for longitudes
+{ll=length(line); line[(ll*move1):ll]=vettore[1:(ll*move2+1)]; line[1:(ll*move1-1)]=vettore[(ll*move2+2):ll]-360}
+if (dims==2) #for x,y data
+{ll=length(line[,1]); line[(ll*move1):ll,]=vettore[1:(ll*move2+1),]; line[1:(ll*move1-1),]=vettore[(ll*move2+2):ll,]}
+if (dims==3) #for x,y,t data
+{ll=length(line[,1,1]); line[(ll*move1):ll,,]=vettore[1:(ll*move2+1),,]; line[1:(ll*move1-1),,]=vettore[(ll*move2+2):ll,,]}
+return(line)    }
+
+#define flip function ('cos rev/apply is not working)
+flipper<-function(field) {
+dims=length(dim(field))
+if (dims==2) {ll=length(daily[1,]); field=field[,ll:1]} #for x,y data
+if (dims==3) {ll=length(daily[1,,1]); field=field[,ll:1,]} #for x,y,t data
+return(field) }
+
+#opening file: getting variable (if namevar is given, that variable is extracted)
+a=nc_open(namefile)
+if (is.null(namevar)) {daily=ncvar_get(a)} else {daily=ncvar_get(a,namevar)}
+
+#check for dimensions (presence or not of time dimension)
+dimensions=length(dim(daily))
+
+#load axis: old version, loading the variable dimensions with a max of 4 dimensions 
+#it showed some issues with the time_bnds variable appearing in some NetCDF file
+#naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+
+#load axis: updated version, looking for dimension directly stored inside the variable
+naxis=unlist(lapply(a$var[[namevar]]$dim,function (x) x["name"] ))
+for (axis in naxis) {assign(axis,ncvar_get(a,axis))}
+
+#if dimensions are multiple, get longitude, latitude
+#if needed, rotate and flip the array
+xlist=c("lon","Lon","longitude","Longitude")
+ylist=c("lat","Lat","latitude","Latitude")
+if (dimensions>1)
+{
+    #assign ics and ipsilon 
+    if (is.null(namelon)) {
+        if (any(xlist %in% naxis))  {
+              	#ics=get(names(a$dim[which(naxis %in% xlist)]))} else {print("No lon found")}
+		ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {stop("No lon found")}
+        } else {
+        ics=ncvar_get(a,namelon)
+        }
+    if (is.null(namelat)) {
+        if (any(ylist %in% naxis))  {
+            #ipsilon=get(names(a$dim[which(naxis %in% ylist)]))} else {print("No lat found")}
+	    ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {stop("No lat found")}
+        } else {
+        ipsilon=ncvar_get(a,namelat)
+        }
+
+        #print("flipping and rotating")
+        #longitute rotation around Greenwich
+        if (rot)     {ics=rotation(ics); daily=rotation(daily) }
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
+                if (length(ics)>1)
+                {ipsilon=sort(ipsilon); daily=flipper(daily) }
+
+        #exporting variables to the main program
+        assign("ics",ics, envir = .GlobalEnv)
+        assign("ipsilon",ipsilon, envir = .GlobalEnv)
+	assign(naxis[naxis %in% xlist],ics)
+	assign(naxis[naxis %in% ylist],ipsilon)
+
+}
+
+if (dimensions>3) {stop("This file is more than 3D file")}
+
+#close connection
+nc_close(a)
+
+#remove interpolated file
+if (interp2grid) {system2("rm",tempfile)}
+
+#showing array properties
+#print(dim(daily))
+
+return(daily)
+}
+
+ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2") {
+	field=ncdf.opener.universal(namefile,namevar,namelon,namelat,tmonths,tyears,rotate,interp2grid,grid,remap_method)
+	return(field$field)
+}
+
+
+#function to open a single var 3D (x,y,time) ncdf files: it includes rotation, time selection and CDO-based interpolation
+#to replace both ncdf.opener.time and ncdf.opener
+#it produces a list including its own dimensions
 ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2") {
-	
+	#automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
+	#if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the target grid name
 	require(ncdf4)
 
-	#check if timeflag is activated or full file must be loaded
 	if (is.null(tyears) | is.null(tmonths)) {
 		timeflag=FALSE	
 		print("No time and months specified, loading all the data") 
@@ -368,14 +545,182 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	if (timeflag) {print(paste("From",time[1],"to",time[length(time)]))} 
 
 	#returning file list
+	print(naxis)
 	return(mget(c("field",naxis)))
 }
 
-#ncdf.opener is a simplified wrapper for ncdf.opener.universal which returns only the field, ignoring the list
-ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2") {
-	field=ncdf.opener.universal(namefile,namevar,namelon,namelat,tmonths,tyears,rotate,interp2grid,grid,remap_method)
-	return(field$field)
+
+#function to open ncdf files (much more refined, with CDO-based interpolation)
+ncdf.opener.time<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2")
+{
+#function to open netcdf files. It uses ncdf4 library
+#time selection of month and years needed
+#automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing
+#if require (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the grid name
+require(ncdf4)
+require(PCICt)
+
+if (is.null(tyears) | is.null(tmonths)) {stop("Please specify both months and years to load")}
+
+if (rotate=="full") {rot=T; move1=move2=1/2} #180 degrees rotation of longitude
+if (rotate=="half") {rot=T; move1=1/4; move2=3/4} #90 degree rotation (useful for TM90)
+if (rotate=="no") {rot=F} #keep as it is, breaking at Greemwich
+
+#interpolation made with CDO: second order conservative remapping
+if (interp2grid)
+        {
+        print(paste("Remapping with CDO on",grid,"grid"))
+        filename=basename(normalizePath(namefile))
+        filedir=dirname(normalizePath(namefile))
+        cdo=Sys.which("cdo")
+        tempfile=paste0(file.path(filedir,paste0("tempfile_",filename)))
+        system2(cdo,args=c(paste0(remap_method,",",grid),namefile,tempfile))
+        namefile=tempfile
+        }
+
+#define rotate function (faster than with apply)
+rotation<-function(line) {
+vettore=line; dims=length(dim(vettore))
+if (dims==1) #for longitudes
+{ll=length(line); line[(ll*move1):ll]=vettore[1:(ll*move2+1)]; line[1:(ll*move1-1)]=vettore[(ll*move2+2):ll]-360}
+if (dims==2) #for x,y data
+{ll=length(line[,1]); line[(ll*move1):ll,]=vettore[1:(ll*move2+1),]; line[1:(ll*move1-1),]=vettore[(ll*move2+2):ll,]}
+if (dims==3) #for x,y,t data
+{ll=length(line[,1,1]); line[(ll*move1):ll,,]=vettore[1:(ll*move2+1),,]; line[1:(ll*move1-1),,]=vettore[(ll*move2+2):ll,,]}
+return(line)    }
+
+#define flip function ('cos rev/apply is not working)
+flipper<-function(field) {
+dims=length(dim(field))
+if (dims==2) {ll=length(field[1,]); field=field[,ll:1]} #for x,y data
+if (dims==3) {ll=length(field[1,,1]); field=field[,ll:1,]} #for x,y,t data
+return(field) }
+
+
+#opening file: getting variable (if namevar is given, that variable is extracted)
+print(paste("opening file:",namefile))
+a=nc_open(namefile)
+
+#load axis: old version, loading the variable dimensions with a max of 4 dimensions 
+#it showed some issues with the time_bnds variable appearing in some NetCDF file
+#naxis=names(a$dim)[1:min(c(4,length(a$dim)))]
+
+#load axis: updated version, looking for dimension directly stored inside the variable
+naxis=unlist(lapply(a$var[[namevar]]$dim,function (x) x["name"] ))
+for (axis in naxis) {print(axis); assign(axis,ncvar_get(a,axis))}
+
+print("selecting years and months")
+#origin=strsplit(ncatt_get(a,"time","units")$value," ")[[1]][3]
+
+
+#if (substring(origin, 1, 1)=="%") {
+#	print("qui")
+#	timeline=strptime(time,format="%Y%m%d") #time with format
+#} else {
+#	origin.pcict <- as.PCICt(origin, cal)
+#	timeline=origin.pcict + (time * 86400)	#time with origin
+#}
+#select time needed
+
+#based on preprocessing of CDO time format: get calendar type and use PCICt package for irregular data
+caldata=ncatt_get(a,"time","calendar")$value
+timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
+
+# break if the calendar has not been recognized
+if (any(is.na(timeline))) {
+	stop("Calendar from NetCDF is unsupported or not present. Stopping!!!")
 }
+
+#break if the data requested is not there
+lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
+lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-",number.days.month(lastday_base)),cal=caldata,format="%Y-%m-%d")
+firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
+
+
+#print(max(timeline)); print(lastday); print(min(timeline)); print(firstday)
+
+if (max(timeline)<lastday | min(timeline)>firstday) {
+	stop("You requested a time interval that is not present in the NetCDF")
+}
+
+#time selection and variable loading
+print("loading full field...")
+#if no name provided load the only variable available
+if (is.null(namevar)) {namevar=names(a$var)}
+field=ncvar_get(a,namevar)
+print(str(field))
+
+# select data we need
+select=which(as.numeric(format(timeline,"%Y")) %in% tyears & as.numeric(format(timeline,"%m")) %in% tmonths)
+field=field[,,select]
+time=timeline[select]
+
+
+print(paste("This is a",caldata,"calendar"))
+print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
+
+print(paste("Months that have been loaded are.. "))
+print(unique(format(time,"%Y-%m")))
+
+
+#check for dimensions (presence or not of time dimension)
+dimensions=length(dim(field))
+
+#if dimensions are multiple, get longitude, latitude
+#if needed, rotate and flip the array
+xlist=c("lon","Lon","longitude","Longitude")
+ylist=c("lat","Lat","latitude","Latitude")
+if (dimensions>1)
+{
+	#assign ics and ipsilon 
+	if (is.null(namelon)) {
+		if (any(xlist %in% naxis))  {
+            		ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {stop("No lon found")} 
+		} else {
+			ics=ncvar_get(a,namelon)
+		}
+	if (is.null(namelat)) {
+		if (any(ylist %in% naxis))  {
+		        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {stop("No lat found")}
+		} else {
+			ipsilon=ncvar_get(a,namelat)
+		}
+		
+	print("flipping and rotating")
+        #longitute rotation around Greenwich
+        if (rot)     {ics=rotation(ics); field=rotation(field) }
+        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
+                if (length(ics)>1)
+                {ipsilon=sort(ipsilon); field=flipper(field) }
+
+        #exporting variables to the main program
+        assign("ics",ics, envir = .GlobalEnv)
+        assign("ipsilon",ipsilon, envir = .GlobalEnv)
+        assign(naxis[naxis %in% xlist],ics)
+        assign(naxis[naxis %in% ylist],ipsilon)
+	    #assign(names(a$dim[which(naxis %in% xlist)]),ics)
+	    #assign(names(a$dim[which(naxis %in% ylist)]),ipsilon)
+        
+
+}
+
+
+if (dimensions>3)
+{stop("This file is more than 3D file")}
+
+#close connection
+nc_close(a)
+
+#remove interpolated file
+if (interp2grid) {system2("rm",tempfile)}
+
+#showing array properties
+print(paste(dim(field)))
+print(paste("From",time[1],"to",time[length(time)]))
+
+return(mget(c("field",naxis)))
+}
+
 
 ##########################################################
 #--------------Plotting functions------------------------#
@@ -716,6 +1061,19 @@ blocking.persistence<-function(field,minduration=5,time.array)
 {
 
 #function for persistence
+#pers<-function(timeseries,persistence,time.array)
+#{
+#        xx=NULL
+#        for (s in min(time.array$season):max(time.array$season))
+#                {
+#                yy=timeseries[which(time.array$season==s)]
+#                nn=time.persistence(yy,persistence)
+#                xx=append(xx,nn)
+#                }
+#        return(xx)
+#}
+
+#function for persistence
 pers2<-function(timeseries,persistence,time.array)
 {     
 dd=min(time.array$season):max(time.array$season) 
@@ -796,6 +1154,44 @@ for (t in time)
 return(field)
 }
 
+#large scale extension
+#largescale.extension2<-function(ics,ipsilon,field)
+#{
+#print("Large Scale Extension based on fixed angle")
+#deltaics=(ics[20]-ics[19])
+#deltaips=(ipsilon[20]-ipsilon[19])
+#passo=round(5/(ics[20]-ics[19]))
+#vertical=round(2.5/(ipsilon[20]-ipsilon[19]))
+
+#print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+#
+#short<-function(ics,ipsilon,field,passo,vertical)
+#{
+#out=field
+#startipsilon=which.min(abs(ipsilon-30))
+#estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
+#new=rbind(field,field,field)
+#for (i in 1:length(ics))
+#{ii=i+length(ics)
+#for (j in startipsilon:(startipsilon+estension))
+#{
+#control=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
+#if (control>0)
+#{out[i,j]=1}
+#}
+#}
+#return(out)
+#}
+
+#for (t in 1:length(field[1,1,]))
+#{
+#if (any(t==round(seq(0,length(field[1,1,]),,11))))
+#        {print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
+#if (all(!is.na(field[,,t])))
+#{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
+#}
+#return(field)
+#}
 
 #Longitude filter for minimum extension
 longitude.filter<-function(ics,ipsilon,field)

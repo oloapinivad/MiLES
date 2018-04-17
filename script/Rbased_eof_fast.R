@@ -21,6 +21,7 @@ savefile1=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",exp,ens,year1,year2,
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
         print("Actually requested EOFs data is already there!")
+	print(savefile1)
 	if (doforce=="true") {
 	        print("Running with doforce=true... re-run!")
 	} else  {
@@ -30,7 +31,7 @@ if (file.exists(savefile1)) {
 
 #new file opening
 nomefile=z500filename
-fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
@@ -151,8 +152,8 @@ monthtime=as.numeric(etime$data[etime$day==15])
 # dimensions definition
 TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees_east", ics, longname="longitude")
-y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="latitude")
+x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
+y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
 z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
 ef <- ncdim_def( "PC", "-", 1:neofs)
 t <- ncdim_def( "time", TIME, monthtime,calendar=tcal, longname="time", unlim=T)

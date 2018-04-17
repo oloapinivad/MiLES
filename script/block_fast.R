@@ -19,6 +19,7 @@ savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
 #check if data is already there to avoid re-run
 if (file.exists(savefile1) & file.exists(savefile2)) {
 	print("Actually requested blocking data is already there!")
+	print(savefile1); print(savefile2)
 	if (doforce=="true") {
 	 	print("Running with doforce=true... re-run!")
 	} else	{
@@ -28,7 +29,7 @@ if (file.exists(savefile1) & file.exists(savefile2)) {
 
 #new file opening
 nomefile=z500filename
-fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(nomefile,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
@@ -221,8 +222,8 @@ full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","B
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
 TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees_east", ics, longname="longitude")
-y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="latitude")
+x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
+y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
 z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
 t1 <- ncdim_def( "time", TIME, 1, unlim=T, calendar=tcal, longname="time")
 t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")

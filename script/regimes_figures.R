@@ -21,7 +21,7 @@ source(CFGSCRIPT)
 # loading anomalies and variances of experiment
 nomefile=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
 frequencies_exp=ncdf.opener(nomefile,"Frequencies")
-regimes_exp=ncdf.opener(nomefile,"Regimes","Lon","Lat",rotate="no")
+regimes_exp=ncdf.opener(nomefile,namevar="Regimes",rotate="no")
 
 # loading reference field
 # check for REFDIR==FILESDIR, i.e. if we are using the climatology provided by MiLES or another dataset MiLES-generated 
@@ -35,7 +35,7 @@ regimes_exp=ncdf.opener(nomefile,"Regimes","Lon","Lat",rotate="no")
 
 #nomefile=paste0(REFDIR,"/RegimesPattern_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
 frequencies_ref=ncdf.opener(nomefile_ref,"Frequencies")
-regimes_ref=ncdf.opener(nomefile_ref,"Regimes","Lon","Lat",rotate="no")
+regimes_ref=ncdf.opener(nomefile_ref,namevar="Regimes",rotate="no")
 
 #try to assign the 4 standard regimes names to the dataset using the distance between 
 #the location of the maximum/minimum of the pattern and 4 "standard" locations

@@ -31,12 +31,12 @@ neofs=4
 ##########################################################
 
 #loading anomalies and variances of experiment
-variance_exp=ncdf.opener(nomefile_exp,"Variances",rotate="no")*100 #convert to percentage
-regressions_exp=ncdf.opener(nomefile_exp,"Regressions",rotate="no")
+variance_exp=ncdf.opener(nomefile_exp,namevar="Variances",rotate="no")*100 #convert to percentage
+regressions_exp=ncdf.opener(nomefile_exp,namevar="Regressions",rotate="no")
 
 #loading reference field
-variance_ref=ncdf.opener(nomefile_ref,"Variances",rotate="no")*100 #convert to percentage
-regressions_ref=ncdf.opener(nomefile_ref,"Regressions",rotate="no")
+variance_ref=ncdf.opener(nomefile_ref,namevar="Variances",rotate="no")*100 #convert to percentage
+regressions_ref=ncdf.opener(nomefile_ref,namevar="Regressions",rotate="no")
 
 
 ##########################################################
