@@ -1,7 +1,7 @@
-# MiLES v0.5
+# MiLES v0.51
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Mar 2018
+Oct 2014  - Apr 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
@@ -114,8 +114,8 @@ can specified at this stage: here below a list of the commands that can be set u
 - `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar"). This last functionality is under testing.
 - `teles` -> A list of one or teleconnection patterns. "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2".
 - `output_file_type` -> pdf, eps or png figures format.
-- `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plotsi (default). All projection from mapproj R package are supported (but not all of them have been tested).
-- `doeof`,`doblock`,`doregime` -> set to true or false in order to run some specific section
+- `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plots (default). All projection from mapproj R package are supported (but not all of them have been tested).
+- `doeof`,`doblock`,`doregime` -> set to true or false in order to run some specific sections.
 
 The chain of scripts will be executed as a sequence.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
@@ -148,6 +148,10 @@ It is reccomended in such cases to split the analysis in different subsets.
 ------------
 
 ## HISTORY
+
+*v0.51 - Apr 2018
+- Improved Netcdf conventions for output files
+- Rewritten ncdf.opener function
 
 *v0.5 - Mar 2018*
 - Able to detect 500hPa level inside of any geopotential height data
