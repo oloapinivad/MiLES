@@ -208,17 +208,23 @@ return(etime)
 #if required (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the target grid name
 #time selection based on package PCICt must be specifed with both "tmonths" and "tyears" flags
 #it returns a list including its own dimensions
-ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2") {
-	
+ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,
+				rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2",
+				exportlonlat=TRUE,verbose=TRUE) {
+
+	#load package	
 	require(ncdf4)
+		
+	#verbose-only printing function
+	printv<-function(value) {if (verbose) {print(value)} }
 
 	#check if timeflag is activated or full file must be loaded
 	if (is.null(tyears) | is.null(tmonths)) {
 		timeflag=FALSE	
-		print("No time and months specified, loading all the data") 
+		printv("No time and months specified, loading all the data") 
 		} else {
 		timeflag=TRUE
-		print("tyears and tmonths are set!")
+		printv("tyears and tmonths are set!")
 		require(PCICt)
 		}
 
@@ -256,7 +262,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		return(field) }
 
 	#opening file: getting variable (if namevar is given, that variable is extracted)
-	print(paste("opening file:",namefile))
+	printv(paste("opening file:",namefile))
 	a=nc_open(namefile)
 
 	#if no name provided load the only variable available
@@ -269,11 +275,11 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	naxis=unlist(lapply(a$var[[namevar]]$dim,function (x) x["name"] ))
 	for (axis in naxis) {
 		assign(axis,ncvar_get(a,axis))
-		print(paste(axis,":",length(get(axis)),"records"))
+		printv(paste(axis,":",length(get(axis)),"records"))
 	}
 
 	if (timeflag) {
-		print("selecting years and months")
+		printv("selecting years and months")
 	
 		#based on preprocessing of CDO time format: get calendar type and use PCICt package for irregular data
 		caldata=ncatt_get(a,"time","calendar")$value
@@ -296,7 +302,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	}
 
 	#time selection and variable loading
-	print("loading full field...")
+	printv("loading full field...")
 	field=ncvar_get(a,namevar)
 
 	if (timeflag) {
@@ -306,11 +312,11 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		field=field[,,select]
 		time=timeline[select]
 
-		print(paste("This is a",caldata,"calendar"))
-		print(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
+		printv(paste("This is a",caldata,"calendar"))
+		printv(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
 
-		print(paste("Months that have been loaded are.. "))
-		print(unique(format(time,"%Y-%m")))
+		printv(paste("Months that have been loaded are.. "))
+		printv(unique(format(time,"%Y-%m")))
 	}
 
 	#check for dimensions (presence or not of time dimension)
@@ -338,19 +344,22 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 
 	        #longitute rotation around Greenwich
 	        if (rot)     {
-			print("rotating...")
+			printv("rotating...")
 			ics=rotation(ics); field=rotation(field) 
 		}
-	        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 )
+	        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 ) {
 	                if (length(ics)>1) {
 				print("flipping...")
 				ipsilon=sort(ipsilon)
 				field=flipper(field) 
 			}
+		}
 
 		#exporting variables to the main program
-	        assign("ics",ics, envir = .GlobalEnv)
-	        assign("ipsilon",ipsilon, envir = .GlobalEnv)
+		if (exportlonlat) {
+	        	assign("ics",ics, envir = .GlobalEnv)
+	        	assign("ipsilon",ipsilon, envir = .GlobalEnv)
+		}
 	        assign(naxis[naxis %in% xlist],ics)
 	        assign(naxis[naxis %in% ylist],ipsilon)
 	}
@@ -364,16 +373,18 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	if (interp2grid) {system2("rm",tempfile)}
 
 	#showing array properties
-	print(paste(dim(field)))
-	if (timeflag) {print(paste("From",time[1],"to",time[length(time)]))} 
+	printv(paste(dim(field)))
+	if (timeflag) {printv(paste("From",time[1],"to",time[length(time)]))} 
 
 	#returning file list
 	return(mget(c("field",naxis)))
 }
 
-#ncdf.opener is a simplified wrapper for ncdf.opener.universal which returns only the field, ignoring the list
-ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2") {
-	field=ncdf.opener.universal(namefile,namevar,namelon,namelat,tmonths,tyears,rotate,interp2grid,grid,remap_method)
+#ncdf.opener is a simplified wrapper for ncdf.opener.universal which returns only the field, ignoring the list and no verbosity
+ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,
+		      rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2",
+		      exportlonlat=TRUE,verbose=FALSE) {
+	field=ncdf.opener.universal(namefile,namevar,namelon,namelat,tmonths,tyears,rotate,interp2grid,grid,remap_method,exportlonlat,verbose)
 	return(field$field)
 }
 

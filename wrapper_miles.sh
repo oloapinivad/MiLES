@@ -22,17 +22,17 @@ doregime=true #Regimes section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
-doforce=fasle
+doforce=false
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1979
-year2_exp=1989
-dataset_exp="NCEP"
-#ens_list=$(seq -f "%02g" 0 4 )
-ens_list="NO"
+year1_exp=1851
+year2_exp=2014
+dataset_exp="20CRv2c"
+ens_list=$(seq -f e"%02g" 1 4 )
+#ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
@@ -58,7 +58,7 @@ seasons="DJF"
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
 # "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to 0!
-teles="NAO AO"
+teles="NAO"
 #tele="-50_20_10_80"
 
 # output file type for figures (pdf, png, eps)
@@ -164,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	#time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
+	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
 
 	for season in $seasons ; do
 		echo $season

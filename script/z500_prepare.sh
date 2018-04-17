@@ -39,14 +39,21 @@ if [[ ! -f $z500filename ]] || [[ $doforce == "true" ]] ; then
 	fi
 
 	#introducing a function to autofine geopotential height level in the file (looking for 500hPa or 50000Pa!)
+	#updated with "level_select" command for special cases
 	zunit=$( $cdonc zaxisdes $TEMPDIR/fullfile.nc | grep units | cut -f2 -d'"') 
-	if [[ "$zunit" == "millibar" ]] || [[ "$zunit" == "hPa" ]] ; then level=500 ; fi
-	if [[ "$zunit" == "Pa" ]] ; then level=50000 ; fi
+	if [[ -z $zunit ]] ; then 
+		echo "WARNING: Unknown unit for vertical axis!!!"
+		echo "Selecting the first available level, it may be wrong!!!"
+		level_select="-sellevidx,1"
+	else
+		if [[ "$zunit" == "millibar" ]] || [[ "$zunit" == "hPa" ]] ; then level=500 ; fi
+		if [[ "$zunit" == "Pa" ]] ; then level=50000 ; fi
+		echo "Level is $level $zunit" 
+		level_select="-sellevel,$level"
+	fi
 
-	echo "Level is $level" 
-	
 	#main operations: sellevel and daymean + setlevel, setname, interpolation resolution and NH selection
-	$cdonc sellonlatbox,0,360,0,90 -remapcon2,r144x73 -setlevel,50000 -setname,zg -daymean -sellevel,$level $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
+	$cdonc sellonlatbox,0,360,0,90 -remapcon2,r144x73 -setlevel,50000 -setname,zg -daymean ${level_select} $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
 
 	#in order to avoid issues, all data are forced to be geopotential height in case geopotential is identified (i.e. values too large for a Z500
 	sanityvalue=$($cdonc outputint -fldmean -seltimestep,1 $TEMPDIR/smallfile.nc)
