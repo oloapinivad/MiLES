@@ -9,8 +9,9 @@
 # you must customozie this according to the dataset you analyze and your local file structure
 # you can use $dataset and $ens variable
 INDIR=$WORK/data/CMIP5/${dataset}/HIST/${ens}/day/Z500
-if [[ "${dataset}" == "NCEP" ]] || [[ "${dataset}" == "20CRv2c"  ]] ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
+if [[ "${dataset}" == "NCEP" ]] ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
 if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] ; then INDIR=$WORK/data/${dataset}/day/Z500 ; fi
+if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/$ens/day/Z500 ; fi
 
 # to look for some specific file structure
 # if commented the program will look for all the netcdf or grib files in the folder
