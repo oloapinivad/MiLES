@@ -25,6 +25,7 @@ savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,s
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
         print("Actually requested weather regimes data is already there!")
+	print(savefile1)
 	if (doforce=="true") {
                 print("Running with doforce=true... re-run!")
         } else  {
@@ -52,7 +53,7 @@ timeseason=season2timeseason(season)
 
 #new file opening
 nomefile=z500filename
-fieldlist=ncdf.opener.time(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(nomefile,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
 
 #extract calendar and time unit from the original file
 tcal=attributes(fieldlist$time)$cal
@@ -119,15 +120,12 @@ print("saving NetCDF climatologies...")
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
 TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
 LEVEL=50000
-x <- ncdim_def( "Lon", "degrees_east", ics, longname="Longitude")
-y <- ncdim_def( "Lat", "degrees_north", ipsilon, longname="Latitude")
-z <- ncdim_def( "Lev", "Pa", LEVEL, longname="Pressure")
-t <- ncdim_def( "Time", TIME, fulltime,calendar=tcal, longname="Time", unlim=T)
+x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
+y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
+t <- ncdim_def( "time", TIME, fulltime,calendar=tcal, longname="time", unlim=T)
 
 # extra dimensions definition
-x0 <- ncdim_def( "lon", "degrees_east", 0, longname="Longitude")
-y0 <- ncdim_def( "lat", "degrees_north", 0, longname="Longitude")
-cl <- ncdim_def( "Lev", "cluster index", 1:nclusters, longname="Pressure")
+cl <- ncdim_def( "lev", "cluster index", 1:nclusters, longname="pressure")
 
 #var definition
 unit="m"; longvar="Weather Regimes Pattern"

@@ -22,8 +22,8 @@ for (field in fieldlist) {
 
     #use file.builder function
 	nomefile=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
-    field_exp=ncdf.opener(nomefile,field,"Lon","Lat",rotate="no")
-    assign(paste(field,"_exp",sep=""),field_exp)
+	field_exp=ncdf.opener(nomefile,namevar=field,rotate="no")
+	assign(paste(field,"_exp",sep=""),field_exp)
 }
 
 #open reference field
@@ -38,8 +38,8 @@ for (field in fieldlist) {
 		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",dataset_ref,ens_ref,year1_ref,year2_ref,season)
 	}
     
-	field_ref=ncdf.opener(nomefile_ref,field,"Lon","Lat",rotate="no")
-    assign(paste(field,"_ref",sep=""),field_ref)
+	field_ref=ncdf.opener(nomefile_ref,namevar=field,rotate="no")
+    	assign(paste(field,"_ref",sep=""),field_ref)
 }
 
 ##########################################################

@@ -51,8 +51,8 @@ year2_ref=2016
 # To analyse the whole year use "ALL"
 # Beta: now you can define your own season putting together 3-character string for each consecutive month you 
 # want to include, for example "Jan_Feb_Mar".
-seasons="DJF MAM SON JJA"
-#seasons="DJF"
+#seasons="DJF MAM SON JJA"
+seasons="DJF"
 
 # select which teleconnection pattern EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
@@ -164,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
+	#time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
 
 	for season in $seasons ; do
 		echo $season
