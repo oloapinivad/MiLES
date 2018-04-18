@@ -17,22 +17,22 @@ machine=wilma
 
 #control flags to check which sections should be run
 doeof=true #EOFs section
-doblock=true #Blocking section 
+doblock=false #Blocking section 
 doregime=true #Regimes section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
-doforce=false
+doforce=true
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1851
-year2_exp=2014
-dataset_exp="20CRv2c"
-ens_list=$(seq -f e"%02g" 1 4 )
-#ens_list="NO"
+year1_exp=1979
+year2_exp=2017
+dataset_exp="ERAI"
+#ens_list=$(seq -f e"%02g" 1 4 )
+ens_list="NO"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
@@ -164,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
+	#time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
 
 	for season in $seasons ; do
 		echo $season

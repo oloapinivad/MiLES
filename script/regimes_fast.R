@@ -3,8 +3,7 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters,doforce)
-{
+miles.regimes.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters,doforce)  {
 
 #t0
 t0<-proc.time()
@@ -15,13 +14,13 @@ if (nclusters!=4 | season!="DJF") {
 }
 
 #test function to smooth seasonal cycle: it does not work fine yet, keep it false
-smoothing=F
+smoothing=T
 xlim=c(-80,40)
 ylim=c(30,87.5)
 
 #define file where save data
-
 savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
+
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
         print("Actually requested weather regimes data is already there!")
@@ -33,15 +32,12 @@ if (file.exists(savefile1)) {
         }
 }
 
-
-#setting up main variables
-#REGIMESDIR=file.path(FILESDIR,exp,"Regimes",paste0(year1,"_",year2),season)
-#dir.create(REGIMESDIR,recursive=T)
-
 #setting up time domain
 years=year1:year2
 timeseason=season2timeseason(season)
 
+#decide if we want to include this
+#increase the number of files to load for edge-day smoothing
 #if (smoothing) {
 #	timeseason0=timeseason
 #	if (season=="DJF") {
@@ -52,8 +48,7 @@ timeseason=season2timeseason(season)
 #}
 
 #new file opening
-nomefile=z500filename
-fieldlist=ncdf.opener.universal(nomefile,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(z500filename,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
 
 #extract calendar and time unit from the original file
 tcal=attributes(fieldlist$time)$cal
@@ -66,38 +61,16 @@ etime=power.date.new(fieldlist$time)
 Z500=fieldlist$field
 
 print("Compute anomalies based on daily mean")
-#old clean script with apply and ave, slow
-#Z500cycle=apply(Z500,c(1,2),ave,etime$month,etime$day)
-#if (!smoothing) {
-#    Z500anom=Z500-aperm(Z500cycle,c(2,3,1)) 
-#}
-
-#beta function for daily anomalies, use array predeclaration and rowMeans (40 times faster!)
-daily.anom.mean.beta<-function(ics,ipsilon,field,etime) {
-    condition=paste(etime$day,etime$month)
-    daily=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
-    anom=field*NA
-    for (t in unique(condition)) {
-        daily[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
-        anom[,,which(t==condition)]=sweep(field[,,which(t==condition)],c(1,2),daily[,,which(t==unique(condition))],"-")
-    }
-    return(anom)
+#smoothing flag and daily anomalies
+if (smoothing) {
+	Z500anom=daily.anom.run.mean(ics,ipsilon,Z500,etime)
+} else {
+	Z500anom=daily.anom.mean(ics,ipsilon,Z500,etime)
 }
 
-Z500anom=daily.anom.mean.beta(ics,ipsilon,Z500,etime)
-
-#if (smoothing) {
-#	print("running mean")
-#	rundays=5
-#	runZ500cycle=apply(Z500cycle,c(2,3),filter,rep(1/rundays,rundays),sides=2)
-#	Z500anom0=Z500-aperm(runZ500cycle,c(2,3,1))
-#	whichdays=which(as.numeric(format(datas,"%m")) %in% timeseason0)
-#	Z500anom=Z500anom0[,,whichdays]
-#	etime=power.date.new(datas[whichdays])
-#	}
-
-#compute weather regimes
-weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
+#compute weather regimes: new regimes2 function with minimum variance evaluation
+#weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
+weather_regimes=regimes2(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,minvar=0.8,xlim,ylim,alg="Hartigan-Wong")
 
 t1=proc.time()-t0
 print(t1)
@@ -108,13 +81,6 @@ print(t1)
 
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
-
-#--deprecated--# 
-#print(fulltime[2])
-#temporary check for seconds/days TO BE FIXED
-#if (fulltime[2]==1) {tunit="days"}
-#if (fulltime[2]==86400) {tunit="seconds"}
-#--------------#
 
 # dimensions definition
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
@@ -163,7 +129,7 @@ if (length(args)!=0) {
         print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
         print(name_args)
     } else {
-# when the number of arguments is ok run the function()
+	# when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
         miles.regimes.fast(exp,ens,year1,year2,season,z500filename,FILESDIR,nclusters,doforce)

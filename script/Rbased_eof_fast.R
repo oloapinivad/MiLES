@@ -47,20 +47,11 @@ Z500=fieldlist$field
 #monthly averaging
 print("monthly mean...")
 
-#slower cleaner functions
-#Z500monthly=apply(Z500,c(1,2),by,list(etime$month,etime$year),mean)
-#Z500monthly=apply(Z500,c(1,2),by,paste(etime$month,etime$year),mean)
-#Z500monthly=aperm(Z500monthly,c(2,3,1))
+#deprecated: slower cleaner functions
+#Z500monthly=aperm(apply(Z500,c(1,2),by,paste(etime$month,etime$year),mean),c(2,3,1))
 
-#beta function for monthly mean, using preallocation and rowMeans
-monthly.mean.beta<-function(ics,ipsilon,field,etime) {
-    condition=paste(etime$month,etime$year)
-    monthly=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
-    for (t in unique(condition)) {monthly[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)} 
-    return(monthly)
-}
-Z500monthly=monthly.mean.beta(ics,ipsilon,Z500,etime)
-
+#new faster monthly mean function
+Z500monthly=monthly.mean(ics,ipsilon,Z500,etime)
 
 #climatology
 print("climatological mean...")
@@ -68,59 +59,63 @@ Z500clim=apply(Z500monthly,c(1,2),ave,rep(timeseason,length(years)))
 Z500clim=aperm(Z500clim,c(2,3,1))
 
 #monthly anomalies
+print("anomalies...")
 Z500anom=Z500monthly-Z500clim
 
 #select teleconnection region
 if (tele=="NAO") {
-    xlim=c(-90,40); ylim=c(20,85)
+	xlim=c(-90,40); ylim=c(20,85)
 } else if (tele=="AO") {
-    xlim=c(-180,180); ylim=c(20,85)
+	xlim=c(-180,180); ylim=c(20,85)
+#} else if (tele=="PNA") {
+	#xlim=c(140,-80) ; ylim=c(20,85) #140E-80W: to be improved
 } else {
-    splitter=as.numeric(strsplit(tele,"_")[[1]])
-    if (length(splitter)==4) {
-        xlim=c(splitter[1],splitter[2])
-        ylim=c(splitter[3],splitter[4])
-    } else {
-        stop("Wrong teleconnection region!")
+	#use non standard region, detect region with strsplit
+	splitter=as.numeric(strsplit(tele,"_")[[1]])
+	if (length(splitter)==4) {
+        	xlim=c(splitter[1],splitter[2])
+        	ylim=c(splitter[3],splitter[4])
+    	} else {
+        	stop("Wrong teleconnection region!")
     }
 }
         
 #compute EOFs
 print("EOFs...")
 EOFS=eofs(ics,ipsilon,Z500anom,neof=neofs,xlim,ylim,method="SVD",do_standardize=T,do_regression=T)
-COEFF=eofs.coeff(ics,ipsilon,Z500anom,EOFS,do_standardize=T)
+#COEFF=eofs.coeff(ics,ipsilon,Z500anom,EOFS,do_standardize=T) #do we really need this?
 
 #flip signs of patterns and regressions for NAO and AO
 print("checking signs...")
 for (i in 1:neofs) {
-    posreg=NULL
+    	posreg=NULL
 
-    # define regions for sign control: boxes where values should be positive
-    if (tele=="NAO") {
-        if (i==1) {posreg=c(-30,30,40,50)}   #NAO
-        if (i==2) {posreg=c(-60,0,40,60)}    #East Atlantic Pattern 
-        if (i==3) {posreg=c(-30,30,50,70)}   #Scandinavian Blocking
-    }
+    	# define regions for sign control: boxes where values should be positive
+    	if (tele=="NAO") {
+    		if (i==1) {posreg=c(-30,30,40,50)}   #NAO
+    		if (i==2) {posreg=c(-60,0,40,60)}    #East Atlantic Pattern 
+        	if (i==3) {posreg=c(-30,30,50,70)}   #Scandinavian Blocking
+    	}
 
-    if (tele=="AO") {
-        if (i==1) {posreg=c(-180,180,20,50)}    #Arctic Oscillation
-        if (i==2) {posreg=c(-120,-60,40,60)} #PNA
-    }
+ 	if (tele=="AO") {
+        	if (i==1) {posreg=c(-180,180,20,50)}    #Arctic Oscillation
+        	if (i==2) {posreg=c(-120,-60,40,60)}    #PNA
+    	}
 
-    #if definition of region exists
-    if (!is.null(posreg)) {
-        #convert into indices
-        xbox=whicher(EOFS$pattern$x,posreg[1]):whicher(EOFS$pattern$x,posreg[2])
-        ybox=whicher(EOFS$pattern$y,posreg[3]):whicher(EOFS$pattern$y,posreg[4])
-        valuereg=mean(EOFS$pattern$z[xbox,ybox,i])
+    	#if definition of region exists
+    	if (!is.null(posreg)) {
+        	#convert into indices
+        	xbox=whicher(EOFS$pattern$x,posreg[1]):whicher(EOFS$pattern$x,posreg[2])
+        	ybox=whicher(EOFS$pattern$y,posreg[3]):whicher(EOFS$pattern$y,posreg[4])
+        	valuereg=mean(EOFS$pattern$z[xbox,ybox,i])
 
-        #if negative in the box, flip all signs!
-        if (valuereg<0) {
-            EOFS$pattern$z[,,i]=-EOFS$pattern$z[,,i]
-            COEFF[,i]=-COEFF[,i]
-            EOFS$regression=-EOFS$regression
-        }
-    }
+        	#if negative in the box, flip all signs!
+        	if (valuereg<0) {
+        		EOFS$pattern$z[,,i]=-EOFS$pattern$z[,,i]
+            		#COEFF[,i]=-COEFF[,i]
+            		EOFS$regression=-EOFS$regression
+        	}
+    	}
 }
 
 #expand EOF pattern to save it
@@ -138,13 +133,6 @@ print(t1)
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
 print(savefile1)
-
-#--deprecated--# 
-#print(fulltime[2])
-#temporary check for seconds/days TO BE FIXED
-#if (fulltime[2]==1) {tunit="days"}
-#if (fulltime[2]==86400) {tunit="seconds"}
-#--------------#
 
 #monthly specific time
 monthtime=as.numeric(etime$data[etime$day==15])
@@ -175,7 +163,8 @@ variance_ncdf=ncvar_def("Variances",unit,list(ef),-999,longname=longvar,prec="si
 ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf))
 ncvar_put(ncfile1, "Patterns", expanded_pattern, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
 ncvar_put(ncfile1, "Regressions", EOFS$regression, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
+#ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
+ncvar_put(ncfile1, "PCs", EOFS$coeff, start = c(1, 1),  count = c(-1,-1))
 ncvar_put(ncfile1, "Variances", EOFS$variance, start = c(1),  count = c(-1))
 nc_close(ncfile1)
 
