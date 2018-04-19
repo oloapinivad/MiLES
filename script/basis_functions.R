@@ -332,15 +332,15 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	        if (is.null(namelon)) {
 	                if (any(xlist %in% naxis))  {
 	                        ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {print("WARNING: No lon found"); ics=NA}
-	                } else {
-	                        ics=ncvar_get(a,namelon)
-	                }
+	  	} else {
+	             	ics=ncvar_get(a,namelon)
+	        }
 	        if (is.null(namelat)) {
 	                if (any(ylist %in% naxis))  {
 	                        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {print("WARNING: No lat found"); ipsilon=NA}
-	                } else {
-	                        ipsilon=ncvar_get(a,namelat)
-	                }
+	       	} else {
+	              	ipsilon=ncvar_get(a,namelat)
+	        }
 
 	        #longitute rotation around Greenwich
 	        if (rot)     {
@@ -360,8 +360,8 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	        	assign("ics",ics, envir = .GlobalEnv)
 	        	assign("ipsilon",ipsilon, envir = .GlobalEnv)
 		}
-	        assign(naxis[naxis %in% xlist],ics)
-	        assign(naxis[naxis %in% ylist],ipsilon)
+	        assign(naxis[naxis %in% c(xlist,namelon)],ics)
+	        assign(naxis[naxis %in% c(ylist,namelat)],ipsilon)
 	}
 
 	if (dimensions>3) {stop("This file is more than 3D file")}
