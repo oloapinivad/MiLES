@@ -72,6 +72,24 @@ if (smoothing) {
 #weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
 weather_regimes=regimes2(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,minvar=0.8,xlim,ylim,alg="Hartigan-Wong")
 
+compose=weather_regimes$regimes
+names=paste("Regimes",1:nclusters)
+position=rbind(c(-50,60),c(-40,50),c(0,60),c(-15,60))
+rownames(position)<-c("NAO-","Atlantic Ridge","Scandinavian Blocking","NAO+")
+for (i in 1:nclusters)  {
+	MM=which(compose[,,i]==max(compose[,,i],na.rm=T),arr.ind=T)
+	mm=which(compose[,,i]==min(compose[,,i],na.rm=T),arr.ind=T)
+	if (max(compose[,,i],na.rm=T)>abs(min(compose[,,i],na.rm=T))) {
+		distMM=dist(rbind(c(ics[MM[1]],ipsilon[MM[2]]),position))
+	} else {
+		distMM=dist(rbind(c(ics[mm[1]],ipsilon[mm[2]]),position))
+	}
+	#print(distMM)
+	names[i]=rownames(position)[which.min(distMM[1:nclusters])]
+	if (i>1 & any(names[i]==names[1:max(c(1,i-1))])) {names[i]=paste("Regime",i)    }
+	print(names[i])
+}
+
 t1=proc.time()-t0
 print(t1)
 
@@ -103,11 +121,16 @@ cluster_ncdf=ncvar_def("Indices",unit,list(t),-999,longname=longvar,prec="single
 unit="%"; longvar="Weather Regimes Frequencies"
 frequencies_ncdf=ncvar_def("Frequencies",unit,list(cl),-999,longname=longvar,prec="single",compression=1)
 
+#testnames
+dimnchar=ncdim_def("nchar","", 1:max(nchar(names)), create_dimvar=FALSE )
+names_ncdf=ncvar_def("Names","", list(dimnchar, cl), prec="char" )
+
 #saving file
-ncfile1 <- nc_create(savefile1,list(pattern_ncdf,cluster_ncdf,frequencies_ncdf))
+ncfile1 <- nc_create(savefile1,list(pattern_ncdf,cluster_ncdf,frequencies_ncdf,names_ncdf))
 ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1),  count = c(-1,-1,-1))
 ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1),  count = c(-1))
 ncvar_put(ncfile1, "Frequencies", weather_regimes$frequencies, start = c(1),  count = c(-1))
+ncvar_put(ncfile1, "Names", names) 
 nc_close(ncfile1)
 
 }
