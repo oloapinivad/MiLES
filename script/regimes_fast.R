@@ -69,25 +69,48 @@ if (smoothing) {
 }
 
 #compute weather regimes: new regimes2 function with minimum variance evaluation
-#weather_regimes=regimes(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,neof=4,xlim,ylim,alg="Hartigan-Wong")
 weather_regimes=regimes2(ics,ipsilon,Z500anom,ncluster=nclusters,ntime=1000,minvar=0.8,xlim,ylim,alg="Hartigan-Wong")
 
+# Cluster assignation: based on the position of the absolute maximum/minimum
+# negative value for NAO-, maximum for the other 3 regimes
 compose=weather_regimes$regimes
 names=paste("Regimes",1:nclusters)
-position=rbind(c(-50,60),c(-40,50),c(0,60),c(-15,60))
+position=rbind(c(-45,65),c(-35,50),c(10,60),c(-20,60))
 rownames(position)<-c("NAO-","Atlantic Ridge","Scandinavian Blocking","NAO+")
+
+#minimum distance in degrees to assign a regime name
+min_dist_in_deg=20 
+
+#loop
 for (i in 1:nclusters)  {
+
+	#find position of max and minimum values
 	MM=which(compose[,,i]==max(compose[,,i],na.rm=T),arr.ind=T)
 	mm=which(compose[,,i]==min(compose[,,i],na.rm=T),arr.ind=T)
+
+	#use maximum or minimum (use special vector to alterate distance when needed)
 	if (max(compose[,,i],na.rm=T)>abs(min(compose[,,i],na.rm=T))) {
-		distMM=dist(rbind(c(ics[MM[1]],ipsilon[MM[2]]),position))
+		distmatrix=rbind(c(ics[MM[1]],ipsilon[MM[2]]),position+c(0,0,0,1000))
 	} else {
-		distMM=dist(rbind(c(ics[mm[1]],ipsilon[mm[2]]),position))
+		distmatrix=rbind(c(ics[mm[1]],ipsilon[mm[2]]),position+c(1000,1000,1000,0))
 	}
-	#print(distMM)
-	names[i]=rownames(position)[which.min(distMM[1:nclusters])]
-	if (i>1 & any(names[i]==names[1:max(c(1,i-1))])) {names[i]=paste("Regime",i)    }
+
+	# compute distances and names assignation
+	distMM=dist(distmatrix)[1:nclusters]
+	print(distMM)
+
+	# minimum distance for correct assignation of 15 deg
+	if (min(distMM)<min_dist_in_deg) {
+		names[i]=rownames(position)[which.min(distMM)]
+
+		# avoid double assignation	
+		if (i>1 & any(names[i]==names[1:max(c(1,i-1))])) {
+			print("Warning: double assignation of the same regime. Avoiding last assignation...")
+			names[i]=paste("Regime",i)  
+      		}
+	}
 	print(names[i])
+
 }
 
 t1=proc.time()-t0

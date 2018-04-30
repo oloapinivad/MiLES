@@ -16,7 +16,7 @@ set -eu
 machine=wilma
 
 #control flags to check which sections should be run
-doeof=true #EOFs section
+doeof=false #EOFs section
 doblock=false #Blocking section 
 doregime=true #Regimes section
 dofigs=true #Do you want figures?
@@ -28,11 +28,11 @@ doforce=true
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
 # this variable to distinguish them
 # set also years 
-year1_exp=1979
-year2_exp=2017
-dataset_exp="ERAI"
+year1_exp=1951
+year2_exp=2005
+dataset_exp="CMCC-CESM"
 #ens_list=$(seq -f e"%02g" 1 4 )
-ens_list="NO"
+ens_list="r1"
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
