@@ -50,7 +50,7 @@ area.weight<-function(ics,ipsilon,root=T) {
 return(field)
 }
 
-#sector details for blocking extra diagnostics
+#sector details for blocking extra diagnostics and EOFs sectors
 sector.details<-function(SECTOR) {
 
     if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
@@ -987,11 +987,114 @@ for (ss in 1:ncluster) {cluster[cluster==(ss+10)]=which(kk==ss)}
 print("Finalize...")
 out=list(cluster=cluster,frequencies=frequencies[kk],regimes=compose[,,kk],tot.withinss=regimes$tot.withinss)
 return(out)
+
+}
+
+
+regimes2<-function(lon,lat,field,ncluster=4,ntime=1000,minvar=0.8,
+		   xlim,ylim,alg="Hartigan-Wong") {
+
+	# R tool to compute cluster analysis based on k-means.
+	# Requires "personal" function eofs (see above)
+	# Take as input a 3D anomaly field
+
+	#Reduce the phase space with EOFs: use SVD and do not standardize PCs
+	print("Launching EOFs...")
+	t0=proc.time()
+	reducedspace=eofs(lon,lat,field,neof=20,xlim=xlim,ylim=ylim,method="SVD",do_regression=F,do_standardize=F)
+	t1=proc.time()-t0
+	#print(t1)
+	reqPC=which(cumsum(reducedspace$variance)>minvar)[1]
+	print(paste("Retaining",reqPC,"PCs to fullfil minimum explained variance required (",minvar*100,"%)"))
+
+	#extract the principal components
+	PC=reducedspace$coeff[,1:reqPC]
+	print(str(PC))
+
+	#k-means computation repeat for ntime to find best solution. 
+	print("Computing k-means...")
+	t0=proc.time()
+	print(str(ncluster))
+	regimes=kmeans(PC,as.numeric(ncluster),nstart=ntime,iter.max=100,algorithm=alg)
+	t1=proc.time()-t0
+	#print(t1)
+
+	#Extract regimes frequencyr and timeseries of occupation
+	cluster=regimes$cluster
+	frequencies=regimes$size/dim(field)[3]*100
+	print(frequencies[order(frequencies,decreasing=T)])
+	#print(regimes$tot.withinss)
+
+	print("Creating Composites...")
+	compose=aperm(apply(field,c(1,2),by,cluster,mean),c(2,3,1))
+
+	#sorting from the more frequent to the less frequent
+	kk=order(frequencies,decreasing=T)
+	cluster=cluster+10
+	for (ss in 1:ncluster) {cluster[cluster==(ss+10)]=which(kk==ss)}
+
+	#prepare output
+	print("Finalize...")
+	out=list(cluster=cluster,frequencies=frequencies[kk],regimes=compose[,,kk],tot.withinss=regimes$tot.withinss)
+	return(out)
 }
 
 ##########################################################
-#-----------------Meandering functions-------------------#
+#-------------------Time Avg functions-------------------#
 ##########################################################
 
+#fast function for monthly mean, using preallocation, vectorization and rowMeans
+monthly.mean<-function(ics,ipsilon,field,etime) {
+	condition=paste(etime$month,etime$year)
+	monthly=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
+        for (t in unique(condition)) {
+		monthly[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
+	}
+        return(monthly)
+}
 
+#introduce running mean
+run.mean<-function(field,n=5) {
+        nn=floor(n/2)
+        newfield=field
+        for (t in (1+nn):(length(field)-nn)) {
+                newfield[t]=mean(field[(t-nn):(t+nn)])
+        }
+        return(newfield)
+}
 
+#improve running mean
+#use vectorization for a 5 day running mean ad-hoc function (to be generalized!)
+#about 10 times faster that a standard running mean function based on for loop
+run.mean5<-function(field) {
+         nn=2
+         newfield=rowMeans(cbind(c(field[3:length(field)],NA,NA),c(field[2:length(field)],NA),field,c(NA,field[1:(length(field)-1)]),c(NA,NA,field[1:(length(field)-2)])),na.rm=T)
+         return(newfield)
+}
+
+#function for daily anomalies, use array predeclaration and rowMeans (40 times faster!)
+daily.anom.mean<-function(ics,ipsilon,field,etime) {
+        condition=paste(etime$day,etime$month)
+        daily=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
+	anom=field*NA
+	for (t in unique(condition)) {
+		daily[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
+		anom[,,which(t==condition)]=sweep(field[,,which(t==condition)],c(1,2),daily[,,which(t==unique(condition))],"-")
+	}
+	return(anom)
+}
+
+#beta function for daily anomalies plus running mean (only 50% slower that standard daily avg)
+daily.anom.run.mean<-function(ics,ipsilon,field,etime) {
+	condition=paste(etime$day,etime$month)
+        daily=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
+	for (t in unique(condition)) {
+	        daily[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
+	}
+	rundaily=apply(daily,c(1,2),run.mean5)
+	anom=field*NA
+	for (t in unique(condition)) {
+		anom[,,which(t==condition)]=sweep(field[,,which(t==condition)],c(1,2),daily[,,which(t==unique(condition))],"-")
+	}
+	return(anom)
+}

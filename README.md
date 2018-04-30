@@ -38,10 +38,11 @@ Current version includes:
 	Figures showing linear regression of PCs on monthly Z500 are provided.
 	PCs and eigenvectors, as well as the variances explained are provided in NetCDF4 Zip format.
 
-4.	**North Atlantic Weather Regimes (beta)**: following k-means clustering of 500hPa geopotential height.
+4.	**North Atlantic Weather Regimes**: following k-means clustering of 500hPa geopotential height.
 	4 weather regimes over North Atlantic (80W-40E 30N-87.5N) are evaluted using 
-	anomalies from daily seasonal cycle. North Atlantic first 4 EOFs are computed to reduce 
+	anomalies from daily seasonal cycle. North Atlantic first EOFs (retaining the 80% of variance) are computed to reduce 
 	the phase-space dimension and then k-means clustering using Hartigan-Wong algorithm with k=4 is computed. 
+	Cluster assignment is performed analyzing positions of absolute minima and maxima.
 	Figures report patterns and frequencies of occurrence. NetCDF4 Zip data are saved.
 	*Only 4 regimes and DJF season is supported so far.*
 
@@ -122,21 +123,21 @@ However, each **MiLES** script can be run autonomously from command line providi
 R-based script are written as functions and thus can be called inside R if needed.  
 
 * `z500_prepare.sh`. **MiLES** is based on a pre-processing of data. 
-This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it SHOULD be able to identify 500hPa data. The code interpolates data on a 2.5x2.5 grid, it selects the NH only and it organizes their structure and their features in order to make them handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` flag to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
+This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` flag to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
 * `Rbased_eof_fast.R` and `Rbased_eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * `blocking_fast.R` and `blocking_figures.R`. blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts.
 
-* `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. The second provides the figures.
-It also tries to assign the right weather regimes to its name. However please be aware that it is not always effective.
+* `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. 
+It also tries to assign the right weather regimes to its name, saving all to NetCDF data. The second provides the figures.
 
 * `extra_figures_block.R`. This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
 
 ## EXECUTION TIMES
 
-MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about
+MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on MiLES v0.5)
 - EOFs: 11 seconds
 - Blocking: 57 seconds
 - Regimes: 25 seconds
@@ -149,7 +150,9 @@ It is reccomended in such cases to split the analysis in different subsets.
 
 ## HISTORY
 
-*v0.51 - Apr 2018
+*v0.51 - Apr 2018*
+- Consolidation of weather regimes functions (shift to variance minimum)
+- Improved cluster name assignation
 - Improved Netcdf conventions for output files
 - Rewritten ncdf.opener function
 
