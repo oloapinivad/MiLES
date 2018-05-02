@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1237838.svg)](https://doi.org/10.5281/zenodo.1237838)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1237837.svg)](https://doi.org/10.5281/zenodo.1237837)
 
 # MiLES v0.51
 ## Mid-Latitude Evaluation System
@@ -50,11 +50,11 @@ Current version includes:
 
 ----------------
 
-## MAIN NOTES
+## MAIN NOTES & REFERENCES
 
 Be aware that this is a free scientific tool in continous development, then it may not be free of bugs. Please report any issue at p.davini@isac.cnr.it
 
-Please refer to **MiLES** specifing which version has been used in the acknowledgment of any publication.
+Please cite **MiLES** in your publication: *"P. Davini, 2018: MiLES - Mid Latitude Evaluation System. Zenodo. http://doi.org/10.5281/zenodo.1237837"*. If you want to cite a specific version of check on [Zenodo](https://zenodo.org/record/1237838#.WumJkNOFPUI) which DOI to use. 
 
 Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."* in case you  use the 1D blocking index in any publication.
 
