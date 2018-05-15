@@ -252,6 +252,8 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		{ll=length(line[,1]); line[(ll*move1):ll,]=vettore[1:(ll*move2+1),]; line[1:(ll*move1-1),]=vettore[(ll*move2+2):ll,]}
 		if (dims==3) #for x,y,t data
 		{ll=length(line[,1,1]); line[(ll*move1):ll,,]=vettore[1:(ll*move2+1),,]; line[1:(ll*move1-1),,]=vettore[(ll*move2+2):ll,,]}
+		if (dims==4) #for x,y,z,t data
+	        {ll=length(line[,1,1,1]); line[(ll*move1):ll,,,]=vettore[1:(ll*move2+1),,,]; line[1:(ll*move1-1),,,]=vettore[(ll*move2+2):ll,,,]}
 		return(line)    }
 
 	#define flip function ('cos rev/apply is not working)
@@ -259,16 +261,20 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		dims=length(dim(field))
 		if (dims==2) {ll=length(field[1,]); field=field[,ll:1]} #for x,y data
 		if (dims==3) {ll=length(field[1,,1]); field=field[,ll:1,]} #for x,y,t data
+		if (dims==4) {ll=length(field[1,,1,1]); field=field[,ll:1,,]} #for x,y,z,t data
 		return(field) }
 
 	#opening file: getting variable (if namevar is given, that variable is extracted)
 	printv(paste("opening file:",namefile))
 	a=nc_open(namefile)
+	print(paste("Loading", namevar, "..."))
 
 	#if no name provided load the only variable available
 	if (is.null(namevar)) {
 		namevar=names(a$var)
-		if (length(namevar)>1) {print(namevar); stop("More than one var in the files, please select it with namevar=yourvar")}
+		if (length(namevar)>1) {
+			print(namevar); stop("More than one var in the files, please select it with namevar=yourvar")
+		}
 	}
 
 	#load axis: updated version, looking for dimension directly stored inside the variable
@@ -331,13 +337,13 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	        #assign ics and ipsilon 
 	        if (is.null(namelon)) {
 	                if (any(xlist %in% naxis))  {
-	                        ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {print("WARNING: No lon found"); ics=NA}
+	                        ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {printv("WARNING: No lon found"); ics=NA}
 	  	} else {
 	             	ics=ncvar_get(a,namelon)
 	        }
 	        if (is.null(namelat)) {
 	                if (any(ylist %in% naxis))  {
-	                        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {print("WARNING: No lat found"); ipsilon=NA}
+	                        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {printv("WARNING: No lat found"); ipsilon=NA}
 	       	} else {
 	              	ipsilon=ncvar_get(a,namelat)
 	        }
@@ -360,11 +366,12 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	        	assign("ics",ics, envir = .GlobalEnv)
 	        	assign("ipsilon",ipsilon, envir = .GlobalEnv)
 		}
-	        assign(naxis[naxis %in% c(xlist,namelon)],ics)
-	        assign(naxis[naxis %in% c(ylist,namelat)],ipsilon)
+		# if ics and ipsilon exists, assign the rearranged values
+	        if (!is.na(ics[1])) {assign(naxis[naxis %in% c(xlist,namelon)],ics)} 
+	        if (!is.na(ipsilon[1])) {assign(naxis[naxis %in% c(ylist,namelat)],ipsilon)}
 	}
 
-	if (dimensions>3) {stop("This file is more than 3D file")}
+	if (dimensions>4) {stop("This file is more than 4D file")}
 
 	#close connection
 	nc_close(a)
