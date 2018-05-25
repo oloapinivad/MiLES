@@ -16,8 +16,8 @@ set -eu
 machine=wilma
 
 #control flags to check which sections should be run
-doeof=false #EOFs section
-doblock=false #Blocking section 
+doeof=true #EOFs section
+doblock=true #Blocking section 
 doregime=true #Regimes section
 dofigs=true #Do you want figures?
 
@@ -30,7 +30,7 @@ doforce=true
 # set also years 
 year1_exp=1951
 year2_exp=2005
-dataset_exp="CMCC-CESM"
+dataset_exp="MPI-ESM-P"
 #ens_list=$(seq -f e"%02g" 1 4 )
 ens_list="r1"
 
@@ -164,7 +164,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	#time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
+	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
 
 	for season in $seasons ; do
 		echo $season

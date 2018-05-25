@@ -225,7 +225,7 @@ LEVEL=50000
 x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
 y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
 z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
-t1 <- ncdim_def( "time", TIME, 1, unlim=T, calendar=tcal, longname="time")
+t1 <- ncdim_def( "time", TIME, 0, unlim=T, calendar=tcal, longname="time")
 t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
 
 for (var in fieldlist)
