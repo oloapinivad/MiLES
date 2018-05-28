@@ -1,14 +1,15 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1237837.svg)](https://doi.org/10.5281/zenodo.1237837)
 
-# MiLES v0.51
+# MiLES v0.6
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Apr 2018
+Oct 2014  - Jun 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
 Acknowledgements to:
-J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
+J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR),
+E. Arnone (ISAC-CNR), G. Di Capua (PIK)
 
 ------------------------------
 
@@ -48,6 +49,9 @@ Current version includes:
 	Figures report patterns and frequencies of occurrence. NetCDF4 Zip data are saved.
 	*Only 4 regimes and DJF season is supported so far.*
 
+5. 	**Meandering Index (beta)** : following the index introduced *Di Capua and Coumou (2016)*. It evaluates the 
+	waviness of the atmosphere (i.e. the lenght of the longest isopleth) at a reference latitude of 60N. 
+
 ----------------
 
 ## MAIN NOTES & REFERENCES
@@ -55,10 +59,13 @@ Current version includes:
 Be aware that this is a free scientific tool in continous development, then it may not be free of bugs. Please report any issue at p.davini@isac.cnr.it
 
 Please cite **MiLES** in your publication: *"P. Davini, 2018: MiLES - Mid Latitude Evaluation System. Zenodo. http://doi.org/10.5281/zenodo.1237837"*. If you want to cite a specific version of check on [Zenodo](https://zenodo.org/record/1237838#.WumJkNOFPUI) which DOI to use. 
+Extra references to specific indices are:
 
-Please cite *"Tibaldi S, Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."* in case you  use the 1D blocking index in any publication.
+a). *"Tibaldi S. and Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."* in case you  use the 1D blocking index.
 
-Similary, please cite *"Davini, P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."* in case you use the 2D blocking index in any publication.
+b). *"Davini  P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."* in case you use the 2D blocking index.
+
+c) *"Di Capua G. and Coumou D. 2016: Changes in meandering of the Northern Hemisphere circulation. Environ. Res. Lett. 11 (2016) 094028 doi:10.1088/1748-9326/11/9/094028"* in cas you use the Meandering Index.
 
 
 ----------------

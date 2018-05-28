@@ -13,7 +13,7 @@ set -eu
 ################################################
 
 #config name: create your own config file for your machine.
-machine=adamsberg
+machine=wilma
 
 #control flags to check which sections should be run
 doeof=false #EOFs section
