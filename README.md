@@ -8,8 +8,8 @@ Oct 2014  - Jun 2018
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
 Acknowledgements to:
-J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR),
-E. Arnone (ISAC-CNR), G. Di Capua (PIK)
+G. Di Capua (PIK), J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR),
+E. Arnone (ISAC-CNR)
 
 ------------------------------
 
@@ -50,7 +50,7 @@ Current version includes:
 	*Only 4 regimes and DJF season is supported so far.*
 
 5. 	**Meandering Index (beta)** : following the index introduced *Di Capua and Coumou (2016)*. It evaluates the 
-	waviness of the atmosphere (i.e. the lenght of the longest isopleth) at a reference latitude of 60N. 
+	waviness of the atmosphere (i.e. the lenght of the longest isopleth) at a reference latitude of 60N. Origina 	     code can be found at https://github.com/giorgiadicapua/MeanderingIndex
 
 ----------------
 
