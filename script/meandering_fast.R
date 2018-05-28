@@ -47,16 +47,16 @@ isolvls=seq(4800,6000,5)
 ref_lat=60
 
 #Running the real code
-MI_lat_fast=MI_value_fast=1:totdays*NA
+MI_lat=MI_value=1:totdays*NA
 
 for (t in 1:totdays) {
         if (any(t==round(seq(0,totdays,,21))))  {
                 print(paste("--->",round(t/totdays*100),"%"))
         }
         
-	MI_list_fast=sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
-        MI_value_fast[t]=max(unlist(MI_list_fast[1,]))
-        MI_lat_fast[t]=unlist(MI_list_fast[2,])[which.max(unlist(MI_list_fast[1,]))]
+	MI_list=sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+        MI_value[t]=max(unlist(MI_list[1,]))
+        MI_lat[t]=unlist(MI_list[2,])[which.max(unlist(MI_list[1,]))]
 }
 
 tf=proc.time()-t0
@@ -141,7 +141,7 @@ if (length(args)!=0) {
         print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
         print(name_args)
     } else {
- when the number of arguments is ok run the function()
+# when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(file.path(PROGDIR,"script/basis_functions.R"))
 	source(file.path(PROGDIR,"script/meandering_functions.R"))
