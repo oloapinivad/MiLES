@@ -2,8 +2,8 @@
 set -eu
 ################################################
 #------- MidLatitude Evaluation System --------#
-#------------------MiLES v0.5------------------#
-#----------Mar 2018, P. Davini, ISAC-CNR-------#
+#------------------MiLES v0.6------------------#
+#----------May 2018, P. Davini, ISAC-CNR-------#
 #
 #
 #
@@ -13,16 +13,17 @@ set -eu
 ################################################
 
 #config name: create your own config file for your machine.
-machine=wilma
+machine=adamsberg
 
 #control flags to check which sections should be run
-doeof=true #EOFs section
-doblock=true #Blocking section 
-doregime=true #Regimes section
+doeof=false #EOFs section
+doblock=false #Blocking section 
+doregime=false #Regimes section
+domeand=true #Meandering section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
-doforce=true
+doforce=false
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
@@ -184,6 +185,11 @@ for exp in $exps ; do
 		if [[ $doregime == "true" ]] && [[ $season == DJF ]] ; then
 			time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters $doforce
 		fi
+
+		# meandering index
+                if $domeand ; then
+                        time $Rscript "$PROGDIR/script/meandering_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $doforce
+                fi
 	done
 
 done
