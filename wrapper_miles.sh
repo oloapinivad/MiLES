@@ -23,7 +23,8 @@ domeand=true #Meandering section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
-doforce=false
+doforcedata=false
+doforce=true
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
@@ -72,6 +73,8 @@ teles="NAO"
 # these are suggested: any other polar plot by "mapproj" R package are supported
 # "azequalarea" set by default
 #map_projection="azequalarea"
+
+echo $doforce
 
 ###############################################
 #-------------Configuration scripts------------#
@@ -165,7 +168,7 @@ for exp in $exps ; do
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforce
+	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforcedata
 
 	for season in $seasons ; do
 		echo $season
@@ -185,7 +188,6 @@ for exp in $exps ; do
 		if [[ $doregime == "true" ]] && [[ $season == DJF ]] ; then
 			time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters $doforce
 		fi
-
 		# meandering index
                 if $domeand ; then
                         time $Rscript "$PROGDIR/script/meandering_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $doforce

@@ -10,9 +10,9 @@ year1=$3
 year2=$4
 z500filename=$5
 config=$6
-doforce=$7
+doforcedata=$7
 
-if [[ ! -f $z500filename ]] || [[ $doforce == "true" ]] ; then
+if [[ ! -f $z500filename ]] || [[ $doforcedata == "true" ]] ; then
 
 	rm -f $z500filename
 	DATADIR=$(dirname $z500filename)

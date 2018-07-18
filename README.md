@@ -3,7 +3,7 @@
 # MiLES v0.6
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Jun 2018
+Oct 2014  - Jul 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
@@ -49,8 +49,9 @@ Current version includes:
 	Figures report patterns and frequencies of occurrence. NetCDF4 Zip data are saved.
 	*Only 4 regimes and DJF season is supported so far.*
 
-5. 	**Meandering Index (beta)** : following the index introduced *Di Capua and Coumou (2016)*. It evaluates the 
-	waviness of the atmosphere (i.e. the lenght of the longest isopleth) at a reference latitude of 60N. Origina 	     code can be found at https://github.com/giorgiadicapua/MeanderingIndex
+5. 	**Meandering Index (beta)** : following the index introduced by *Di Capua and Coumou (2016)*. It evaluates the 
+	waviness of the atmosphere (i.e. the length of the longest isopleth) at a reference latitude of 60N. Original
+	code can be found at https://github.com/giorgiadicapua/MeanderingIndex
 
 ----------------
 
@@ -65,14 +66,14 @@ a). *"Tibaldi S. and Molteni F. 1990. On the operational predictability of block
 
 b). *"Davini  P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."* in case you use the 2D blocking index.
 
-c) *"Di Capua G. and Coumou D. 2016: Changes in meandering of the Northern Hemisphere circulation. Environ. Res. Lett. 11 (2016) 094028 doi:10.1088/1748-9326/11/9/094028"* in cas you use the Meandering Index.
+c). *"Di Capua G. and Coumou D. 2016: Changes in meandering of the Northern Hemisphere circulation. Environ. Res. Lett. 11 (2016) 094028 doi:10.1088/1748-9326/11/9/094028"* in case you use the Meandering Index.
 
 
 ----------------
 
 ## SOFTWARE REQUIREMENTS
 
-- a. R version >3.0
+- a. R version > 3.0
 - b. CDO version > 1.6.5 (1.8 at least for complete GRIB support), compiled with netCDF4
 - c. Compiling environment (gcc)
 
@@ -82,7 +83,7 @@ If everything runs fine, their installation is performed by an automated
 routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
 - _ncdf4_ provides the interface for NetCDF files.
-- _maps_ provides the world maps for the plots: (version >= 3.0 )
+- _maps_ provides the world maps for the plots (version >= 3.0 )
 - _PCICt_ provides the tools to handle 360-days and 365-days calendars (from model data). 
 - _akima_ provides the interpolation for map projections.
 - _mapproj_ provides a series of map projection that can be used.
@@ -125,7 +126,7 @@ can specified at this stage: here below a list of the commands that can be set u
 - `teles` -> A list of one or teleconnection patterns. "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2".
 - `output_file_type` -> pdf, eps or png figures format.
 - `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plots (default). All projection from mapproj R package are supported (but not all of them have been tested).
-- `doeof`,`doblock`,`doregime` -> set to true or false in order to run some specific sections.
+- `doeof`,`doblock`,`doregime`,`domeand` -> set to true or false in order to run some specific sections.
 
 The chain of scripts will be executed as a sequence.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
@@ -142,6 +143,8 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 * `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. 
 It also tries to assign the right weather regimes to its name, saving all to NetCDF data. The second provides the figures.
 
+* `meandering_fast.R`. It computes the Meandering Index following the Di Capua and Comou (2016). No figures are yet provided. 
+
 * `extra_figures_block.R`. This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
 
 ## EXECUTION TIMES
@@ -150,6 +153,7 @@ MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core
 - EOFs: 11 seconds
 - Blocking: 57 seconds
 - Regimes: 25 seconds
+- Meandering: to be tested (slow!)
 - Figures (together): 20 seconds
 
 Please be aware that issues may arise with large datasets (i.e. larger than 100 years) where the single file approach may be problematic. 
@@ -158,6 +162,9 @@ It is reccomended in such cases to split the analysis in different subsets.
 ------------
 
 ## HISTORY
+
+*v0.6 - Jul 2018*
+- Introducing Meandering Index in the MiLES suite
 
 *v0.51 - Apr 2018*
 - Consolidation of weather regimes functions (shift to variance minimum)

@@ -41,7 +41,7 @@ totdays=length(fieldlist$time)
 Z500=fieldlist$field
 
 # list of isohypses on which evaluate the MI
-isolvls=seq(4800,6000,5)
+isolvls=seq(4900,6200,5)
 
 # reference latitude (60N following Di Capua et al., 2016)
 ref_lat=60

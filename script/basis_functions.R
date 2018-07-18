@@ -1105,3 +1105,5 @@ daily.anom.run.mean<-function(ics,ipsilon,field,etime) {
 	}
 	return(anom)
 }
+
+
