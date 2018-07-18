@@ -133,7 +133,7 @@ However, each **MiLES** script can be run autonomously from command line providi
 R-based script are written as functions and thus can be called inside R if needed.  
 
 * `z500_prepare.sh`. **MiLES** is based on a pre-processing of data. 
-This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` flag to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
+This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` and `doforcedata` flags to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
 * `Rbased_eof_fast.R` and `Rbased_eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
@@ -149,11 +149,11 @@ It also tries to assign the right weather regimes to its name, saving all to Net
 
 ## EXECUTION TIMES
 
-MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on MiLES v0.5)
-- EOFs: 11 seconds
-- Blocking: 57 seconds
-- Regimes: 25 seconds
-- Meandering: to be tested (slow!)
+MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on MiLES v0.6)
+- EOFs: 12 seconds
+- Blocking: 59 seconds
+- Regimes: 28 seconds
+- Meandering: 182 seconds
 - Figures (together): 20 seconds
 
 Please be aware that issues may arise with large datasets (i.e. larger than 100 years) where the single file approach may be problematic. 
