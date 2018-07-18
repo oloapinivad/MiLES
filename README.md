@@ -8,8 +8,8 @@ Oct 2014  - Jul 2018
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
 Acknowledgements to:
-G. Di Capua (PIK), J. von Hardenberg (ISAC-CNR), I. Mavilia (ISAC-CNR),
-E. Arnone (ISAC-CNR)
+G. Di Capua (PIK), J. von Hardenberg (ISAC-CNR), 
+I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 
 ------------------------------
 
