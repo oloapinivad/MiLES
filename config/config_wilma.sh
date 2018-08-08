@@ -7,8 +7,9 @@
 
 # INDIR ->data folder: all the geopotential height data should be here
 # you must customozie this according to the dataset you analyze and your local file structure
-# you can use $dataset and $ens variable
-INDIR=$WORK/data/CMIP5/${dataset}/HIST/${ens}/day/Z500
+# you can use $dataset, $expid and $ens variable
+# The combination of the three variables is the standard for CMIP experiments.
+INDIR=$WORK/data/CMIP5/${dataset}/${expid}/${ens}/day/Z500
 if [[ "${dataset}" == "NCEP" ]] ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
 if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] ; then INDIR=$WORK/data/${dataset}/day/Z500 ; fi
 if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/$ens/day/Z500 ; fi

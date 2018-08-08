@@ -4,13 +4,13 @@
 # ---- folder definition --------- #
 ####################################
 
-# ---- this is a template for unix machines ----- #
+# ---- this is a template for MacOS machines ----- #
 
 # INDIR ->data folder: all the geopotential height data should be here
-# you must customozie this according to the dataset you analyze and your local file structure
-# you can play with the path structure with variable $dataset and $ens
-# this will correspond to $dataset_exp or $dataset_ref and to $ens from wrapper_miles.sh
-INDIR=/Users/myuser/Desktop/$dataset/$ens
+# you must customoze this according to the dataset you analyze and your local file structure
+# you can play with the path structure with variable $dataset, $expid and $ens
+# this will correspond to $dataset_exp and $expid_exp and to $ens from wrapper_miles.sh
+INDIR=/Users/myuser/Desktop/$dataset/$expid/$ens
 
 # to look for some specific file structure
 # otherwise the program will look for all the netcdf or grib files in the folder
