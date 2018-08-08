@@ -3,7 +3,7 @@
 # MiLES v0.6
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Jul 2018
+Oct 2014  - Aug 2018
 
 by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
 
@@ -51,13 +51,14 @@ Current version includes:
 
 5. 	**Meandering Index (beta)** : following the index introduced by *Di Capua and Coumou (2016)*. It evaluates the 
 	waviness of the atmosphere (i.e. the length of the longest isopleth) at a reference latitude of 60N. Original
-	code can be found at https://github.com/giorgiadicapua/MeanderingIndex
+	code can be found at https://github.com/giorgiadicapua/MeanderingIndex. NetCDF4 Zip data are saved 
+	but no figures are provided.
 
 ----------------
 
 ## MAIN NOTES & REFERENCES
 
-Be aware that this is a free scientific tool in continous development, then it may not be free of bugs. Please report any issue at p.davini@isac.cnr.it
+Be aware that this is a free scientific tool in continous development, then it may not be free of bugs. Please report any issue on the GitHub portal.
 
 Please cite **MiLES** in your publication: *"P. Davini, 2018: MiLES - Mid Latitude Evaluation System. Zenodo. http://doi.org/10.5281/zenodo.1237837"*. If you want to cite a specific version of check on [Zenodo](https://zenodo.org/record/1237838#.WumJkNOFPUI) which DOI to use. 
 Extra references to specific indices are:
@@ -79,8 +80,7 @@ c). *"Di Capua G. and Coumou D. 2016: Changes in meandering of the Northern Hemi
 
 IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.
 You have to run `Rscript config/installpack.R` as first step in order to install the packages.
-If everything runs fine, their installation is performed by an automated
-routine that brings the user through the standard web-based installation.
+If everything runs fine, their installation is performed by an automated routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline.
 - _ncdf4_ provides the interface for NetCDF files.
 - _maps_ provides the world maps for the plots (version >= 3.0 )
@@ -89,7 +89,7 @@ Packages are also included in **MiLES** and can be installed offline.
 - _mapproj_ provides a series of map projection that can be used.
 
 
-If you are aware of other way to implement this 5 passages without using those packages, please contact me.
+If you are aware of other way to implement this 5 passages without using those packages, please contact me through the GitHub portal.
 
 There are some issues on Mac Os X (10.11 and later at least) related to gfortran. It may happen that 
 some packages requires specifically gfortran-4.8 (see here for help:
@@ -102,13 +102,15 @@ https://stackoverflow.com/questions/29992066/rcpp-warning-directory-not-found-fo
 
 ## HOW TO
 
+### Configuration
+
 Before running **MiLES** the 5 above-mentioned R packages should installed.
 
 Two configuration scripts controls the program options:
 1. 	`config/config_$MACHINE.sh` controls the properties of your environment. 
 	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
-    	This also includes the directory tree for your NetCDF files and the expected input files format.
+    	IMPORTANT: this also includes the directory tree for your NetCDF files and the expected input files format. 
     	It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull: two `.tmpl` files for Unix and Mac Os X machines are provided.  
 2.	`config/R_config.R` controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
@@ -117,17 +119,26 @@ Two configuration scripts controls the program options:
 
 The simplest way to run **MiLES** is executing in bash environment `./wrapper_miles.sh`. 
 Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
-can specified at this stage: here below a list of the commands that can be set up
-- `dataset_exp` -> this is simply an identifier for your experiments used by MiLES to create files and paths structure.
+can specified at this stage: here below a list of the variables that can be set up
+
+### Key variables
+- `dataset_exp` -> identifier for the dataset used to create files and paths structure.
+- `expid_exp` ->  identifier for the experiment type used to create files and paths structure (set to "NO" if you do not want to use it)
+- `ens_list` -> identifier for the ensemble members used to create files and paths structure (set to "NO" if you do not want to use it). This can be written as a list in order to evaluate multiple ensembles. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper only for blocking data.
+IMPORTANT: the three above-mentioned vars are the core of the CMIP data structure and they have been introduced to this aim.
 - `year1_exp` and `year2_exp` -> the years on which MiLES will run. 
-- `ens_list` -> ensemble list of experiments from the same dataset: set to "NO" if using a single ensemble. In case of multiple ensemble members an extra ensemble "mean" will be produced by the wrapper only for blocking data.
-- `std_clim` -> 1 to use standard ERAI 1979-2017 climatology, 0 for custom comparison. If 0, please specify the dataset you want to compare to with `dataset_ref`, `year1_ref` and `year2_ref`. 
+- `std_clim` -> can be true to use standard ERAI 1979-2017 climatology, false for custom comparison.
 - `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use "ALL" to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. "Jan_Feb_Mar"). This last functionality is under testing.
+- `dataset_ref`, `expid_ref`, `ens_ref`, `year1_ref` and `year2_ref`  -> in analogy to the main variables, these controls the experiment to be compared when `std_clim=false` is set. 
+
+### Secondary variables
 - `teles` -> A list of one or teleconnection patterns. "NAO" and "AO" for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as "lon1_lon2_lat1_lat2".
 - `output_file_type` -> pdf, eps or png figures format.
 - `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plots (default). All projection from mapproj R package are supported (but not all of them have been tested).
-- `doeof`,`doblock`,`doregime`,`domeand` -> set to true or false in order to run some specific sections.
+- `doeof`,`doblock`,`doregime`,`domeand` -> set to true or false in order to run some specific sections only.
+- `doforce`,`doforcedata` -> set to true or false in order to rerun the analysis or the data preparation
 
+### Scripts and wrapper
 The chain of scripts will be executed as a sequence.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based script are written as functions and thus can be called inside R if needed.  
@@ -143,11 +154,11 @@ Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index 
 * `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. 
 It also tries to assign the right weather regimes to its name, saving all to NetCDF data. The second provides the figures.
 
-* `meandering_fast.R`. It computes the Meandering Index following the Di Capua and Comou (2016). No figures are yet provided. 
+* `meandering_fast.R`. It computes the Meandering Index following the Di Capua and Coumou (2016). No figures are yet provided. 
 
 * `extra_figures_block.R`. This is not called by the wrapper and it provides extra statistics, comparing several experiments with ensemble means, histogram for specific region and Taylor diagrams.
 
-## EXECUTION TIMES
+### Execution times
 
 MiLES is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on MiLES v0.6)
 - EOFs: 12 seconds
@@ -163,8 +174,10 @@ It is reccomended in such cases to split the analysis in different subsets.
 
 ## HISTORY
 
-*v0.6 - Jul 2018*
-- Introducing Meandering Index in the MiLES suite
+*v0.6 - Aug 2018*
+- Introducing the Meandering Index from Di Capua and Coumou (2016)
+- CMIP-like (dataset+experiment+ensemble member) data structure is introduced, allowing also for experiment type definition
+- Minor updates of wrapper variables names and structure
 
 *v0.51 - Apr 2018*
 - Consolidation of weather regimes functions (shift to variance minimum)

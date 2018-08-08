@@ -5,7 +5,7 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.regimes.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
+miles.regimes.figures<-function(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
 {
 
 if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
@@ -19,7 +19,7 @@ source(CFGSCRIPT)
 ##########################################################
 
 # loading anomalies and variances of experiment
-nomefile=file.builder(FILESDIR,"Regimes","RegimesPattern",exp,ens,year1,year2,season)
+nomefile=file.builder(FILESDIR,"Regimes","RegimesPattern",dataset,expid,ens,year1,year2,season)
 frequencies_exp=ncdf.opener(nomefile,"Frequencies")
 regimes_exp=ncdf.opener(nomefile,namevar="Regimes",rotate="no")
 
@@ -34,7 +34,7 @@ print(names_exp)
     } else {
 
         #use file.builder to create the path of the blocking files
-        nomefile_ref=file.builder(FILESDIR,"Regimes","RegimesPattern",dataset_ref,ens_ref,year1_ref,year2_ref,season)
+        nomefile_ref=file.builder(FILESDIR,"Regimes","RegimesPattern",dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
     }
 
 #nomefile=paste0(REFDIR,"/RegimesPattern_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
@@ -50,17 +50,8 @@ lev_field=seq(-250,250,20)
 lev_diff=seq(-150,150,20)
 
 #standard properties
-if (ens=="NO") {
-	info_exp=paste(exp,year1,"-",year2,season)
-} else {
-	info_exp=paste(exp,ens,year1,"-",year2,season)
-}
-
-if (ens_ref=="NO") {
-	info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)
-} else {
-	info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)
-}
+info_exp=info.builder(dataset,expid,ens,year1,year2,season)
+info_ref=info.builder(dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
 
 kk0=1
 # loop on regimes
@@ -77,7 +68,7 @@ for (name in names_ref)
 	print(name)
 
     	#final plot production
-   	figname=fig.builder(FIGDIR,"Regimes",paste0("Regime",ii),exp,ens,year1,year2,season,output_file_type)
+   	figname=fig.builder(FIGDIR,"Regimes",paste0("Regime",ii),dataset,expid,ens,year1,year2,season,output_file_type)
     	print(figname)
     
     	# Chose output format for figure - by JvH
@@ -99,13 +90,13 @@ for (name in names_ref)
         filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=lev_field,color.palette=palette3,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
         proj.addland(proj=map_projection)
         text(varpoints[1],varpoints[2],paste("Frequencies: ",round(frequencies_ref[ii],2),"%",sep=""),cex=2)
-        image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
+        image.scale3(volcano,levels=lev_field,color.palette=palette3,colorbar.label="m",cex.colorbar=imgscl_colorbar,cex.label=imgscl_label,colorbar.width=1*af,line.label=imgscl_line)
 
         #delta field plot
 	im=plot.prepare(ics,ipsilon,regimes_exp[,,ii]-regimes_ref[,,jj],proj=map_projection,lat_lim=lat_lim)
         filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=lev_diff,color.palette=palette2,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
         proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=lev_diff,color.palette=palette2,colorbar.label="m",cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=3)
+	image.scale3(volcano,levels=lev_diff,color.palette=palette2,colorbar.label="m",cex.colorbar=imgscl_colorbar,cex.label=imgscl_label,colorbar.width=1*af,line.label=imgscl_line)
 
         dev.off()
         }
@@ -120,7 +111,7 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","dataset_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","nclusters")
+name_args=c("dataset","expid","ens","year1","year2","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","nclusters")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -132,7 +123,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.figures(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
+        miles.regimes.figures(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
     }
 }
 

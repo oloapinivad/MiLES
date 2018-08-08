@@ -26,6 +26,7 @@ g0=9.81
 
 #normalize a time series
 standardize<-function(timeseries) {
+
 	out=(timeseries-mean(timeseries,na.rm=T))/sd(timeseries,na.rm=T)
 	return(out)
 }
@@ -33,20 +34,23 @@ standardize<-function(timeseries) {
 
 #detect ics ipsilon lat-lon
 whicher<-function(axis,number) {
+
 	out=which.min(abs(axis-number))
 	return(out)
 }
 
 #produce a 2d matrix of area weight
 area.weight<-function(ics,ipsilon,root=T) {
+
 	field=array(NA,dim=c(length(ics),length(ipsilon)))
 	if (root==T) {
-        for (j in 1:length(ipsilon)) {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
+        	for (j in 1:length(ipsilon)) {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
 	}
 
 	if (root==F) {
-        for (j in 1:length(ipsilon)) {field[,j]=cos(pi/180*ipsilon[j])}
+        	for (j in 1:length(ipsilon)) {field[,j]=cos(pi/180*ipsilon[j])}
 	}
+
 return(field)
 }
 
@@ -76,6 +80,7 @@ return(out)
 
 #weighted correlation
 weighted.cor<-function(x,y,w) {
+
     w.mean.x=sum(w*x)/sum(w)
     w.mean.y=sum(w*y)/sum(w)
 
@@ -89,6 +94,7 @@ weighted.cor<-function(x,y,w) {
 
 #weighted standard deviations
 weighted.sd<-function(x,w) {
+
     w.mean=sum(w*x)/sum(w)
     v1=sum(w)
     v2=sum(w^2)
@@ -97,43 +103,67 @@ weighted.sd<-function(x,w) {
     return(sdd)
 }
 
-#basic switch to create NetCDF file names and folders
-file.builder<-function(DATADIR,dir_name,file_name,dataset,ens,year1,year2,season) {
-    if (ens=="NO") {
-        filedir=file.path(DATADIR,dataset,dir_name,paste0(year1,"_",year2),season)
-        filename=paste0(file_name,"_",dataset,"_",year1,"_",year2,"_",season,".nc")
-    } else {
-        filedir=file.path(DATADIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
-        filename=paste0(file_name,"_",dataset,"_",ens,"_",year1,"_",year2,"_",season,".nc")
-    }
+# info string creator
+info.builder<-function(dataset,expid,ens,year1,year2,season)  {
+	
+	# loop on descriptors that are concatenated to create info string
+        descriptors=c(dataset,expid,ens,paste0(year1,"-",year2),season)
+        info=NULL
+        for (dcode in descriptors) {
+                if (dcode!="NO") {
+                        info=paste(info,dcode)
+                }
+        }
+	return(info)
+}
 
+# basic switch to create NetCDF file names and folders (use recursive structure from v0.6)
+file.builder<-function(DATADIR,dir_name,file_name,dataset,expid,ens,year1,year2,season) {
+
+	# loop on descriptors that are concatenated to create dir and file name	
+	descriptors=c(dataset,expid,ens,paste0(year1,"_",year2),season)
+	filedir=file.path(DATADIR,dir_name)
+       	filename=file_name
+	for (dcode in descriptors) {
+		if (dcode!="NO") {
+			filedir=file.path(filedir,dcode)
+			filename=paste0(filename,"_",dcode)
+		}
+	}
+	
 	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
 	if (exists("dir.exists")) {
 		if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
 	} else {
 		dir.create(filedir,recursive=T,showWarnings=F)
 	}
-    return(paste0(filedir,"/",filename))
+    	return(file.path(filedir,paste0(filename,".nc")))
 }
 
-#basic switch to create figures names and folders
-fig.builder<-function(FIGDIR,dir_name,file_name,dataset,ens,year1,year2,season,output_file_type) {
-        if (ens=="NO") {
-                filedir=file.path(FIGDIR,dataset,dir_name,paste0(year1,"_",year2),season)
-                figname=paste(file_name,"_",exp,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-        } else {
-                filedir=file.path(FIGDIR,dataset,ens,dir_name,paste0(year1,"_",year2),season)
-                figname=paste(file_name,"_",exp,"_",ens,"_",year1,"_",year2,"_",season,".",output_file_type,sep="")
-        }
+#basic switch to create figures names and folders (use recursive structure from v0.6)
+fig.builder<-function(FIGDIR,dir_name,file_name,dataset,expid,ens,year1,year2,season,output_file_type) {
 
-  #actually dir.exists is in devtools only for R < 3.2, then is included in base package
-        if (exists("dir.exists")) {
-                if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
-        } else {
-                dir.create(filedir,recursive=T,showWarnings=F)
-        }
+	# loop on descriptors that are concatenated to create dir and file name 
+	descriptors=c(dataset,expid,ens,paste0(year1,"_",year2),season)
+        filedir=FIGDIR
+	filename=file_name
+	for (dcode in descriptors) {
+		if (dcode!="NO") {
+			filedir=file.path(filedir,dcode)
+		        filename=paste0(filename,"_",dcode)
+		}       
+	}
+	
+	filedir=file.path(filedir,dir_name)	        
+	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
+	if (exists("dir.exists")) {
+		if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+	} else {
+	        dir.create(filedir,recursive=T,showWarnings=F)
+	}
 
-return(paste0(filedir,"/",figname))
+return(file.path(filedir,paste0(filename,".",output_file_type)))
+
 }
 
 
@@ -180,22 +210,20 @@ number.days.month <- function(datas) {
 	return(as.integer(format(datas-1,format="%d")))
 }
 
-power.date.new<-function(datas)
-{
-whichdays=as.numeric(format(datas,"%m"))
-#create a "season" for continuous time, used by persistance tracking
-seas=whichdays*1; ss=1
-for (i in 1:(length(whichdays)-1))
-       {
-       if (diff(whichdays)[i]>1)  {ss=ss+1}
-       seas[i+1]=ss
-       }
+power.date.new<-function(datas) {
+	whichdays=as.numeric(format(datas,"%m"))
+	#create a "season" for continuous time, used by persistance tracking
+	seas=whichdays*1; ss=1
+	for (i in 1:(length(whichdays)-1)) {
+       		if (diff(whichdays)[i]>1)  {ss=ss+1}
+       		seas[i+1]=ss
+	}	
 
-etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
-print("Time Array Built")
-print(paste("Length:",length(seas)))
-print(paste("From",datas[1],"to",datas[length(seas)]))
-return(etime)
+	etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
+	print("Time Array Built")
+	print(paste("Length:",length(seas)))
+	print(paste("From",datas[1],"to",datas[length(seas)]))
+	return(etime)
 }
 
 ##########################################################
@@ -720,126 +748,117 @@ return(out)
 ##########################################################
 
 #time persistence (used for longitude filter too)
-time.persistence<-function(timeseries,persistence=5)
-{
-rr=rle(timeseries)
-rr$values[which(rr$values==1 & rr$length<persistence)]=0
-nn=rep(rr$values,rr$length)
-return(nn)
+time.persistence<-function(timeseries,persistence=5)	{
+	rr=rle(timeseries)
+	rr$values[which(rr$values==1 & rr$length<persistence)]=0
+	nn=rep(rr$values,rr$length)
+	return(nn)
 }
 
 
 #blocking 5 days tracking
-blocking.persistence<-function(field,minduration=5,time.array)
-{
+blocking.persistence<-function(field,minduration=5,time.array) {
 
-#function for persistence
-pers2<-function(timeseries,persistence,time.array)
-{     
-dd=min(time.array$season):max(time.array$season) 
-nn=sapply(dd, function(x) {time.persistence(timeseries[which(time.array$season==x)],persistence)})
-xx=c(unlist(nn))
-return(xx)
-}
+	#function for persistence
+	pers2<-function(timeseries,persistence,time.array) {     
+		dd=min(time.array$season):max(time.array$season) 
+		nn=sapply(dd, function(x) {time.persistence(timeseries[which(time.array$season==x)],persistence)})
+		xx=c(unlist(nn))
+		return(xx)
+	}
 
-# check for etime
-if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
+	# check for etime
+	if (length(time.array$month)!=length(field[1,1,])) { stop("Wrong time array! Exiting...") }
 
-print("Time filtering...")
-newfield=apply(field,c(1,2),function(x) pers2(x,persistence=minduration,time.array))
-newfield=aperm(newfield,c(2,3,1))
-print("Mean field...")
-meanfield=apply(newfield,c(1,2),mean,na.rm=T)*100
+	print("Time filtering...")
+	newfield=apply(field,c(1,2),function(x) pers2(x,persistence=minduration,time.array))
+	newfield=aperm(newfield,c(2,3,1))
+	print("Mean field...")
+	meanfield=apply(newfield,c(1,2),mean,na.rm=T)*100
 
 
-print("Events detection...")
-maxdim=max(apply(newfield,c(1,2),function(x) length(rle(x)$length[which(rle(x)$values==1)])))
-events=apply(newfield,c(1,2),function(x) c(rle(x)$lengths[which(rle(x)$values==1)],rep(NA,maxdim-length(rle(x)$length[which(rle(x)$values==1)]))))
-events=aperm(events,c(2,3,1))
-print("Mean Duration...")
-duration=apply(events,c(1,2),mean,na.rm=T)
-print("Number of Events...")
-nevents=apply(events,c(1,2),function(x) length(x[!is.na(x)]))
+	print("Events detection...")
+	maxdim=max(apply(newfield,c(1,2),function(x) length(rle(x)$length[which(rle(x)$values==1)])))
+	events=apply(newfield,c(1,2),function(x) c(rle(x)$lengths[which(rle(x)$values==1)],rep(NA,maxdim-length(rle(x)$length[which(rle(x)$values==1)]))))
+	events=aperm(events,c(2,3,1))
+	print("Mean Duration...")
+	duration=apply(events,c(1,2),mean,na.rm=T)
+	print("Number of Events...")
+	nevents=apply(events,c(1,2),function(x) length(x[!is.na(x)]))
 
-out=list(track=newfield,percentage=meanfield,duration=duration,events=events,nevents=nevents)
-print(quantile(meanfield))
-print(min(duration,na.rm=T))
-return(out)
+	out=list(track=newfield,percentage=meanfield,duration=duration,events=events,nevents=nevents)
+	print(quantile(meanfield))
+	print(min(duration,na.rm=T))
+	return(out)
 }
 
 
 #large scale extension with further implementation
-largescale.extension.if<-function(ics,ipsilon,field)
-{
-print("Large Scale Extension based on fixed angle")
-fimin=30 #southern latitude to be analyzed
-fimax=75 #northern latitude to be analyzed
-deltaics=diff(ics)[1]
-deltaips=diff(ipsilon)[1]
-passo=round(5/deltaics)  #horizontal movemenent
-vertical=round(2.5/deltaips) #vertical movement
-#time=1:length(field[1,1,]) #elements of the length of the dataset
-time=which(apply(field,3,max)!=0) #elements length of the dataset (removing no blocked days)
+largescale.extension.if<-function(ics,ipsilon,field) {
 
-print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+	print("Large Scale Extension based on fixed angle")
+	fimin=30 #southern latitude to be analyzed
+	fimax=75 #northern latitude to be analyzed
+	deltaics=diff(ics)[1]
+	deltaips=diff(ipsilon)[1]
+	passo=round(5/deltaics)  #horizontal movemenent
+	vertical=round(2.5/deltaips) #vertical movement
+	#time=1:length(field[1,1,]) #elements of the length of the dataset
+	time=which(apply(field,3,max)!=0) #elements length of the dataset (removing no blocked days)
 
-short<-function(ics,ipsilon,field,passo,vertical) {
-	control=field
-	range=which.min(abs(ipsilon-fimin)):which.min(abs(ipsilon-fimax)) #check range for latitude excursion
-	#range=range[(1+vertical):(length(range)-vertical)] #reduce range considering border effect
-	
-	new=rbind(field,field,field) #bind domain for cross-date line
-	for (i in 1:length(ics))
-		{
-		ii=i+length(ics)
-		if (!all(new[(ii-passo):(ii+passo),]==0)) #check to speed up
-			{
-			for (j in range)
-				{
-				control[i,j]=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
+	print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+
+	short<-function(ics,ipsilon,field,passo,vertical) {
+		control=field
+		range=which.min(abs(ipsilon-fimin)):which.min(abs(ipsilon-fimax)) #check range for latitude excursion
+		#range=range[(1+vertical):(length(range)-vertical)] #reduce range considering border effect	
+		new=rbind(field,field,field) #bind domain for cross-date line
+		for (i in 1:length(ics)) {
+			ii=i+length(ics)
+			if (!all(new[(ii-passo):(ii+passo),]==0)) { #check to speed up 
+				for (j in range) {
+					control[i,j]=mean(new[(ii-passo):(ii+passo),(j-vertical):(j+vertical)],na.rm=T)
 				}
 			}
 		}
-	control[control>0]=1
-	return(control)
-}
+		control[control>0]=1
+		return(control)
+	}
 
 
-for (t in time)
-{
-	if (any(t==round(seq(0,length(field[1,1,]),,11))))
-        	{print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
-			{field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)}
-}
-return(field)
+	for (t in time) {
+		if (any(t==round(seq(0,length(field[1,1,]),,11)))) {
+			print(paste("--->",round(t/length(field[1,1,])*100),"%"))
+		}
+		field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)
+	}
+	return(field)
 }
 
 
 #Longitude filter for minimum extension
-longitude.filter<-function(ics,ipsilon,field)
-{
-print("Longitude filter based on fixed angle")
-out=field
-deltaics=(ics[20]-ics[19])
-startipsilon=which.min(abs(ipsilon-30))
-estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
-passo=round(15/(ics[20]-ics[19]))
+longitude.filter<-function(ics,ipsilon,field) {
+	print("Longitude filter based on fixed angle")
+	out=field
+	deltaics=(ics[20]-ics[19])
+	startipsilon=which.min(abs(ipsilon-30))
+	estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
+	passo=round(15/(ics[20]-ics[19]))
 
-print(paste("Continous longitude contrain",passo*deltaics,"° lon"))
+	print(paste("Continous longitude contrain",passo*deltaics,"° lon"))
 
-for (t in 1:length(field[1,1,]))
-{
-if (any(t==round(seq(0,length(field[1,1,]),,11))))
-        {print(paste("--->",round(t/length(field[1,1,])*100),"%"))}
-
-new=rbind(field[,,t],field[,,t],field[,,t])
-for (j in startipsilon:((startipsilon+estension)))
-{
-new[,j]=time.persistence(new[,j],persistence=passo)
-}
-field[,,t]=new[length(ics)+(1:length(ics)),]
-}
-return(field)
+	for (t in 1:length(field[1,1,])) {
+		if (any(t==round(seq(0,length(field[1,1,]),,11))))	{
+			print(paste("--->",round(t/length(field[1,1,])*100),"%"))
+		}
+	
+		new=rbind(field[,,t],field[,,t],field[,,t])
+		for (j in startipsilon:((startipsilon+estension))) {
+			new[,j]=time.persistence(new[,j],persistence=passo)
+		}
+		field[,,t]=new[length(ics)+(1:length(ics)),]
+	}
+	return(field)
 }
 
 
@@ -847,8 +866,7 @@ return(field)
 #------------EOFs and regims functions-------------------#
 ##########################################################
 
-eofs<-function(lon,lat,field,neof=4,xlim,ylim,method="SVD",do_standardize=F,do_regression=F)
-{
+eofs<-function(lon,lat,field,neof=4,xlim,ylim,method="SVD",do_standardize=F,do_regression=F) {
 # R tool for computing EOFs based on Singular Value Decomposition ("SVD", default)
 # or with the eigenvectors of the covariance matrix ("covariance", slower) 
 # If requested, computes linear regressions and standardizes the PCs
@@ -870,8 +888,7 @@ slat=lat[whicher(lat,ylim[1]):whicher(lat,ylim[2])]
 new_box=array(box,dim=c(dim(box)[1]*dim(box)[2],dim(box)[3]))
 
 #calling SVD
-if (method=="SVD")
-{       
+if (method=="SVD") {       
         print("Calling SVD...")
         SVD=svd(new_box,nu=neof,nv=neof)
         
@@ -879,35 +896,37 @@ if (method=="SVD")
         pattern=array(SVD$u,dim=c(dim(box)[1],dim(box)[2],neof))
         coefficient=SVD$v
         variance=(SVD$d[1:neof])^2/sum((SVD$d)^2)
-        if (do_standardize)
-                { coefficient=apply(coefficient,c(2),standardize) }
-                else
-                { coefficient=sweep(coefficient,c(2),sqrt(variance),"*") }
+        if (do_standardize) {
+			coefficient=apply(coefficient,c(2),standardize) 
+		} else {
+                	coefficient=sweep(coefficient,c(2),sqrt(variance),"*") 
+		}
 }
 
 #calling covariance matrix
-if (method=="covariance")
-{       
+if (method=="covariance") {       
         print("Calling eigenvectors of the covariance matrix...")
         covma=cov(t(new_box))
         eig=eigen(covma)
         coef=(t(new_box)%*%eig$vector)[,1:neof]
         pattern=array(eig$vectors,dim=c(dim(box)[1],dim(box)[2],dim(box)[3]))[,,1:neof]
         variance=eig$values[1:neof]/sum(eig$values)
-           if (do_standardize)
-                { coefficient=apply(coef,c(2),standardize) }
-                else
-                { coefficient=coef }
+        if (do_standardize) {
+			coefficient=apply(coef,c(2),standardize) 
+		} else {
+                	coefficient=coef
+		}
 }
 
 #linear regressions on anomalies
 regression=NULL
-if (do_regression)
-{       
+if (do_regression) {       
         print("Linear Regressions (it can takes a while)... ")
         regression=array(NA,dim=c(length(lon),length(lat),neof))
         #for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) coef(lm(x ~ coefficient[,i]))[2])}
-        for (i in 1:neof) {regression[,,i]=apply(field,c(1,2),function(x) lin.fit(as.matrix(coefficient[,i],ncol=1),x)$coefficients)}
+        for (i in 1:neof) {
+		regression[,,i]=apply(field,c(1,2),function(x) lin.fit(as.matrix(coefficient[,i],ncol=1),x)$coefficients)
+	}
 }
 
 #preparing output
@@ -917,8 +936,7 @@ out=list(pattern=pattern,coeff=coefficient,variance=variance,regression=regressi
 return(out)
 }
 
-eofs.coeff<-function(lon,lat,field,eof_object,do_standardize=F)
-{
+eofs.coeff<-function(lon,lat,field,eof_object,do_standardize=F) {
 # Computes expansion coefficient (i.e. PCs) of a given dataset on the 
 # loading pattern of EOF previously computed
 # Works only on eof_object obtained with "eofs" function
@@ -941,18 +959,18 @@ new_pattern=array(eof_object$pattern$z,dim=c(dim(eof_object$pattern$z)[1]*dim(eo
 coef=(t(new_box)%*%new_pattern)
 
 #standardize
-if (do_standardize)
-                { coefficient=apply(coef,c(2),standardize) }
-                else
-                { coefficient=coef }
+if (do_standardize) {
+		coefficient=apply(coef,c(2),standardize) 
+	} else {
+                coefficient=coef 
+}
 
 print("Finalize...")
 return(coefficient)
 }
 
 
-regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim,alg="Hartigan-Wong")
-{
+regimes<-function(lon,lat,field,ncluster=4,ntime=1000,neof=10,xlim,ylim,alg="Hartigan-Wong") {
 # R tool to compute cluster analysis based on k-means.
 # Requires "personal" function eofs
 # Take as input a 3D anomaly field
@@ -988,7 +1006,9 @@ compose=aperm(apply(field,c(1,2),by,cluster,mean),c(2,3,1))
 #sorting from the more frequent to the less frequent
 kk=order(frequencies,decreasing=T)
 cluster=cluster+10
-for (ss in 1:ncluster) {cluster[cluster==(ss+10)]=which(kk==ss)}
+for (ss in 1:ncluster) {
+	cluster[cluster==(ss+10)]=which(kk==ss)
+}
 
 #prepare output
 print("Finalize...")
@@ -1052,6 +1072,7 @@ regimes2<-function(lon,lat,field,ncluster=4,ntime=1000,minvar=0.8,
 
 #fast function for monthly mean, using preallocation, vectorization and rowMeans
 monthly.mean<-function(ics,ipsilon,field,etime) {
+
 	condition=paste(etime$month,etime$year)
 	monthly=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
         for (t in unique(condition)) {

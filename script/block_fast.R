@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+miles.block.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
 {
 
 #t0
@@ -13,8 +13,8 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
-savefile2=file.builder(FILESDIR,"Block","BlockFull",exp,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,"Block","BlockClim",dataset,expid,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"Block","BlockFull",dataset,expid,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1) & file.exists(savefile2)) {
@@ -313,7 +313,7 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
+name_args=c("dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -325,6 +325,6 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.block.fast(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+        miles.block.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }

@@ -5,18 +5,19 @@
 
 #define experiment and years
 dataset=$1
-ens=$2
-year1=$3
-year2=$4
-z500filename=$5
-config=$6
-doforcedata=$7
+expid=$2
+ens=$3
+year1=$4
+year2=$5
+z500filename=$6
+config=$7
+doforcedata=$8
 
 if [[ ! -f $z500filename ]] || [[ $doforcedata == "true" ]] ; then
 
 	rm -f $z500filename
 	DATADIR=$(dirname $z500filename)
-    	TEMPDIR=$DATADIR/tempdir_${dataset}_${ens}_$RANDOM
+    	TEMPDIR=$DATADIR/tempdir_${dataset}_${expid}_${ens}_$RANDOM
     	mkdir -p $TEMPDIR
 
 	echo "Z500 data are missing (or you forcily required a rebuilt!)"

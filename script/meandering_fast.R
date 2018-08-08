@@ -2,7 +2,7 @@
 #-----Meandering routines computation for MiLES------#
 #--------G. Di Capua & P. Davini (Apr 2018)----------#
 ######################################################
-miles.meandering<-function(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
+miles.meandering<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
 
 #t0
 t0<-proc.time()
@@ -12,8 +12,8 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,"MI","MIClim",exp,ens,year1,year2,season)
-savefile2=file.builder(FILESDIR,"MI","MIFull",exp,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,"MI","MIClim",dataset,expid,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"MI","MIFull",dataset,expid,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
@@ -132,7 +132,7 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
+name_args=c("dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -145,7 +145,7 @@ if (length(args)!=0) {
         for (k in 1:req_args) {assign(name_args[k],args[k])}
         source(file.path(PROGDIR,"script/basis_functions.R"))
 	source(file.path(PROGDIR,"script/meandering_functions.R"))
-        miles.meandering(exp,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+        miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }
 

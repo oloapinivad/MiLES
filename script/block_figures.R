@@ -5,7 +5,7 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.block.figures<-function(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
+miles.block.figures<-function(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
 {
 #figures configuration files
 source(CFGSCRIPT)
@@ -21,7 +21,7 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 for (field in fieldlist) {	
 
     #use file.builder function
-	nomefile=file.builder(FILESDIR,"Block","BlockClim",exp,ens,year1,year2,season)
+	nomefile=file.builder(FILESDIR,"Block","BlockClim",dataset,expid,ens,year1,year2,season)
 	field_exp=ncdf.opener(nomefile,namevar=field,rotate="no")
 	assign(paste(field,"_exp",sep=""),field_exp)
 }
@@ -47,8 +47,8 @@ for (field in fieldlist) {
 ##########################################################
 
 #standard properties
-if (ens=="NO") {info_exp=paste(exp,year1,"-",year2,season)} else {info_exp=paste(exp,ens,year1,"-",year2,season)}
-if (ens_ref=="NO") {info_ref=paste(dataset_ref,year1_ref,"-",year2_ref,season)} else {info_ref=paste(dataset_ref,ens_ref,year1_ref,"-",year2_ref,season)}
+info_exp=info.builder(dataset,expid,ens,year1,year2,season)
+info_ref=info.builder(dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
 
 #loop on fields
 for (field in fieldlist) {
@@ -57,20 +57,20 @@ for (field in fieldlist) {
 	fp=field.details(field)
 	
 	#get fields
-    field_ref=get(paste(field,"_ref",sep=""))
-    field_exp=get(paste(field,"_exp",sep=""))
+    	field_ref=get(paste(field,"_ref",sep=""))
+    	field_exp=get(paste(field,"_exp",sep=""))
 
-    #create figure names with ad-hoc function
-    figname=fig.builder(FIGDIR,"Block",field,exp,ens,year1,year2,season,output_file_type)
-    print(figname)
+    	#create figure names with ad-hoc function
+    	figname=fig.builder(FIGDIR,"Block",field,dataset,expid,ens,year1,year2,season,output_file_type)
+    	print(figname)
 
 	#special treatment for TM90: it is a 1D field!
 	if (field=="TM90") {
 
-        open.plot.device(figname,output_file_type,CFGSCRIPT,special=TRUE)
+        	open.plot.device(figname,output_file_type,CFGSCRIPT,special=TRUE)
 
 		#panels option
-        par(cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,3),oma=c(0,0,0,0))
+	        par(cex.main=2,cex.axis=1.5,cex.lab=1.5,mar=c(5,5,4,3),oma=c(0,0,0,0))
 
 		#rotation to simplify the view (90 deg to the west)
 		n=(-length(ics)/4)
@@ -84,7 +84,7 @@ for (field in fieldlist) {
 		plot(ics2,field_exp2,type="l",lwd=lwdline,ylim=fp$lev_field,main=fp$title_name,xlab="Longitude",ylab=fp$legend_unit,col=tm90cols[1])
 		points(ics2,field_ref2,type="l",lwd=lwdline,lty=1,col=tm90cols[2])
 		grid()
-        legend(100,30,legend=c(info_exp,info_ref),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
+        	legend(100,30,legend=c(info_exp,info_ref),lwd=lwdline,lty=c(1,1),col=tm90cols,bg="white",cex=1.5)
 	
 		#par(new=TRUE)	
 		#plot(ics2,field_exp2,type="n",ylim=c(0,90),xlab="",ylab="",axes=F)
@@ -95,10 +95,10 @@ for (field in fieldlist) {
 		#skip other part of the script
 		next()
 
-		}
+	}
 	
 	# Chose output format for figure - by JvH
-    open.plot.device(figname,output_file_type,CFGSCRIPT)
+    	open.plot.device(figname,output_file_type,CFGSCRIPT)
 
 	#plot options	
 	par(plotpar)
@@ -113,13 +113,13 @@ for (field in fieldlist) {
 	im=plot.prepare(ics,ipsilon,field_ref,proj=map_projection,lat_lim=lat_lim)
 	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste(info_ref),levels=fp$lev_field,color.palette=fp$color_field,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
 	proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=fp$lev_field,color.palette=fp$color_field,colorbar.label=fp$legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=fp$legend_distance)
+	image.scale3(volcano,levels=fp$lev_field,color.palette=fp$color_field,colorbar.label=fp$legend_unit,cex.colorbar=imgscl_colorbar,cex.label=imgscl_label,colorbar.width=1*af,line.label=fp$legend_distance)
 
 	#delta field plot
 	im=plot.prepare(ics,ipsilon,field_exp-field_ref,proj=map_projection,lat_lim=lat_lim)
 	filled.contour3(im$x,im$y,im$z,xlab=im$xlab,ylab=im$ylab,main=paste("Difference"),levels=fp$lev_diff,color.palette=fp$color_diff,xlim=im$xlim,ylim=im$ylim,axes=im$axes)
 	proj.addland(proj=map_projection)
-	image.scale3(volcano,levels=fp$lev_diff,color.palette=fp$color_diff,colorbar.label=fp$legend_unit,cex.colorbar=1.2,cex.label=1.5,colorbar.width=1*af,line.label=fp$legend_distance)
+	image.scale3(volcano,levels=fp$lev_diff,color.palette=fp$color_diff,colorbar.label=fp$legend_unit,cex.colorbar=imgscl_colorbar,cex.label=imgscl_label,colorbar.width=1*af,line.label=fp$legend_distance)
 
 	dev.off()
 	}
@@ -135,7 +135,7 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("exp","ens","year1","year2","dataset_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
+name_args=c("dataset","expid","ens","year1","year2","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
 req_args=length(name_args)
 
 # print error message if uncorrect number of command 
@@ -147,7 +147,7 @@ if (length(args)!=0) {
 # when the number of arguments is ok run the function()
 	for (k in 1:req_args) {assign(name_args[k],args[k])}
 	source(paste0(PROGDIR,"/script/basis_functions.R"))
-	miles.block.figures(exp,ens,year1,year2,dataset_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
+	miles.block.figures(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
     }
 }
 

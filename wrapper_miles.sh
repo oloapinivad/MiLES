@@ -16,15 +16,15 @@ set -eu
 machine=wilma
 
 #control flags to check which sections should be run
-doeof=false #EOFs section
-doblock=false #Blocking section 
-doregime=false #Regimes section
+doeof=true #EOFs section
+doblock=true #Blocking section 
+doregime=true #Regimes section
 domeand=true #Meandering section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists (not recommendend)
 doforcedata=false
-doforce=true
+doforce=false
 
 # exp identificator: it is important for the folder structure.
 # if you have more than one runs (i.e. ensemble members) or experiments of the same model use
@@ -32,19 +32,21 @@ doforce=true
 # set also years 
 year1_exp=1951
 year2_exp=2005
-dataset_exp="MPI-ESM-P"
+dataset_exp=MPI-ESM-P
+expid_exp=HIST
 #ens_list=$(seq -f e"%02g" 1 4 )
-ens_list="r1"
+ens_list=r1
 
 # std_clim flag: this is used to choose which climatology compare with results
 # or with a user specified one: standard climatology is ERAINTERIM 1979-2014
 # if std_clim=1 ERAINTERIM 1979-2014 is used
 # if std_clim=0 a MiLES-generated different climatology can be specified
-std_clim=1
+std_clim=true
 
-# only valid if std_clim=0
-dataset_ref="NCEP"
-ens_ref="NO"
+# only valid if std_clim=false
+dataset_ref=NCEP
+expid_ref=NO
+ens_ref=NO
 year1_ref=1982
 year2_ref=2016
 
@@ -59,7 +61,7 @@ seasons="DJF"
 # select which teleconnection pattern EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
-# "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to 0!
+# "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to false!
 teles="NAO"
 #tele="-50_20_10_80"
 
@@ -81,7 +83,7 @@ echo $doforce
 ################################################
 
 # machine dependent script (set above)
-dataset=""; ens=""; expected_input_name="" #declared to avoid problems with set -u
+dataset=""; expid="" ens=""; expected_input_name="" #declared to avoid problems with set -u
 . config/config_${machine}.sh
 
 # this script controls some of the graphical parameters
@@ -97,19 +99,19 @@ nclusters=4
 ##NO NEED TO TOUCHE BELOW THIS LINE#############
 ################################################
 
-#check if you can compare run with std_clim=1
-if  [ $std_clim -eq 1 ] ; then
+#check if you can compare run with std_clim=true
+if ${std_clim} ; then
 
 	for tele in $teles ; do
         	if ! { [ "$tele" = NAO ] || [ "$tele" = AO ]; } ; then
-        	        echo "Error: you cannot use non-standard EOFs region with std_clim=1"
+        	        echo "Error: you cannot use non-standard EOFs region with std_clim=true"
                 exit
         	fi
 	done
 	
 	for season in $seasons ; do
         	if ! { [ "$season" = DJF ] || [ "$season" = MAM ] || [ "$season" = SON ] || [ "$season" = JJA ]; } ; then 
-                	echo "Error: you cannot use non-standard seasons with std_clim=1"
+                	echo "Error: you cannot use non-standard seasons with std_clim=true"
                 	exit
         	fi        
 	done
@@ -117,16 +119,17 @@ if  [ $std_clim -eq 1 ] ; then
 fi
 
 # if we are using standard climatology
-if [[ ${std_clim} -eq 1 ]] ; then
+if ${std_clim} ; then
 	dataset_ref="ERAI_clim"
 	year1_ref=1979
 	year2_ref=2017
 	REFDIR=$PROGDIR/clim
-	exps=$dataset_exp
-	ens_ref="NO"
+	datasets=$dataset_exp
+	expid_ref=NO
+	ens_ref=NO
 else
         REFDIR=$FILESDIR
-        exps=$(echo ${dataset_exp} ${dataset_ref})
+        datasets=$(echo ${dataset_exp} ${dataset_ref})
 fi
 
 
@@ -138,37 +141,41 @@ fi
 for ens_exp in ${ens_list} ; do
 
 # loop to produce data: on experiment and - if needed - reference
-for exp in $exps ; do
+for dataset in $datasets ; do
 
 	# select for experiment
-	if [[ $exp == $dataset_exp ]] ; then
-		year1=${year1_exp}; year2=${year2_exp}; ens=${ens_exp}
+	if [[ $dataset == $dataset_exp ]] ; then
+		year1=${year1_exp}; year2=${year2_exp}; expid=${expid_exp}; ens=${ens_exp}
 	fi
 
 	# select for reference
-	if [[ $exp == $dataset_ref ]] ; then
+	if [[ $dataset == $dataset_ref ]] ; then
 		if [ "${ens_ref}" == "mean" ] ; then continue ; fi
-		if [ ${std_clim} -eq 1 ] ; then
+		if ${std_clim} ; then
  			echo "skip!"
 		else
-	        	year1=${year1_ref}; year2=${year2_ref}; ens=${ens_ref}
+	        	year1=${year1_ref}; year2=${year2_ref}; expid=${expid_ref}; ens=${ens_ref}
 		fi
 	fi
 	
-	echo $exp $year1 $year2
+	echo $dataset $expid $ens $year1 $year2
 
 	#definition of the fullfile name
-	ZDIR=$OUTPUTDIR/Z500/$exp
+	ZDIR=$OUTPUTDIR/Z500
 	mkdir -p $ZDIR
-	if [ "$ens" == "NO" ] ; then
-		z500filename=$ZDIR/Z500_${exp}_fullfile.nc
-	else
-		z500filename=$ZDIR/${ens}/Z500_${exp}_${ens}_fullfile.nc
-	fi
+	zfile=Z500 
+	for dcode in $dataset $expid $ens ; do
+		if [[ "$dcode" != "NO" ]] ; then
+			zfile=${zfile}_${dcode}
+			ZDIR=$ZDIR/$dcode
+		fi
+	done
+	z500filename=$ZDIR/${zfile}_fullfile.nc
+	
 	echo $z500filename
 
 	#fullfile prepare
-	time . $PROGDIR/script/z500_prepare.sh $exp $ens $year1 $year2 $z500filename $machine $doforcedata
+	time . $PROGDIR/script/z500_prepare.sh $dataset $expid $ens $year1 $year2 $z500filename $machine $doforcedata
 
 	for season in $seasons ; do
 		echo $season
@@ -176,22 +183,26 @@ for exp in $exps ; do
 		# Rbased EOFs
 		if $doeof ; then
 			for tele in $teles ; do
-        			time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" $exp $ens $year1 $year2 $season $tele $z500filename $FILESDIR $PROGDIR $doforce
+        			time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" 	$dataset $expid $ens $year1 $year2 $season \
+											$tele $z500filename $FILESDIR $PROGDIR $doforce
 			done
 		fi
 		# blocking
 		if $doblock ; then
-			time $Rscript "$PROGDIR/script/block_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $doforce
+			time $Rscript "$PROGDIR/script/block_fast.R" 	$dataset $expid $ens $year1 $year2 $season \
+									$z500filename $FILESDIR $PROGDIR $doforce
 		fi
 
 		# regimes
 		if [[ $doregime == "true" ]] && [[ $season == DJF ]] ; then
-			time $Rscript "$PROGDIR/script/regimes_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $nclusters $doforce
+			time $Rscript "$PROGDIR/script/regimes_fast.R"	$dataset $expid $ens $year1 $year2 $season \
+									$z500filename $FILESDIR $PROGDIR $nclusters $doforce
 		fi
 		# meandering index
-                if $domeand ; then
-                        time $Rscript "$PROGDIR/script/meandering_fast.R" $exp $ens $year1 $year2 $season $z500filename $FILESDIR $PROGDIR $doforce
-                fi
+        	if $domeand ; then
+        	    time $Rscript "$PROGDIR/script/meandering_fast.R" 	$dataset $expid $ens $year1 $year2 $season \
+									$z500filename $FILESDIR $PROGDIR $doforce
+        	fi
 	done
 
 done
@@ -206,18 +217,24 @@ for season in $seasons ; do
 	# EOFs figures
 	if $doeof ; then
 		for tele in $teles ; do
-    			time $Rscript "$PROGDIR/script/Rbased_eof_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
+    			time $Rscript "$PROGDIR/script/Rbased_eof_figures.R" 	$dataset_exp $expid_exp $ens_exp $year1_exp $year2_exp \
+										$dataset_ref $expid_ref $ens_ref $year1_ref $year2_ref \
+										$season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $tele
 		done
 	fi
 
 	# blocking figures
 	if $doblock ; then
-		time $Rscript "$PROGDIR/script/block_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+		time $Rscript "$PROGDIR/script/block_figures.R" 	$dataset_exp $expid_exp $ens_exp $year1_exp $year2_exp \
+									$dataset_ref $expid_ref $ens_ref $year1_ref $year2_ref \
+									$season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	fi
 
 	# regimes figures
 	if [[ $doregime == "true" ]] && [[ $season == DJF ]] ; then
-		time $Rscript "$PROGDIR/script/regimes_figures.R" $dataset_exp $ens_exp $year1_exp $year2_exp $dataset_ref $ens_ref $year1_ref $year2_ref $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
+		time $Rscript "$PROGDIR/script/regimes_figures.R" 	$dataset_exp $expid_exp $ens_exp $year1_exp $year2_exp \
+									$dataset_ref $expid_ref $ens_ref $year1_ref $year2_ref \
+									$season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR $nclusters
 	fi
 done
 fi
