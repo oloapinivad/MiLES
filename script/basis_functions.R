@@ -122,22 +122,23 @@ file.builder<-function(DATADIR,dir_name,file_name,dataset,expid,ens,year1,year2,
 
 	# loop on descriptors that are concatenated to create dir and file name	
 	descriptors=c(dataset,expid,ens,paste0(year1,"_",year2),season)
-	filedir=file.path(DATADIR,dir_name)
-       	filename=file_name
 	for (dcode in descriptors) {
 		if (dcode!="NO") {
-			filedir=file.path(filedir,dcode)
-			filename=paste0(filename,"_",dcode)
+			DATADIR=file.path(DATADIR,dcode)
+			file_name=paste0(file_name,"_",dcode)
 		}
 	}
+
+	# add directory name descriptor
+        DATADIR=file.path(DATADIR,dir_name)
 	
 	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
 	if (exists("dir.exists")) {
-		if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+		if (!dir.exists(DATADIR)) {dir.create(DATADIR,recursive=T)}
 	} else {
-		dir.create(filedir,recursive=T,showWarnings=F)
+		dir.create(DATADIR,recursive=T,showWarnings=F)
 	}
-    	return(file.path(filedir,paste0(filename,".nc")))
+    	return(file.path(DATADIR,paste0(file_name,".nc")))
 }
 
 #basic switch to create figures names and folders (use recursive structure from v0.6)
@@ -145,24 +146,24 @@ fig.builder<-function(FIGDIR,dir_name,file_name,dataset,expid,ens,year1,year2,se
 
 	# loop on descriptors that are concatenated to create dir and file name 
 	descriptors=c(dataset,expid,ens,paste0(year1,"_",year2),season)
-        filedir=FIGDIR
-	filename=file_name
 	for (dcode in descriptors) {
 		if (dcode!="NO") {
-			filedir=file.path(filedir,dcode)
-		        filename=paste0(filename,"_",dcode)
+			FIGDIR=file.path(FIGDIR,dcode)
+		        file_name=paste0(file_name,"_",dcode)
 		}       
 	}
-	
-	filedir=file.path(filedir,dir_name)	        
+
+	# add directory name descriptor
+	FIGDIR=file.path(FIGDIR,dir_name)	        
+
 	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
 	if (exists("dir.exists")) {
-		if (!dir.exists(filedir)) {dir.create(filedir,recursive=T)}
+		if (!dir.exists(FIGDIR)) {dir.create(FIGDIR,recursive=T)}
 	} else {
-	        dir.create(filedir,recursive=T,showWarnings=F)
+	        dir.create(FIGDIR,recursive=T,showWarnings=F)
 	}
 
-return(file.path(filedir,paste0(filename,".",output_file_type)))
+return(file.path(FIGDIR,paste0(file_name,".",output_file_type)))
 
 }
 
@@ -184,14 +185,14 @@ season2timeseason<-function(season)
         charseason=strsplit(season,"_")[[1]]
         print(charseason)
         if (mean(nchar(charseason))==3) {
-            timeseason=which(charseason==month.abb)
+            	timeseason=which(charseason==month.abb)
             } else {
-            timeseason=which(charseason==month.name)
+            	timeseason=which(charseason==month.name)
             } 
     }
     print(timeseason)
     if (length(timeseason)==0 |  min(timeseason)<0 | max(timeseason)>13) {
-        stop("wrong season selected!")
+    	stop("wrong season selected!")
     }
 	return(timeseason)
 }
