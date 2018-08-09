@@ -22,7 +22,7 @@ R_version=as.numeric(R.Version()$major)+as.numeric(R.Version()$minor)/10
 
 #constants
 Earth.Radius = 6367500
-g0=9.81
+g0 = 9.81
 
 #normalize a time series
 standardize<-function(timeseries) {
@@ -42,14 +42,14 @@ whicher<-function(axis,number) {
 #produce a 2d matrix of area weight
 area.weight<-function(ics,ipsilon,root=T) {
 
-	field=array(NA,dim=c(length(ics),length(ipsilon)))
-	if (root==T) {
-        	for (j in 1:length(ipsilon)) {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
-	}
+        field=array(NA,dim=c(length(ics),length(ipsilon)))
+        if (root==T) {
+                for (j in 1:length(ipsilon)) {field[,j]=sqrt(cos(pi/180*ipsilon[j]))}
+        }
 
-	if (root==F) {
-        	for (j in 1:length(ipsilon)) {field[,j]=cos(pi/180*ipsilon[j])}
-	}
+        if (root==F) {
+                for (j in 1:length(ipsilon)) {field[,j]=cos(pi/180*ipsilon[j])}
+        }
 
 return(field)
 }
@@ -165,6 +165,14 @@ fig.builder<-function(FIGDIR,dir_name,file_name,dataset,expid,ens,year1,year2,se
 
 return(file.path(FIGDIR,paste0(file_name,".",output_file_type)))
 
+}
+
+# progression bar
+progression.bar<-function(index,total_length,each=10) {
+	if (any(index==round(seq(0,total_length,,each+1))))      {
+		progression=paste("--->",round(index/total_length*100),"%")
+		print(progression)
+        }
 }
 
 
@@ -629,7 +637,7 @@ proj.addland<-function(proj="no",orient=c(90,0,0),param=NULL,color="black") {
 
 	if (proj=="no") {
 		map("world",regions=".",interior=F,exact=F,boundary=T,add=T)
-		} else {
+	} else {
         	# get map, project and do the lines     
 		box()
         	map("world",add=T,projection=proj,orientation=orient,parameter=param,interior=F,exact=F,boundary=T)
@@ -800,14 +808,14 @@ largescale.extension.if<-function(ics,ipsilon,field) {
 	print("Large Scale Extension based on fixed angle")
 	fimin=30 #southern latitude to be analyzed
 	fimax=75 #northern latitude to be analyzed
-	deltaics=diff(ics)[1]
-	deltaips=diff(ipsilon)[1]
-	passo=round(5/deltaics)  #horizontal movemenent
-	vertical=round(2.5/deltaips) #vertical movement
+	yreso=ipsilon[2]-ipsilon[1]
+	xreso=ics[2]-ics[1]
+	passo=5/xreso  #horizontal movemenent
+	vertical=2.5/yreso #vertical movement
 	#time=1:length(field[1,1,]) #elements of the length of the dataset
 	time=which(apply(field,3,max)!=0) #elements length of the dataset (removing no blocked days)
 
-	print(paste("Box dimension:",passo*2*deltaics,"° lon x ",vertical*2*deltaips,"° lat"))
+	print(paste("Box dimension:",passo*2*xreso,"° lon x ",vertical*2*yreso,"° lat"))
 
 	short<-function(ics,ipsilon,field,passo,vertical) {
 		control=field
@@ -827,10 +835,9 @@ largescale.extension.if<-function(ics,ipsilon,field) {
 	}
 
 
+	tt=length(time)
 	for (t in time) {
-		if (any(t==round(seq(0,length(field[1,1,]),,11)))) {
-			print(paste("--->",round(t/length(field[1,1,])*100),"%"))
-		}
+		progression.bar(t,tt)
 		field[,,t]=short(ics,ipsilon,field[,,t],passo,vertical)
 	}
 	return(field)
@@ -841,17 +848,17 @@ largescale.extension.if<-function(ics,ipsilon,field) {
 longitude.filter<-function(ics,ipsilon,field) {
 	print("Longitude filter based on fixed angle")
 	out=field
-	deltaics=(ics[20]-ics[19])
+	yreso=ipsilon[2]-ipsilon[1]
+	xreso=ics[2]-ics[1]
 	startipsilon=which.min(abs(ipsilon-30))
-	estension=round((75-30)/(ipsilon[20]-ipsilon[19]))
-	passo=round(15/(ics[20]-ics[19]))
+	estension=(75-30)/yreso
+	passo=15/xreso
 
-	print(paste("Continous longitude contrain",passo*deltaics,"° lon"))
+	print(paste("Continous longitude contrain",passo*xreso,"° lon"))
 
-	for (t in 1:length(field[1,1,])) {
-		if (any(t==round(seq(0,length(field[1,1,]),,11))))	{
-			print(paste("--->",round(t/length(field[1,1,])*100),"%"))
-		}
+	tt=length(field[1,1,])
+	for (t in 1:tt) {
+		progression.bar(t,tt)
 	
 		new=rbind(field[,,t],field[,,t],field[,,t])
 		for (j in startipsilon:((startipsilon+estension))) {
@@ -892,7 +899,7 @@ new_box=array(box,dim=c(dim(box)[1]*dim(box)[2],dim(box)[3]))
 if (method=="SVD") {       
         print("Calling SVD...")
         SVD=svd(new_box,nu=neof,nv=neof)
-        
+       
         #extracting EOFs (loading pattern), expansions coefficient and variance explained
         pattern=array(SVD$u,dim=c(dim(box)[1],dim(box)[2],neof))
         coefficient=SVD$v

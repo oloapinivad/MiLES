@@ -12,7 +12,7 @@
 INDIR=$WORK/data/CMIP5/${dataset}/${expid}/${ens}/day/Z500
 if [[ "${dataset}" == "NCEP" ]] ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
 if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] ; then INDIR=$WORK/data/${dataset}/day/Z500 ; fi
-if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/$ens/day/Z500 ; fi
+if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/Z500 ; fi
 if [[ "${dataset}" == "CMCC-CM2" ]] ;  then INDIR=$SCRATCH/cmcc ; fi
 
 # to look for some specific file structure

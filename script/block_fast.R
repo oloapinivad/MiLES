@@ -2,8 +2,10 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
-{
+miles.block.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce) {
+
+#source functions
+source(file.path(PROGDIR,"script/basis_functions.R"))
 
 #t0
 t0<-proc.time()
@@ -45,6 +47,23 @@ totdays=length(fieldlist$time)
 #declare variable
 Z500=fieldlist$field
 
+#grid resolution
+yreso=ipsilon[2]-ipsilon[1]
+xreso=ics[2]-ics[1]
+
+# reso checks: this are not needed with default 2.5 grid, but they may be relevant with 
+# future envisaged power up to finer grids
+# xcritical factor is due to RWB longitudinal jump of 7.5 
+# ycritical factor is due to Large Scale Extension of 2.5
+xcritical=2.5
+ycritical=2.5
+if (ycritical %% yreso != 0 ) {
+	stop("Latitudinal resolution is not a factor of 5 deg")
+}
+
+if (xcritical %% xreso !=0 ) {
+	stop("Longitudinal resolution is not a factor of 5 deg")
+}
 
 ##########################################################
 #--------------Tibaldi and Molteni 1990------------------#
@@ -53,11 +72,11 @@ Z500=fieldlist$field
 print("Tibaldi and Molteni (1990) index...")
 # TM90: parametres for blocking detection
 tm90_fi0=60 #central_lat
-tm90_fiN=tm90_fi0+20; tm90_fiS=tm90_fi0-20 #south and north lath
+tm90_fiN=tm90_fi0+20; tm90_fiS=tm90_fi0-20 #south and north lat, 80N and 40N
 tm90_central=whicher(ipsilon,tm90_fi0)
 tm90_south=whicher(ipsilon,tm90_fiS)
 tm90_north=whicher(ipsilon,tm90_fiN)
-tm90_range=c(-2:2)  #5 degrees to the north, 5 to the south (larger than TM90 or D'Andrea et al 1998)
+tm90_range=seq(-5,5,yreso)/yreso #5 degrees to the north, 5 to the south (larger than TM90 or D'Andrea et al 1998)
 
 #TM90: beta version, the amazing power of R vectorization!
 #6 lines to get the climatology
@@ -80,14 +99,14 @@ totblocked=totblocked2=Z500*0
 # Davini et al. 2012: parameters to be set for blocking detection
 fi0=30                          #lowest latitude to be analyzed
 jump=15                         #distance on which compute gradients
-step0=round(jump/diff(ipsilon)[1])   #number of grid points to be used
+step0=jump/yreso			#number of grid points to be used
 central=which.min(abs(ipsilon-fi0))             #lowest starting latitude
 north=central+step0                             #lowest north latitude
-south=central-step0                                     #lowest sourth latitude
+south=central-step0                             #lowest sourth latitude
 maxsouth=central-2*step0
 fiN=ipsilon[north]
 fiS=ipsilon[south]
-range=round((90-fi0-jump)/diff(ipsilon)[1])  #escursion to the north for computing blocking
+range=(90-fi0-jump)/yreso  #escursion to the north for computing blocking (from 30 up to 75)
 
 print("--------------------------------------------------")
 print("Davini et al. (2012) index and diagnostics...")
@@ -99,17 +118,14 @@ print(paste("range of latitudes ",fi0,"-",90-step0*diff(ics)[1]," N",sep=""))
 ##########################################################
 
 #----COMPUTING BLOCKING INDICES-----
-for (t in 1:totdays)
-		{
-		if (any(t==round(seq(0,totdays,,11))))
-                {print(paste("--->",round(t/totdays*100),"%"))}
+for (t in 1:totdays) {
+	progression.bar(t,totdays)
 
-		#multidim extension
-                new_field=rbind(Z500[,,t],Z500[,,t],Z500[,,t])
+	#multidim extension
+        new_field=rbind(Z500[,,t],Z500[,,t],Z500[,,t])
 
-                for (delta in 0:range)  # computing blocking for different latitudes
-                {
-                ghgn=(Z500[,north+delta,t]-Z500[,central+delta,t])/(fiN-fi0)
+        for (delta in 0:range) {  # computing blocking for different latitudes
+        	ghgn=(Z500[,north+delta,t]-Z500[,central+delta,t])/(fiN-fi0)
                 ghgs=(Z500[,central+delta,t]-Z500[,south+delta,t])/(fi0-fiS)
                 gh2gs=(Z500[,south+delta,t]-Z500[,maxsouth+delta,t])/(fi0-fiS)
                 check1=which(ghgs>0 & ghgn<(-10))
@@ -119,44 +135,42 @@ for (t in 1:totdays)
 			totblocked2[check2,central+delta,t]=1
 		}
 
-                if (length(check1)>0)
-                {
-                # 1-MATRIX FOR INSTANTANEOUS BLOCKING
-                totblocked[check1,central+delta,t]=1
+                if (length(check1)>0) {
+                	# 1-MATRIX FOR INSTANTANEOUS BLOCKING
+                	totblocked[check1,central+delta,t]=1
 		
 
-                # 2-PART ON COMPUTATION OF ROSSBY WAVEBREAKING
-                r=check1+length(ics)
-                rwb_jump=jump/2
-                steprwb=round(rwb_jump/(ics[20]-ics[19]))
-                rwb_west=new_field[(r-steprwb),south+delta+steprwb]
-                rwb_east=new_field[(r+steprwb),south+delta+steprwb]
-                fullgh=(rwb_west-rwb_east)
+                	# 2-PART ON COMPUTATION OF ROSSBY WAVEBREAKING
+                	r=check1+length(ics)
+                	rwb_jump=jump/2
+                	steprwb=rwb_jump/xreso
+                	rwb_west=new_field[(r-steprwb),south+delta+steprwb]
+                	rwb_east=new_field[(r+steprwb),south+delta+steprwb]
+                	fullgh=(rwb_west-rwb_east)
 
-                totrwb[check1[fullgh<0],central+delta,t]=(-10)     # gradient decreasing: cyclonic RWB     
-                totrwb[check1[fullgh>0],central+delta,t]=10        # gradient increasing: anticyclonic RWB                 
+                	totrwb[check1[fullgh<0],central+delta,t]=(-10)     # gradient decreasing: cyclonic RWB     
+                	totrwb[check1[fullgh>0],central+delta,t]=10        # gradient increasing: anticyclonic RWB                 
 
-                # 4-part about adapted version of blocking intensity by Wiedenmann et al. (2002)
-                step=round(60/(ics[2]-ics[1]))
-                ii=check1+length(ics)
-                zu=zd=NULL
-                for (ll in ii)
-                        {
-                        zu=c(zu,min(new_field[(ll-step):ll,central+delta]))
-                        zd=c(zd,min(new_field[ll:(ll+step),central+delta]))
+                	# 4-part about adapted version of blocking intensity by Wiedenmann et al. (2002)
+                	step=60/xreso
+                	ii=check1+length(ics)
+                	zu=zd=NULL
+                	for (ll in ii) {
+                        	zu=c(zu,min(new_field[(ll-step):ll,central+delta]))
+                        	zd=c(zd,min(new_field[ll:(ll+step),central+delta]))
                         }
-                mz=Z500[check1,central+delta,t]
-                rc=0.5*((zu+mz)/2+(zd+mz)/2)
-                totBI[check1,central+delta,t]=100*(mz/rc-1)
+                	mz=Z500[check1,central+delta,t]
+                	rc=0.5*((zu+mz)/2+(zd+mz)/2)
+                	totBI[check1,central+delta,t]=100*(mz/rc-1)
 
-                #5 - part about meridional gradient index
-                totmeridional[check1,central+delta,t]=ghgs[check1]
+                	#5 - part about meridional gradient index
+                	totmeridional[check1,central+delta,t]=ghgs[check1]
+		}
+	}
+}
 
-
-                }}}
-
-                print(paste("Total # of days:",t))
-                print("-------------------------")
+print(paste("Total # of days:",t))
+print("-------------------------")
 
 ##########################################################
 #--------------------Mean Values-------------------------#
@@ -210,13 +224,6 @@ print("saving NetCDF climatologies...")
 #which fieds to plot/save
 fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
 full_fieldlist=c("TM90","InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents")
-
-#--deprecated--# 
-#print(fulltime[2])
-#temporary check for seconds/days TO BE FIXED
-#if (fulltime[2]==1) {tunit="days"}
-#if (fulltime[2]==86400) {tunit="seconds"}
-#--------------#
 
 # dimensions definition
 fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
@@ -322,9 +329,8 @@ if (length(args)!=0) {
         print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
         print(name_args)
     } else {
-# when the number of arguments is ok run the function()
+	# when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.block.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+        miles.block.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce)
     }
 }

@@ -15,7 +15,7 @@ I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
 
 ## WHAT IS MiLES?
 
-**MiLES** is a tool for estimating properties of Northern Hemisphere mid-latitude climate in Global Climate Models and Reanalysis datasets. It has been originally thought for EC-Earth output and then it has been extended to any climate model or Reanalysis datasets. 
+**MiLES** is a tool for estimating properties of Northern Hemisphere mid-latitude climate in Global Climate Models and Reanalysis datasets. It has been originally thought for EC-Earth Global Climate Model output and then it has been extended to any climate model or Reanalysis datasets. 
 It is based on daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs and climatological figures for the chosen time period and season.
 Before performing analysis, data are preprocessed interpolated on a common 2.5x2.5 grid using CDO.  
 Model data are compared against ECMWF ERA-Interim Reanalysis for a standard period (1979-2017) or with any other MiLES-generated data.
@@ -36,8 +36,8 @@ Current version includes:
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
 3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R using SVD.
-	First 4 EOFs for North Atlantic (over the 90W-40E 20N-85N box) and Northern Hemisphere (20N-85N).
-	North Atlantic Oscillation, East Atlantic Pattern, and Arctic Oscillation are thus computed. 
+	First 4 EOFs for North Atlantic (over the 90W-40E, 20N-85N box), North Pacific (140E-80W, 20N-85N) and Northern Hemisphere (20N-85N).
+	North Atlantic Oscillation, Pacific North American pattern and Arctic Oscillation are thus computed. 
 	Figures showing linear regression of PCs on monthly Z500 are provided.
 	PCs and eigenvectors, as well as the variances explained are provided in NetCDF4 Zip format.
 
@@ -88,7 +88,6 @@ Packages are also included in **MiLES** and can be installed offline.
 - _akima_ provides the interpolation for map projections.
 - _mapproj_ provides a series of map projection that can be used.
 
-
 If you are aware of other way to implement this 5 passages without using those packages, please contact me through the GitHub portal.
 
 There are some issues on Mac Os X (10.11 and later at least) related to gfortran. It may happen that 
@@ -106,7 +105,7 @@ https://stackoverflow.com/questions/29992066/rcpp-warning-directory-not-found-fo
 
 Before running **MiLES** the 5 above-mentioned R packages should installed.
 
-Two configuration scripts controls the program options:
+Two configuration scripts control the program options:
 1. 	`config/config_$MACHINE.sh` controls the properties of your environment. 
 	It should be set accordingly to your local configuration.
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
@@ -136,7 +135,7 @@ IMPORTANT: the three above-mentioned vars are the core of the CMIP data structur
 - `output_file_type` -> pdf, eps or png figures format.
 - `map_projection` -> set "no" for standard plot (fast). Use "azequalarea" for polar plots (default). All projection from mapproj R package are supported (but not all of them have been tested).
 - `doeof`,`doblock`,`doregime`,`domeand` -> set to true or false in order to run some specific sections only.
-- `doforce`,`doforcedata` -> set to true or false in order to rerun the analysis or the data preparation
+- `doforceanl`,`doforcedata` -> set to true or false in order to rerun the analysis or the data preparation (respectively).
 
 ### Scripts and wrapper
 The chain of scripts will be executed as a sequence.
@@ -144,7 +143,7 @@ However, each **MiLES** script can be run autonomously from command line providi
 R-based script are written as functions and thus can be called inside R if needed.  
 
 * `z500_prepare.sh`. **MiLES** is based on a pre-processing of data. 
-This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforce` and `doforcedata` flags to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
+This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforceanl` and `doforcedata` flags to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
 * `Rbased_eof_fast.R` and `Rbased_eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
@@ -177,7 +176,9 @@ It is reccomended in such cases to split the analysis in different subsets.
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)
 - CMIP-like (dataset+experiment+ensemble member) data structure is introduced, allowing also for experiment type definition
-- Minor updates of wrapper variables names and structure
+- Minor updates to the functions variables names, structure and layout
+- Packages update
+- Beta support for cross-dateline EOFs
 
 *v0.51 - Apr 2018*
 - Consolidation of weather regimes functions (shift to variance minimum)

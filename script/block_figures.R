@@ -4,9 +4,13 @@
 ######################################################
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
+miles.block.figures<-function(dataset,expid,ens,year1,year2,
+			      dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+			      season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,PROGDIR) {
 
-miles.block.figures<-function(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT)
-{
+#source function scripts
+source(file.path(PROGDIR,"script/basis_functions.R"))
+
 #figures configuration files
 source(CFGSCRIPT)
 
@@ -20,7 +24,7 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 #open field
 for (field in fieldlist) {	
 
-    #use file.builder function
+	#use file.builder function
 	nomefile=file.builder(FILESDIR,"Block","BlockClim",dataset,expid,ens,year1,year2,season)
 	field_exp=ncdf.opener(nomefile,namevar=field,rotate="no")
 	assign(paste(field,"_exp",sep=""),field_exp)
@@ -35,7 +39,7 @@ for (field in fieldlist) {
 	} else { 
 		
 		#use file.builder to create the path of the blocking files
-		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",dataset_ref,ens_ref,year1_ref,year2_ref,season)
+		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
 	}
     
 	field_ref=ncdf.opener(nomefile_ref,namevar=field,rotate="no")
@@ -146,8 +150,9 @@ if (length(args)!=0) {
     } else {
 # when the number of arguments is ok run the function()
 	for (k in 1:req_args) {assign(name_args[k],args[k])}
-	source(paste0(PROGDIR,"/script/basis_functions.R"))
-	miles.block.figures(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
+	miles.block.figures(dataset,expid,ens,year1,year2,
+			    dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+			    season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,PROGDIR) 
     }
 }
 

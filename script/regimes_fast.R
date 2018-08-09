@@ -3,7 +3,10 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters,doforce)  {
+miles.regimes.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,nclusters=nclusters,doforce)  {
+
+#source functions
+source(paste0(PROGDIR,"/script/basis_functions.R"))
 
 #t0
 t0<-proc.time()
@@ -177,8 +180,7 @@ if (length(args)!=0) {
     } else {
 	# when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,nclusters,doforce)
+        miles.regimes.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,nclusters,doforce)
     }
 }
 

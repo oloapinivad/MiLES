@@ -5,10 +5,14 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.regimes.figures<-function(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
-{
+miles.regimes.figures<-function(dataset,expid,ens,year1,year2,
+				dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+				season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,PROGDIR,nclusters) {
 
 if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
+
+#source function scripts
+source(paste0(PROGDIR,"/script/basis_functions.R"))
 
 #R configuration file 
 source(CFGSCRIPT)
@@ -122,8 +126,9 @@ if (length(args)!=0) {
     } else {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.regimes.figures(dataset,expid,ens,year1,year2,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
+        miles.regimes.figures(dataset,expid,ens,year1,year2,
+			      dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+			      season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,PROGDIR,nclusters)
     }
 }
 

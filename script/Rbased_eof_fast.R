@@ -2,8 +2,10 @@
 #-----EOFs routines computation for MiLES--------#
 #-------------P. Davini (Feb 2018)-------------------#
 ######################################################
-miles.eofs.fast<-function(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)
-{
+miles.eofs.fast<-function(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)  {
+
+#source functions
+source(paste0(PROGDIR,"/script/basis_functions.R"))
 
 #standard defined 4 EOFs
 neofs=4
@@ -18,6 +20,30 @@ timeseason=season2timeseason(season)
 #define folders using file.builder function (takes care of ensembles)
 savefile1=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",dataset,expid,ens,year1,year2,season)
 
+#select teleconnection region
+if (tele=="NAO") {
+        xlim=c(-90,40); ylim=c(20,85); rotation="full"
+} else if (tele=="AO") {
+        xlim=c(-180,180); ylim=c(20,85); rotation="full"
+} else if (tele=="PNA") {
+        xlim=c(140,280) ; ylim=c(20,85); rotation="no" #140E-80W: use trick of rotation for cross-dateline
+} else {
+        #use non standard region, detect region with strsplit
+        splitter=as.numeric(strsplit(tele,"_")[[1]])
+        if (length(splitter)==4) {
+                xlim=c(splitter[1],splitter[2])
+                ylim=c(splitter[3],splitter[4])
+		if (xlim[2]>180) {
+			rotation="no"
+		} else { 
+			rotation="full"
+		}
+
+        } else {
+                stop("Wrong teleconnection region!")
+    }
+}
+
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
         print("Actually requested EOFs data is already there!")
@@ -31,7 +57,7 @@ if (file.exists(savefile1)) {
 
 #new file opening
 nomefile=z500filename
-fieldlist=ncdf.opener.universal(nomefile,"zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(nomefile,"zg",tmonths=timeseason,tyears=years,rotate=rotation)
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
@@ -47,9 +73,6 @@ Z500=fieldlist$field
 #monthly averaging
 print("monthly mean...")
 
-#deprecated: slower cleaner functions
-#Z500monthly=aperm(apply(Z500,c(1,2),by,paste(etime$month,etime$year),mean),c(2,3,1))
-
 #new faster monthly mean function
 Z500monthly=monthly.mean(ics,ipsilon,Z500,etime)
 
@@ -62,24 +85,6 @@ Z500clim=aperm(Z500clim,c(2,3,1))
 print("anomalies...")
 Z500anom=Z500monthly-Z500clim
 
-#select teleconnection region
-if (tele=="NAO") {
-	xlim=c(-90,40); ylim=c(20,85)
-} else if (tele=="AO") {
-	xlim=c(-180,180); ylim=c(20,85)
-#} else if (tele=="PNA") {
-	#xlim=c(140,-80) ; ylim=c(20,85) #140E-80W: to be improved
-} else {
-	#use non standard region, detect region with strsplit
-	splitter=as.numeric(strsplit(tele,"_")[[1]])
-	if (length(splitter)==4) {
-        	xlim=c(splitter[1],splitter[2])
-        	ylim=c(splitter[3],splitter[4])
-    	} else {
-        	stop("Wrong teleconnection region!")
-    }
-}
-        
 #compute EOFs
 print("EOFs...")
 EOFS=eofs(ics,ipsilon,Z500anom,neof=neofs,xlim,ylim,method="SVD",do_standardize=T,do_regression=T)
@@ -190,7 +195,6 @@ if (length(args)!=0) {
     } else {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(paste0(PROGDIR,"/script/basis_functions.R"))
         miles.eofs.fast(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)
     }
 }

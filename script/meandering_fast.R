@@ -2,7 +2,11 @@
 #-----Meandering routines computation for MiLES------#
 #--------G. Di Capua & P. Davini (Apr 2018)----------#
 ######################################################
-miles.meandering<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
+miles.meandering<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce) {
+
+#source functions
+source(file.path(PROGDIR,"script/basis_functions.R"))
+source(file.path(PROGDIR,"script/meandering_functions.R"))
 
 #t0
 t0<-proc.time()
@@ -49,15 +53,19 @@ ref_lat=60
 #Running the real code
 MI_lat=MI_value=1:totdays*NA
 
+#library(rbenchmark)
+#print(benchmark(sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)}), 
+#		vapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)},list(1,2))))
+
+
 for (t in 1:totdays) {
-        if (any(t==round(seq(0,totdays,,21))))  {
-                print(paste("--->",round(t/totdays*100),"%"))
-        }
-        
+	progression.bar(t,totdays,each=20)
 	MI_list=sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+	#MI_list=vapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)},list(1,2))
         MI_value[t]=max(unlist(MI_list[1,]))
         MI_lat[t]=unlist(MI_list[2,])[which.max(unlist(MI_list[1,]))]
 }
+
 
 tf=proc.time()-t0
 print(tf)
@@ -143,9 +151,7 @@ if (length(args)!=0) {
     } else {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(file.path(PROGDIR,"script/basis_functions.R"))
-	source(file.path(PROGDIR,"script/meandering_functions.R"))
-        miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+        miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce)
     }
 }
 

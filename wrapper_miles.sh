@@ -22,47 +22,48 @@ doregime=true #Regimes section
 domeand=true #Meandering section
 dofigs=true #Do you want figures?
 
-#control flag for re-run of MiLES if files already exists (not recommendend)
+#control flag for re-run of MiLES if files already exists
 doforcedata=false
-doforce=false
+doforceanl=false
 
-# exp identificator: it is important for the folder structure.
-# if you have more than one runs (i.e. ensemble members) or experiments of the same model use
-# this variable to distinguish them
+# dataset-experiment-ensemble identificators: important for the folder structure and the naming.
+# if you have more than one run or experiments of the same model use this variable to distinguish them
+# Beware that $ens_list is a list of ensemble on which you can run a loop
 # set also years 
-year1_exp=1951
-year2_exp=2005
-dataset_exp=MPI-ESM-P
-expid_exp=HIST
+year1_exp=1979
+year2_exp=2017
+dataset_exp=ERAI
+expid_exp=NO
+ens_list=NO
 #ens_list=$(seq -f e"%02g" 1 4 )
-ens_list=r1
 
 # std_clim flag: this is used to choose which climatology compare with results
-# or with a user specified one: standard climatology is ERAINTERIM 1979-2014
-# if std_clim=1 ERAINTERIM 1979-2014 is used
-# if std_clim=0 a MiLES-generated different climatology can be specified
+# or with a user specified one: standard climatology is ERAINTERIM 1979-2017
+# if std_clim=true ERAINTERIM 1979-2017 is used
+# if std_clim=false a MiLES-generated different climatology can be specified
 std_clim=true
 
 # only valid if std_clim=false
-dataset_ref=NCEP
-expid_ref=NO
-ens_ref=NO
-year1_ref=1982
-year2_ref=2016
+dataset_ref=MPI-ESM-P
+expid_ref=HIST
+ens_ref=r1
+year1_ref=1951
+year2_ref=2005
 
 # please specify one or more of the 4 standard seasons using 3 characters. 
 # std_clim is supported for these 4 seasons only. 
 # To analyse the whole year use "ALL"
 # Beta: now you can define your own season putting together 3-character string for each consecutive month you 
 # want to include, for example "Jan_Feb_Mar".
-#seasons="DJF MAM SON JJA"
-seasons="DJF"
+seasons="DJF MAM SON JJA"
+#seasons="DJF"
 
 # select which teleconnection pattern EOFs you want to compute
 # "NAO": the 4 first  EOFs of North Atlantic, i.e. North Atlantic Oscillation as EOF1
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
+# "PNA": the 4 first EOFs of North Pacific, i.e. Pacific North American Pattern as EOF1 (beta)
 # "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to false!
-teles="NAO"
+teles="NAO AO PNA"
 #tele="-50_20_10_80"
 
 # output file type for figures (pdf, png, eps)
@@ -75,8 +76,6 @@ teles="NAO"
 # these are suggested: any other polar plot by "mapproj" R package are supported
 # "azequalarea" set by default
 #map_projection="azequalarea"
-
-echo $doforce
 
 ###############################################
 #-------------Configuration scripts------------#
@@ -103,9 +102,9 @@ nclusters=4
 if ${std_clim} ; then
 
 	for tele in $teles ; do
-        	if ! { [ "$tele" = NAO ] || [ "$tele" = AO ]; } ; then
+        	if ! { [ "$tele" = NAO ] || [ "$tele" = AO ] || [ "$tele" = PNA ]; } ; then
         	        echo "Error: you cannot use non-standard EOFs region with std_clim=true"
-                exit
+                	exit
         	fi
 	done
 	
@@ -120,6 +119,7 @@ fi
 
 # if we are using standard climatology
 if ${std_clim} ; then
+
 	dataset_ref="ERAI_clim"
 	year1_ref=1979
 	year2_ref=2017
@@ -128,6 +128,7 @@ if ${std_clim} ; then
 	expid_ref=NO
 	ens_ref=NO
 else
+
         REFDIR=$FILESDIR
         datasets=$(echo ${dataset_exp} ${dataset_ref})
 fi
@@ -184,24 +185,24 @@ for dataset in $datasets ; do
 		if $doeof ; then
 			for tele in $teles ; do
         			time $Rscript "$PROGDIR/script/Rbased_eof_fast.R" 	$dataset $expid $ens $year1 $year2 $season \
-											$tele $z500filename $FILESDIR $PROGDIR $doforce
+											$tele $z500filename $FILESDIR $PROGDIR $doforceanl
 			done
 		fi
 		# blocking
 		if $doblock ; then
 			time $Rscript "$PROGDIR/script/block_fast.R" 	$dataset $expid $ens $year1 $year2 $season \
-									$z500filename $FILESDIR $PROGDIR $doforce
+									$z500filename $FILESDIR $PROGDIR $doforceanl
 		fi
 
 		# regimes
 		if [[ $doregime == "true" ]] && [[ $season == DJF ]] ; then
 			time $Rscript "$PROGDIR/script/regimes_fast.R"	$dataset $expid $ens $year1 $year2 $season \
-									$z500filename $FILESDIR $PROGDIR $nclusters $doforce
+									$z500filename $FILESDIR $PROGDIR $nclusters $doforceanl
 		fi
 		# meandering index
         	if $domeand ; then
         	    time $Rscript "$PROGDIR/script/meandering_fast.R" 	$dataset $expid $ens $year1 $year2 $season \
-									$z500filename $FILESDIR $PROGDIR $doforce
+									$z500filename $FILESDIR $PROGDIR $doforceanl
         	fi
 	done
 
