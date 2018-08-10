@@ -15,41 +15,36 @@ if (any(file.access(RLIBPATH,2)==0)) {
 #preference is for web-based installation
 web=1
 
-if (web==1)
-{
-# web based installation
-packages=c("maps","ncdf4","PCICt","akima","mapproj")
-new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if (web==1)	{
+	# web based installation
+	packages=c("maps","ncdf4","PCICt","akima","mapproj")
+	new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 
-if (any(new.packages=="maps")==FALSE) { 
-	if (as.numeric(substr(packageDescription("maps")$Version,1,3))<3) {
-		new.packages=c(new.packages,"maps")
+	if (any(new.packages=="maps")==FALSE) { 
+		if (as.numeric(substr(packageDescription("maps")$Version,1,3))<3) {
+			new.packages=c(new.packages,"maps")
+		}
+	} 
+
+	if (length(new.packages)==0) {print("All packages are there, no need to install anything")}
+	if (length(new.packages)!=0) {print(paste("Installing",length(new.packages),"R packages... follow on-screen instruction"))}
+
+	for (pack in new.packages) {
+		print(paste("Installing... ",pack))
+		install.packages(pack,RLIBLOC,repos="http://cran.irsn.fr",type="source")
 	}
-} 
-
-if (length(new.packages)==0) {print("All packages are there, no need to install anything")}
-if (length(new.packages)!=0) {print(paste("Installing",length(new.packages),"R packages... follow on-screen instruction"))}
-
-for (pack in new.packages)
-{
-print(paste("Installing... ",pack))
-install.packages(pack,RLIBLOC,repos="http://cran.irsn.fr",type="source")
-}
 
 }
 
-
-if (web==0)
-{
-#manual installation
-packages=c("maps_3.1.1.tar.gz","ncdf4_1.16.tar.gz","CICt_0.5-4.tar.gz","akima_0.6-2.tar.gz","mapproj_1.2-4.tar.gz")
-PROGDIR<-Sys.getenv(c("PROGDIR"))
-R_PACKDIR=paste0(PROGDIR,"/R_packages")
-for (pack in new.packages)
-{
-packageinstall=paste(R_PACKDIR,"/",pack,sep="")
-install.packages(packageinstall,repos=NULL,type="source")
-}
+if (web==0) {
+	#manual installation
+	packages=c("akima_0.6-2.tar.gz","mapproj_1.2.6.tar.gz","maps_3.3.0.tar.gz","ncdf4_1.16.tar.gz","PCICt_0.5-4.1.tar.gz")
+	PROGDIR<-Sys.getenv(c("PROGDIR"))
+	R_PACKDIR=paste0(PROGDIR,"/R_packages")
+	for (pack in new.packages) {
+		packageinstall=paste(R_PACKDIR,"/",pack,sep="")
+		install.packages(packageinstall,repos=NULL,type="source")
+	}
 }
 
 for (pack in new.packages) {

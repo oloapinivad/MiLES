@@ -13,6 +13,9 @@ z500filename=$6
 config=$7
 doforcedata=$8
 
+resolution=r144x73
+#resolution=r288x145
+
 if [[ ! -f $z500filename ]] || [[ $doforcedata == "true" ]] ; then
 
 	rm -f $z500filename
@@ -54,7 +57,7 @@ if [[ ! -f $z500filename ]] || [[ $doforcedata == "true" ]] ; then
 	fi
 
 	#main operations: sellevel and daymean + setlevel, setname, interpolation resolution and NH selection
-	$cdonc sellonlatbox,0,360,0,90 -remapcon2,r144x73 -setlevel,50000 -setname,zg -daymean ${level_select} $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
+	$cdonc sellonlatbox,0,360,0,90 -remapcon2,$resolution -setlevel,50000 -setname,zg -daymean ${level_select} $TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
 
 	#in order to avoid issues, all data are forced to be geopotential height in case geopotential is identified (i.e. values too large for a Z500
 	sanityvalue=$($cdonc outputint -fldmean -seltimestep,1 $TEMPDIR/smallfile.nc)

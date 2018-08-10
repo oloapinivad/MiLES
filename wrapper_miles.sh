@@ -16,9 +16,9 @@ set -eu
 machine=wilma
 
 #control flags to check which sections should be run
-doeof=true #EOFs section
+doeof=false #EOFs section
 doblock=true #Blocking section 
-doregime=true #Regimes section
+doregime=false #Regimes section
 domeand=true #Meandering section
 dofigs=true #Do you want figures?
 
@@ -30,11 +30,12 @@ doforceanl=false
 # if you have more than one run or experiments of the same model use this variable to distinguish them
 # Beware that $ens_list is a list of ensemble on which you can run a loop
 # set also years 
-year1_exp=1979
-year2_exp=2017
-dataset_exp=ERAI
-expid_exp=NO
-ens_list=NO
+year1_exp=2039
+year2_exp=2068
+dataset_exp=SPHINX
+expid_exp=T799
+#ens_list=NO
+ens_list="hfb2 hfb3 hfb4"
 #ens_list=$(seq -f e"%02g" 1 4 )
 
 # std_clim flag: this is used to choose which climatology compare with results
@@ -55,7 +56,7 @@ year2_ref=2005
 # To analyse the whole year use "ALL"
 # Beta: now you can define your own season putting together 3-character string for each consecutive month you 
 # want to include, for example "Jan_Feb_Mar".
-seasons="DJF MAM SON JJA"
+seasons="DJF JJA"
 #seasons="DJF"
 
 # select which teleconnection pattern EOFs you want to compute
