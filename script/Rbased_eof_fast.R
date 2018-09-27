@@ -2,10 +2,7 @@
 #-----EOFs routines computation for MiLES--------#
 #-------------P. Davini (Feb 2018)-------------------#
 ######################################################
-miles.eofs.fast<-function(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)  {
-
-#source functions
-source(paste0(PROGDIR,"/script/basis_functions.R"))
+miles.eofs.fast<-function(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,doforce)  {
 
 #standard defined 4 EOFs
 neofs=4
@@ -195,7 +192,8 @@ if (length(args)!=0) {
     } else {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        miles.eofs.fast(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,PROGDIR,doforce)
+        source(file.path(PROGDIR,"script/basis_functions.R"))
+        miles.eofs.fast(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,doforce)
     }
 }
 

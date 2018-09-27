@@ -2,11 +2,7 @@
 #-----Meandering routines computation for MiLES------#
 #--------G. Di Capua & P. Davini (Apr 2018)----------#
 ######################################################
-miles.meandering<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce) {
-
-#source functions
-source(file.path(PROGDIR,"script/basis_functions.R"))
-source(file.path(PROGDIR,"script/meandering_functions.R"))
+miles.meandering<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
 
 #t0
 t0<-proc.time()
@@ -151,7 +147,9 @@ if (length(args)!=0) {
     } else {
 # when the number of arguments is ok run the function()
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce)
+        source(file.path(PROGDIR,"script/basis_functions.R"))
+        source(file.path(PROGDIR,"script/meandering_functions.R"))
+        miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }
 

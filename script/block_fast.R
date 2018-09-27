@@ -2,10 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce) {
-
-#source functions
-source(file.path(PROGDIR,"script/basis_functions.R"))
+miles.block.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
 
 #t0
 t0<-proc.time()
@@ -330,7 +327,9 @@ if (length(args)!=0) {
         print(name_args)
     } else {
 	# when the number of arguments is ok run the function()
+	
         for (k in 1:req_args) {assign(name_args[k],args[k])}
-        miles.block.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,PROGDIR,doforce)
+        source(file.path(PROGDIR,"script/basis_functions.R"))
+        miles.block.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }
