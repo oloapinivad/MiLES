@@ -259,11 +259,11 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	if (is.null(tyears) | is.null(tmonths)) {
 		timeflag=FALSE	
 		printv("No time and months specified, loading all the data") 
-		} else {
+	} else {
 		timeflag=TRUE
 		printv("tyears and tmonths are set!")
 		require(PCICt)
-		}
+	}
 
 	if (rotate=="full") {rot=T; move1=move2=1/2} #180 degrees rotation of longitude
 	if (rotate=="half") {rot=T; move1=1/4; move2=3/4} #90 degree rotation (useful for TM90)
@@ -291,7 +291,8 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		{ll=length(line[,1,1]); line[(ll*move1):ll,,]=vettore[1:(ll*move2+1),,]; line[1:(ll*move1-1),,]=vettore[(ll*move2+2):ll,,]}
 		if (dims==4) #for x,y,z,t data
 	        {ll=length(line[,1,1,1]); line[(ll*move1):ll,,,]=vettore[1:(ll*move2+1),,,]; line[1:(ll*move1-1),,,]=vettore[(ll*move2+2):ll,,,]}
-		return(line)    }
+		return(line)    
+	}
 
 	#define flip function ('cos rev/apply is not working)
 	flipper<-function(field) {
@@ -299,7 +300,8 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		if (dims==2) {ll=length(field[1,]); field=field[,ll:1]} #for x,y data
 		if (dims==3) {ll=length(field[1,,1]); field=field[,ll:1,]} #for x,y,t data
 		if (dims==4) {ll=length(field[1,,1,1]); field=field[,ll:1,,]} #for x,y,z,t data
-		return(field) }
+		return(field) 
+	}
 
 	#opening file: getting variable (if namevar is given, that variable is extracted)
 	printv(paste("opening file:",namefile))
@@ -310,7 +312,8 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	if (is.null(namevar)) {
 		namevar=names(a$var)
 		if (length(namevar)>1) {
-			print(namevar); stop("More than one var in the files, please select it with namevar=yourvar")
+			print(namevar)
+			stop("More than one var in the files, please select it with namevar=yourvar. Stopping!!!")
 		}
 	}
 
@@ -324,15 +327,19 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	if (timeflag) {
 		printv("selecting years and months")
 	
-                #based on preprocessing of CDO time format: get calendar type and use PCICt package for irregular data
+		# extract units and calendary type to deal with PCICt package
                 units=ncatt_get(a,"time","units")$value
                 caldata=ncatt_get(a,"time","calendar")$value
+
+		# original method: based on absolute time preprocessing by CDO time format
                 if ( grepl('day as',units,fixed=TRUE) | grepl('days as',units,fixed=TRUE) ) {
-                    timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
+                 	timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
+		# extra method by JvH: use reference time (developed and tested tested for ESMValTool)
                 } else if (grepl('day since',units,fixed=TRUE) | grepl('days since',units,fixed=TRUE) ) {
-                    origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
-                    origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
-                    timeline = origin.pcict + (floor(time) * 86400)
+                	origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
+                	origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
+                	timeline = origin.pcict + (floor(time) * 86400)
+		# stop if it is not in this format: may be further expanded for times axis based on seconds
                 } else {
                         printv(units)
                         stop("Time units from NetCDF unsupported. Stopping!!!")
@@ -345,12 +352,12 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 
 		#break if the data requested is not there
 		lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
-		lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-",number.days.month(lastday_base)),cal=caldata,format="%Y-%m-%d")
+		lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-", number.days.month(lastday_base)), cal=caldata, format="%Y-%m-%d")
 		firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
-		#print(max(timeline)); print(lastday); print(min(timeline)); print(firstday)
+		printv(max(timeline)); printv(lastday); printv(min(timeline)); printv(firstday)
 
 		if (max(timeline)<lastday | min(timeline)>firstday) {
-		        stop("You requested a time interval that is not present in the NetCDF")
+		        stop("You requested a time interval that is not present in the NetCDF. Stopping!!!")
 		}
 	}
 
@@ -379,18 +386,25 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	#if needed, rotate and flip the array
 	xlist=c("lon","Lon","longitude","Longitude")
 	ylist=c("lat","Lat","latitude","Latitude")
-	if (dimensions>1)
-	{
-	        #assign ics and ipsilon 
+	if (dimensions>1) {
+	        #assign longitudes (ics)
 	        if (is.null(namelon)) {
 	                if (any(xlist %in% naxis))  {
-	                        ics=get(naxis[naxis %in% xlist],a$dim)$vals } else {printv("WARNING: No lon found"); ics=NA}
+	                        ics=get(naxis[naxis %in% xlist],a$dim)$vals 
+			} else {
+				print("WARNING: No lon found"); ics=NA
+			}
 	  	} else {
 	             	ics=ncvar_get(a,namelon)
 	        }
+
+		# assign latitudes (ipsilon)
 	        if (is.null(namelat)) {
 	                if (any(ylist %in% naxis))  {
-	                        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals} else {printv("WARNING: No lat found"); ipsilon=NA}
+	                        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals
+			} else {
+				print("WARNING: No lat found"); ipsilon=NA
+			}
 	       	} else {
 	              	ipsilon=ncvar_get(a,namelat)
 	        }
@@ -400,6 +414,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 			printv("rotating...")
 			ics=rotation(ics); field=rotation(field) 
 		}
+		# rotte axis	
 	        if (ipsilon[2]<ipsilon[1] & length(ipsilon)>1 ) {
 	                if (length(ics)>1) {
 				print("flipping...")
@@ -418,7 +433,9 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	        if (!is.na(ipsilon[1])) {assign(naxis[naxis %in% c(ylist,namelat)],ipsilon)}
 	}
 
-	if (dimensions>4) {stop("This file is more than 4D file")}
+	if (dimensions>4) {
+		stop("This file is more than 4D file. Stopping!!!")
+	}
 
 	#close connection
 	nc_close(a)
