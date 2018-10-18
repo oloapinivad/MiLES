@@ -46,6 +46,10 @@ isolvls=seq(4900,6200,5)
 # reference latitude (60N following Di Capua et al., 2016)
 ref_lat=60
 
+#lower and upper latitudinal bound for the maximum isohypse
+lower_bound=50
+upper_bound=75
+
 #Running the real code
 MI_lat=MI_value=1:totdays*NA
 
@@ -53,13 +57,23 @@ MI_lat=MI_value=1:totdays*NA
 #print(benchmark(sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)}), 
 #		vapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)},list(1,2))))
 
-
 for (t in 1:totdays) {
 	progression.bar(t,totdays,each=20)
+
+	# computed MI
 	MI_list=sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
 	#MI_list=vapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)},list(1,2))
-        MI_value[t]=max(unlist(MI_list[1,]))
-        MI_lat[t]=unlist(MI_list[2,])[which.max(unlist(MI_list[1,]))]
+
+	# applyng bounds on latitude and longitudes 
+	subset=which(unlist(MI_list[2,])>=lower_bound & unlist(MI_list[2,])<=upper_bound)
+	if (length(subset)>0) { 
+        	MI_value[t]=max(unlist(MI_list[1,subset]))
+        	MI_lat[t]=unlist(MI_list[2,subset])[which.max(unlist(MI_list[1,subset]))]
+	} else {
+		MI_value[t]=NA
+		MI_lat[t]=NA
+	}
+
 }
 
 
@@ -152,4 +166,5 @@ if (length(args)!=0) {
         miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }
+
 

@@ -17,14 +17,14 @@ machine=wilma
 
 #control flags to check which sections should be run
 doeof=false #EOFs section
-doblock=true #Blocking section 
+doblock=false #Blocking section 
 doregime=false #Regimes section
 domeand=true #Meandering section
 dofigs=true #Do you want figures?
 
 #control flag for re-run of MiLES if files already exists
 doforcedata=false
-doforceanl=false
+doforceanl=true
 
 # dataset-experiment-ensemble identificators: important for the folder structure and the naming.
 # if you have more than one run or experiments of the same model use this variable to distinguish them
@@ -33,9 +33,9 @@ doforceanl=false
 year1_exp=2039
 year2_exp=2068
 dataset_exp=SPHINX
-expid_exp=T799
+expid_exp=T255
+ens_list="lfb2 lfb3 lfb4"
 #ens_list=NO
-ens_list="hfb2 hfb3 hfb4"
 #ens_list=$(seq -f e"%02g" 1 4 )
 
 # std_clim flag: this is used to choose which climatology compare with results
@@ -64,7 +64,8 @@ seasons="DJF JJA"
 # "AO" : the 4 first EOFs of Northern Hemispiere, i.e. Arctic Oscillation as EOF1 
 # "PNA": the 4 first EOFs of North Pacific, i.e. Pacific North American Pattern as EOF1 (beta)
 # "lon1_lon2_lat1_lat2" : custom regions for EOFs: beware that std_clim will be set to false!
-teles="NAO AO PNA"
+#teles="NAO AO PNA"
+teles="NAO"
 #tele="-50_20_10_80"
 
 # output file type for figures (pdf, png, eps)

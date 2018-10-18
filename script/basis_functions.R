@@ -262,7 +262,6 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	} else {
 		timeflag=TRUE
 		printv("tyears and tmonths are set!")
-		require(PCICt)
 	}
 
 	if (rotate=="full") {rot=T; move1=move2=1/2} #180 degrees rotation of longitude
@@ -324,40 +323,86 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		printv(paste(axis,":",length(get(axis)),"records"))
 	}
 
-	if (timeflag) {
-		printv("selecting years and months")
-	
+	# if a time dimension exists, activate the PCICt package
+	if (exists("time",mode="numeric")) {
+
+		require(PCICt)
+
 		# extract units and calendary type to deal with PCICt package
-                units=ncatt_get(a,"time","units")$value
-                caldata=ncatt_get(a,"time","calendar")$value
+        	units=ncatt_get(a,"time","units")$value
+        	caldata=ncatt_get(a,"time","calendar")$value
 
 		# original method: based on absolute time preprocessing by CDO time format
-                if ( grepl('day as',units,fixed=TRUE) | grepl('days as',units,fixed=TRUE) ) {
-                 	timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
+        	#if ( grepl('day as',units,fixed=TRUE) | grepl('days as',units,fixed=TRUE) ) {
+           	#	timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
 		# extra method by JvH: use reference time (developed and tested tested for ESMValTool)
-                } else if (grepl('day since',units,fixed=TRUE) | grepl('days since',units,fixed=TRUE) ) {
-                	origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
-                	origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
-                	timeline = origin.pcict + (floor(time) * 86400)
+        	#} else if (grepl('day since',units,fixed=TRUE) | grepl('days since',units,fixed=TRUE) ) {
+        	#      	origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
+        	#       	origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
+        	#       	timeline = origin.pcict + (floor(time) * 86400)
+		# extension to include seconds time axis
+		#} else if (grepl('secs since',units,fixed=TRUE) | grepl('seconds since',units,fixed=TRUE) ) {
+		#	origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
+		#	origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
+        	#        timeline = origin.pcict + floor(time)
 		# stop if it is not in this format: may be further expanded for times axis based on seconds
-                } else {
-                        printv(units)
-                        stop("Time units from NetCDF unsupported. Stopping!!!")
-                }
+        	#} else {
+        	#       printv(units)
+		#	printv("Time units from NetCDF unsupported!!!")
+	       	#	printv("Disabling time selection")
+	       	#	printv("Reporting time variable as it is..")
+	       	#	timeflag=FALSE
+        	#}
+		
+		# new method including both absolute and releative time axis (Oct 2018)
+		# if "as" is present, this is an absolute time axis
+		if ( grepl("as",units,fixed=TRUE) ) {
+			printv("Absolute time axis!")
+			timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
+		# if a "since" is present, this is a relative time axis
+		} else if ( grepl("since",units,fixed=TRUE) ) {
+			printv("Relative time axis!")
+			origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
+                        origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
 
-		# break if the calendar has not been recognized
-		if (any(is.na(timeline))) {
-		        stop("Calendar from NetCDF is unsupported or not present. Stopping!!!")
+			# distinguish between day and seconds based axis
+			if ( grepl("day",substr(units,1,3),fixed=TRUE) ) { 
+				timeline = origin.pcict + (floor(time) * 86400) 
+			} else if ( grepl("sec",substr(units,1,3),fixed=TRUE) ) {
+				timeline = origin.pcict + floor(time)
+			} else {
+				print("Uknown relative time axis, disabling time selection!")
+				timeflag=FALSE
+			} 
+
+		# if it not one of the two cases, warn and disable timeflag
+		} else {
+			print("Unknown time axis, disabling time selection!")
+			timeflag=FALSE
 		}
 
-		#break if the data requested is not there
-		lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
-		lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-", number.days.month(lastday_base)), cal=caldata, format="%Y-%m-%d")
-		firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
-		printv(max(timeline)); printv(lastday); printv(min(timeline)); printv(firstday)
+		# warning for not-recognised calendar, stop if timeflag is on, replace time with calendar
+		if (any(is.na(timeline))) {
+		        printv("Calendar from NetCDF is unsupported or not present")
+			if (timeflag) {
+				stop("Calendar from NetCDF is unsupported or not present. Stopping!!!")
+			}
+		} else {
+			time=timeline
+		}
 
-		if (max(timeline)<lastday | min(timeline)>firstday) {
-		        stop("You requested a time interval that is not present in the NetCDF. Stopping!!!")
+		if (timeflag) {
+
+			printv("selecting years and months")
+			#break if the data requested is not there
+			lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
+			lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-", number.days.month(lastday_base)), cal=caldata, format="%Y-%m-%d")
+			firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
+			#printv(max(timeline)); printv(lastday); printv(min(timeline)); printv(firstday)
+
+			if (max(timeline)<lastday | min(timeline)>firstday) {
+		        	stop("You requested a time interval that is not present in the NetCDF. Stopping!!!")
+			}
 		}
 	}
 
@@ -445,7 +490,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 
 	#showing array properties
 	printv(paste(dim(field)))
-	if (timeflag) {printv(paste("From",time[1],"to",time[length(time)]))} 
+	printv(paste("From",time[1],"to",time[length(time)]))
 
 	#returning file list
 	return(mget(c("field",naxis)))
