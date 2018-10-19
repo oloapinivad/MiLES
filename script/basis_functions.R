@@ -219,19 +219,24 @@ number.days.month <- function(datas) {
 	return(as.integer(format(datas-1,format="%d")))
 }
 
-power.date.new<-function(datas) {
+power.date.new<-function(datas,verbose=FALSE) {
+
+	#verbose-only printing function
+        printv<-function(value) {if (verbose) {print(value)} }
+
 	whichdays=as.numeric(format(datas,"%m"))
 	#create a "season" for continuous time, used by persistance tracking
-	seas=whichdays*1; ss=1
+	# fixed in October 2018, but a revision is required
+	seas=whichdays*0+1; ss=1
 	for (i in 1:(length(whichdays)-1)) {
-       		if (diff(whichdays)[i]>1)  {ss=ss+1}
+       		if (abs(diff(whichdays)[i])>1)  {ss=ss+1}
        		seas[i+1]=ss
 	}	
 
 	etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
-	print("Time Array Built")
-	print(paste("Length:",length(seas)))
-	print(paste("From",datas[1],"to",datas[length(seas)]))
+	printv("Time Array Built")
+	printv(paste("Length:",length(seas)))
+	printv(paste("From",datas[1],"to",datas[length(seas)]))
 	return(etime)
 }
 
@@ -247,7 +252,7 @@ power.date.new<-function(datas) {
 #it returns a list including its own dimensions
 ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NULL,tyears=NULL,
 				rotate="full",interp2grid=F,grid="r144x73",remap_method="remapcon2",
-				exportlonlat=TRUE,verbose=TRUE) {
+				exportlonlat=TRUE,verbose=FALSE) {
 
 	#load package	
 	require(ncdf4)
@@ -331,6 +336,10 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		# extract units and calendary type to deal with PCICt package
         	units=ncatt_get(a,"time","units")$value
         	caldata=ncatt_get(a,"time","calendar")$value
+		if (caldata==0) {
+			warning("No calendar found, assuming standard calendar!")
+			caldata="standard"
+		}
 
 		# original method: based on absolute time preprocessing by CDO time format
         	#if ( grepl('day as',units,fixed=TRUE) | grepl('days as',units,fixed=TRUE) ) {
@@ -371,13 +380,13 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 			} else if ( grepl("sec",substr(units,1,3),fixed=TRUE) ) {
 				timeline = origin.pcict + floor(time)
 			} else {
-				print("Uknown relative time axis, disabling time selection!")
+				warning("Unknown relative time axis, disabling time selection!")
 				timeflag=FALSE
 			} 
 
 		# if it not one of the two cases, warn and disable timeflag
 		} else {
-			print("Unknown time axis, disabling time selection!")
+			warning("Unknown time axis, disabling time selection!")
 			timeflag=FALSE
 		}
 
