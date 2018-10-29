@@ -446,7 +446,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	                if (any(xlist %in% naxis))  {
 	                        ics=get(naxis[naxis %in% xlist],a$dim)$vals 
 			} else {
-				print("WARNING: No lon found"); ics=NA
+				warning("No lon found"); ics=NA
 			}
 	  	} else {
 	             	ics=ncvar_get(a,namelon)
@@ -457,7 +457,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 	                if (any(ylist %in% naxis))  {
 	                        ipsilon=get(naxis[naxis %in% ylist],a$dim)$vals
 			} else {
-				print("WARNING: No lat found"); ipsilon=NA
+				warning("No lat found"); ipsilon=NA
 			}
 	       	} else {
 	              	ipsilon=ncvar_get(a,namelat)
