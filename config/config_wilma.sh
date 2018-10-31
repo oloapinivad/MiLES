@@ -5,16 +5,21 @@
 ####################################
 
 
-# INDIR ->data folder: all the geopotential height data should be here
+# INDIR ->data folder: all the input dataa should be here
 # you must customozie this according to the dataset you analyze and your local file structure
-# you can use $dataset, $expid and $ens variable
-# The combination of the three variables is the standard for CMIP experiments.
-INDIR=$WORK/data/CMIP5/${dataset}/${expid}/${ens}/day/Z500
-if [[ "${dataset}" == "NCEP" ]] ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
-if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] ; then INDIR=$WORK/data/${dataset}/day/Z500 ; fi
-if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/Z500 ; fi
+# you can use $dataset, $expid and $ens variables for data structure
+# also $varname and $level can be used
+# the $project variable is an extra element for directory tree
+# The combination of the three variables is the standard for CMIP-like experiments.
+if [[ $varname == "zg" ]] ; then findvar=Z500 ; fi
+if [[ $varname == "ua" ]] ; then findvar=U500 ; fi
+
+if [[ ! -z ${project} ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
+if [[ "${dataset}" == "NCEP" ]] && [[ $varname == "zg" ]]  ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
+if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] ; then INDIR=$WORK/data/${dataset}/day/${findvar} ; fi
+if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/${findvar} ; fi
 if [[ "${dataset}" == "CMCC-CM2" ]] ;  then INDIR=$SCRATCH/cmcc ; fi
-if [[ "${dataset}" == "SPHINX" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/Z500 ; fi
+if [[ "${dataset}" == "SPHINX" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/${findvar} ; fi
 
 # to look for some specific file structure
 # if commented the program will look for all the netcdf or grib files in the folder

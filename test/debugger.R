@@ -2,14 +2,12 @@ rm(list=ls())
 PROGDIR="/home/paolo/MiLES"
 FILESDIR="/work/users/paolo/miles/files"
 source(file.path(PROGDIR,"script/basis_functions.R"))
-source(file.path(PROGDIR,"script/meandering_functions.R"))
 dataset="ERAI"
-expid="no"
-ens="no"
-year1=1979
-year2=2008
-season="DJF"
-z500filename="/work/users/paolo/miles/Z500/ERAI/Z500_ERAI_fullfile.nc"
+year1=1950
+year2=2005
+season="JJA"
+#z500filename="/work/users/paolo/miles/Z500/ERAI/Z500_ERAI_fullfile.nc"
+z500filename="/work/users/paolo/miles/data/zg500/CMIP5/bcc-csm1-1/historical/r1/zg500_bcc-csm1-1_historical_r1_fullfile.nc"
 
 #setting up time domain
 years=year1:year2

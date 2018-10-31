@@ -5,8 +5,8 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.regimes.figures<-function(dataset,expid,ens,year1,year2,
-				dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+miles.regimes.figures<-function(project,dataset,expid,ens,year1,year2,
+				project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
 				season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters) {
 
 if (nclusters!=4 | season!="DJF") {stop("Beta version: unsupported season and/or number of clusters")}
@@ -20,7 +20,7 @@ source(CFGSCRIPT)
 ##########################################################
 
 # loading anomalies and variances of experiment
-nomefile=file.builder(FILESDIR,"Regimes","RegimesPattern",dataset,expid,ens,year1,year2,season)
+nomefile=file.builder(FILESDIR,"Regimes","RegimesPattern",project,dataset,expid,ens,year1,year2,season)
 frequencies_exp=ncdf.opener(nomefile,"Frequencies")
 regimes_exp=ncdf.opener(nomefile,namevar="Regimes",rotate="no")
 
@@ -35,7 +35,7 @@ print(names_exp)
     } else {
 
         #use file.builder to create the path of the blocking files
-        nomefile_ref=file.builder(FILESDIR,"Regimes","RegimesPattern",dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
+        nomefile_ref=file.builder(FILESDIR,"Regimes","RegimesPattern",project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
     }
 
 #nomefile=paste0(REFDIR,"/RegimesPattern_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
@@ -69,7 +69,7 @@ for (name in names_ref)
 	print(name)
 
     	#final plot production
-   	figname=fig.builder(FIGDIR,"Regimes",paste0("Regime",ii),dataset,expid,ens,year1,year2,season,output_file_type)
+   	figname=fig.builder(FIGDIR,"Regimes",paste0("Regime",ii),project,dataset,expid,ens,year1,year2,season,output_file_type)
     	print(figname)
     
     	# Chose output format for figure - by JvH
@@ -112,22 +112,34 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","nclusters")
+name_args=c("project","dataset","expid","ens","year1","year2",
+	    "project_ref","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref",
+	    "season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","nclusters")
 req_args=length(name_args)
 
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-        print(name_args)
-    } else {
-# when the number of arguments is ok run the function()
-        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        req_args=length(name_args)
+        if (length(args)!=req_args) {
+                #stop if something is wrong
+                print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+                print(name_args)
+                stop("ERROR!")
+        } else {
+                # when the number of arguments is ok run the function()
+                for (k in 1:req_args) {
+                        if (args[k]=="") {
+                                args[k]=NA
+                        }
+                        assign(name_args[k],args[k])
+                        print(args[k])
+
+                }
         source(file.path(PROGDIR,"script/basis_functions.R"))
-        miles.regimes.figures(dataset,expid,ens,year1,year2,
-			      dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+        miles.regimes.figures(project,dataset,expid,ens,year1,year2,
+			      project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
 			      season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,nclusters)
-    }
+    	}
 }
 
 

@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
+miles.block.fast<-function(project,dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
 
 #t0
 t0<-proc.time()
@@ -12,8 +12,8 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,"Block","BlockClim",dataset,expid,ens,year1,year2,season)
-savefile2=file.builder(FILESDIR,"Block","BlockFull",dataset,expid,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,"Block","BlockClim",project,dataset,expid,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"Block","BlockFull",project,dataset,expid,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1) & file.exists(savefile2)) {
@@ -28,7 +28,7 @@ if (file.exists(savefile1) & file.exists(savefile2)) {
 
 #new file opening
 nomefile=z500filename
-fieldlist=ncdf.opener.universal(nomefile,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
+fieldlist=ncdf.opener.universal(nomefile,namevar="zg",tmonths=timeseason,tyears=years,rotate="full",verbose=F)
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
@@ -38,7 +38,7 @@ tunit=attributes(fieldlist$time)$units
 #time array to simplify time filtering
 #datas=fieldlist$time
 #etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas)
-etime=power.date.new(fieldlist$time)
+etime=power.date.new(fieldlist$time,verbose=T)
 totdays=length(fieldlist$time)
 
 #declare variable
@@ -317,19 +317,25 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
-req_args=length(name_args)
+name_args=c("project","dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
 
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-        print(name_args)
-    } else {
-	# when the number of arguments is ok run the function()
-	
-        for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(file.path(PROGDIR,"script/basis_functions.R"))
-        miles.block.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
-    }
+	req_args=length(name_args)
+	if (length(args)!=req_args) {
+	        #stop if something is wrong
+	        print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+		print(name_args)
+		stop("ERROR!")
+	} else {
+        	# when the number of arguments is ok run the function()
+        	for (k in 1:req_args) {
+		        if (args[k]=="") {
+        	                args[k]=NA
+        	        }
+        		assign(name_args[k],args[k])
+		}
+	source(file.path(PROGDIR,"script/basis_functions.R"))
+        miles.block.fast(project,dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+	}
 }

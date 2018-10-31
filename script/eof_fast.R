@@ -2,7 +2,7 @@
 #-----EOFs routines computation for MiLES--------#
 #-------------P. Davini (Feb 2018)-------------------#
 ######################################################
-miles.eofs.fast<-function(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,doforce)  {
+miles.eofs.fast<-function(project,dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,doforce)  {
 
 #standard defined 4 EOFs
 neofs=4
@@ -15,7 +15,7 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",dataset,expid,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",project,dataset,expid,ens,year1,year2,season)
 
 #select teleconnection region
 if (tele=="NAO") {
@@ -181,19 +181,27 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","season","tele","z500filename","FILESDIR","PROGDIR","doforce")
+name_args=c("project","dataset","expid","ens","year1","year2","season","tele","z500filename","FILESDIR","PROGDIR","doforce")
 req_args=length(name_args)
-
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-        print(name_args)
-    } else {
-# when the number of arguments is ok run the function()
-        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        if (length(args)!=req_args) {
+                #stop if something is wrong
+                print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+                print(name_args)
+                stop("ERROR!")
+        } else {
+                # when the number of arguments is ok run the function()
+                for (k in 1:req_args) {
+                        if (args[k]=="") {
+                                args[k]=NA
+                        }
+                        assign(name_args[k],args[k])
+                        print(args[k])
+
+                }
         source(file.path(PROGDIR,"script/basis_functions.R"))
-        miles.eofs.fast(dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,doforce)
-    }
+        miles.eofs.fast(project,dataset,expid,ens,year1,year2,season,tele,z500filename,FILESDIR,doforce)
+   	}
 }
 

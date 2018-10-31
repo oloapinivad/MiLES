@@ -1,7 +1,0 @@
-language: r
-cache: packages
-before_install:
-  - cd config
-
-script:
-  - Rscript installpack.R

@@ -112,27 +112,30 @@ Two configuration scripts control the program options:
 
 ### Running with the wrapper
 
-The simplest way to run **MiLES** is executing in bash environment `./wrapper_miles.sh`. 
-Options as seasons, which EOFs compute, reference dataset or file output format as well as the map projection to use
-can specified at this stage: here below a list of the variables that can be set up
+The simplest way to run **MiLES** is executing in bash environment `./wrapper_miles.sh namelist.sh`. 
+Options as datasets, projects, experiment, ensemble, seasons, which EOFs compute, 
+reference dataset or file output format as well as the map projection to use
+can specified since v0.7 through the namelists. Here below a list of the variables that can be set up
 
 #### Key variables
 - `machine` -> the name of the configuration file of your local machine.
-- `dataset_exp` -> identifier for the dataset used to create files and paths structure.
-- `expid_exp` ->  identifier for the experiment type used to create files and paths structure (set to `NO` if you do not want to use it)
-- `ens_list` -> identifier for the ensemble members used to create files and paths structure (set to `NO` if you do not want to use it). This can be written as a list in order to evaluate multiple ensembles. In case of multiple ensemble members an extra ensemble mean will be produced by the wrapper only for blocking data.
+- `project_exp` -> a project identifier, e.g. CMIP5 (unset if you do not want to use it).
+- `dataset_exp` -> identifier for the dataset used to create files and paths structure (mandatory!)
+- `expid_exp` ->  identifier for the experiment type used to create files and paths structure (unset if you do not want to use it)
+- `ens_exp` -> identifier for the ensemble members used to create files and paths structure (unset if you do not want to use it).
 IMPORTANT: the three above-mentioned vars are the core of the CMIP data structure and they have been introduced to this aim.
 - `year1_exp` and `year2_exp` -> the years on which MiLES will run. 
 - `std_clim` -> can be `true` to use standard ERAI 1979-2017 climatology, `false` for custom comparison.
 - `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use `ALL` to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. `Jan_Feb_Mar`). This last functionality is under testing.
-- `dataset_ref`, `expid_ref`, `ens_ref`, `year1_ref` and `year2_ref`  -> in analogy to the main variables, these controls the experiment to be compared when `std_clim=false` is set. 
+- `project_ref`,`dataset_ref`, `expid_ref`, `ens_ref`, `year1_ref` and `year2_ref`  -> in analogy to the main variables, these controls the experiment to be compared when `std_clim=false` is set. 
+
+#### Config options
+Since v0.7 a configuration options sistem has been introduced. Adding specific keywords to the `options` variable will provide different results: you can set `block` for blocking, `eofs` for EOFs, `figures` for having figures and so on. 
 
 #### Secondary variables
 - `teles` -> A list of one or teleconnection patterns. `NAO`,`PNA` or `AO` for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as `lon1_lon2_lat1_lat2`.
 - `output_file_type` -> pdf, eps or png figures format.
 - `map_projection` -> set `no` for standard plot (fast). Use `azequalarea` for polar plots (default). All projection from mapproj R package are supported (but not all of them have been tested).
-- `doeof`,`doblock`,`doregime`,`domeand` -> set to true or false in order to run some specific sections only.
-- `doforceanl`,`doforcedata` -> set to true or false in order to rerun the analysis or the data preparation (respectively).
 
 ### Other Scripts 
 
@@ -140,10 +143,10 @@ The chain of scripts will be executed as a sequence by the wrapper.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based scripts are written as R functions and thus can be called inside R if needed.  
 
-* `z500_prepare.sh`. **MiLES** is based on a pre-processing of data. 
+* `universal_prepare.sh`. **MiLES** is based on a pre-processing of data. 
 This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforcedata` flags to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
-* `Rbased_eof_fast.R` and `Rbased_eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
+* `eof_fast.R` and `eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * `blocking_fast.R` and `blocking_figures.R`. Blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts, as well a wide set of related dignostics. See Davini et al. (2012) for more details.
@@ -170,6 +173,14 @@ It is recommended in such cases to split the analysis in different subsets.
 ------------
 
 ## HISTORY
+
+*v0.7 - Nov 2018*
+- New wrapper structure using namelists
+- Generalized pre-processors
+- Looper with great_loop.sh
+- Improvement in the ncdf.opener function (now working with relative time axis)
+- Introuction of the project variable and the has_config function to control flags
+- Moving back to CDO bilinear interpolation to allow extrapolation
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)

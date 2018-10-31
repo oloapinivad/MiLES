@@ -3,7 +3,7 @@
 #-------------P. Davini (May 2017)-------------------#
 ######################################################
 
-miles.regimes.fast<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters,doforce)  {
+miles.regimes.fast<-function(project,dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,nclusters=nclusters,doforce)  {
 
 #t0
 t0<-proc.time()
@@ -19,7 +19,7 @@ xlim=c(-80,40)
 ylim=c(30,87.5)
 
 #define file where save data
-savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",dataset,expid,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",project,dataset,expid,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
@@ -166,20 +166,27 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters","doforce")
-req_args=length(name_args)
+name_args=c("project","dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","nclusters","doforce")
 
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-        print(name_args)
-    } else {
-	# when the number of arguments is ok run the function()
-        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        req_args=length(name_args)
+        if (length(args)!=req_args) {
+                #stop if something is wrong
+                print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+                print(name_args)
+                stop("ERROR!")
+        } else {
+                # when the number of arguments is ok run the function()
+                for (k in 1:req_args) {
+                        if (args[k]=="") {
+                                args[k]=NA
+                        }
+                        assign(name_args[k],args[k])
+                }
         source(file.path(PROGDIR,"script/basis_functions.R"))
-        miles.regimes.fast(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,nclusters,doforce)
-    }
+        miles.regimes.fast(project,dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,nclusters,doforce)
+    	}
 }
 
 

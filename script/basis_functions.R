@@ -110,7 +110,7 @@ info.builder<-function(dataset,expid,ens,year1,year2,season)  {
         descriptors=c(dataset,expid,ens,paste0(year1,"-",year2),season)
         info=NULL
         for (dcode in descriptors) {
-                if (dcode!="NO") {
+                if (!is.na(dcode)) {
                         info=paste(info,dcode)
                 }
         }
@@ -118,20 +118,24 @@ info.builder<-function(dataset,expid,ens,year1,year2,season)  {
 }
 
 # basic switch to create NetCDF file names and folders (use recursive structure from v0.6)
-file.builder<-function(DATADIR,dir_name,file_name,dataset,expid,ens,year1,year2,season) {
+file.builder<-function(DATADIR,dir_name,file_name,project,dataset,expid,ens,year1,year2,season) {
+
+	# add directory name descriptor
+        DATADIR=file.path(DATADIR,dir_name)
+
+	if (!is.na(project)) {
+		DATADIR=file.path(DATADIR,project)
+	}
 
 	# loop on descriptors that are concatenated to create dir and file name	
 	descriptors=c(dataset,expid,ens,paste0(year1,"_",year2),season)
 	for (dcode in descriptors) {
-		if (dcode!="NO") {
+		if (!is.na(dcode)) {
 			DATADIR=file.path(DATADIR,dcode)
 			file_name=paste0(file_name,"_",dcode)
 		}
 	}
 
-	# add directory name descriptor
-        DATADIR=file.path(DATADIR,dir_name)
-	
 	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
 	if (exists("dir.exists")) {
 		if (!dir.exists(DATADIR)) {dir.create(DATADIR,recursive=T)}
@@ -142,19 +146,23 @@ file.builder<-function(DATADIR,dir_name,file_name,dataset,expid,ens,year1,year2,
 }
 
 #basic switch to create figures names and folders (use recursive structure from v0.6)
-fig.builder<-function(FIGDIR,dir_name,file_name,dataset,expid,ens,year1,year2,season,output_file_type) {
+fig.builder<-function(FIGDIR,dir_name,file_name,project,dataset,expid,ens,year1,year2,season,output_file_type) {
+
+	# add directory name descriptor
+        FIGDIR=file.path(FIGDIR,dir_name)
+
+	if (!is.na(project)) {
+                FIGDIR=file.path(FIGDIR,project)
+        }
 
 	# loop on descriptors that are concatenated to create dir and file name 
 	descriptors=c(dataset,expid,ens,paste0(year1,"_",year2),season)
 	for (dcode in descriptors) {
-		if (dcode!="NO") {
+		if (!is.na(dcode)) {
 			FIGDIR=file.path(FIGDIR,dcode)
 		        file_name=paste0(file_name,"_",dcode)
 		}       
 	}
-
-	# add directory name descriptor
-	FIGDIR=file.path(FIGDIR,dir_name)	        
 
 	#actually dir.exists is in devtools only for R < 3.2, then is included in base package
 	if (exists("dir.exists")) {
@@ -174,7 +182,6 @@ progression.bar<-function(index,total_length,each=10) {
 		print(progression)
         }
 }
-
 
 ##########################################################
 #--------------Time Based functions----------------------#
@@ -224,14 +231,14 @@ power.date.new<-function(datas,verbose=FALSE) {
 	#verbose-only printing function
         printv<-function(value) {if (verbose) {print(value)} }
 
-	whichdays=as.numeric(format(datas,"%m"))
+	#whichdays=as.numeric(format(datas,"%m"))
 	#create a "season" for continuous time, used by persistance tracking
 	# fixed in October 2018, but a revision is required
-	seas=whichdays*0+1; ss=1
-	for (i in 1:(length(whichdays)-1)) {
-       		if (abs(diff(whichdays)[i])>1)  {ss=ss+1}
-       		seas[i+1]=ss
-	}	
+	seas=1:length(datas)*0+1; ss=1
+		for (i in 1:(length(datas)-1)) {
+			if (abs(diff(datas)[i])>1)  {ss=ss+1}
+               seas[i+1]=ss
+        }
 
 	etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
 	printv("Time Array Built")

@@ -5,22 +5,22 @@
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 
-miles.eof.figures<-function(dataset,expid,ens,year1,year2,
-			    dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+miles.eof.figures<-function(project,dataset,expid,ens,year1,year2,
+			    project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
 			    season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele) {
 
 #R configuration file 
 source(CFGSCRIPT)
 
 #use filebuilding script to access to file
-nomefile_exp=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",dataset,expid,ens,year1,year2,season)
+nomefile_exp=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",project,dataset,expid,ens,year1,year2,season)
 
 # check for REFDIR==FILESDIR, i.e. if we are using the climatology provided by MiLES or another dataset MiLES-generated 
 if (REFDIR!=FILESDIR) {
         nomefile_ref=paste0(file.path(REFDIR,paste0("EOFs/",tele)),"/EOFs_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
 } else {
         #use file.builder to create the path of the blocking files
-        nomefile_ref=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
+        nomefile_ref=file.builder(FILESDIR,paste0("EOFs/",tele),"EOFs",project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
 }
 
 #EOFs to plot (depends on how many computed by CDO!)
@@ -68,7 +68,7 @@ for (neof in 1:neofs) {
 	title_name=paste0(region," EOF",neof)
 
     	#define figure
-    	figname=fig.builder(FIGDIR,paste0("EOFs/",tele),paste0("EOF",neof),dataset,expid,ens,year1,year2,season,output_file_type)
+    	figname=fig.builder(FIGDIR,paste0("EOFs/",tele),paste0("EOF",neof),project,dataset,expid,ens,year1,year2,season,output_file_type)
     	print(figname)
 
 	# Chose output format for figure - by JvH
@@ -113,23 +113,29 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","tele")
+name_args=c("project","dataset","expid","ens","year1","year2","project_ref","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR","tele")
 req_args=length(name_args)
 
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-        print(paste("If running from bash, please specify the",req_args,"arguments here below:"))
-        print(name_args)
-     } else {
-	# when the number of arguments is ok run the function()
-        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        if (length(args)!=req_args) {
+                #stop if something is wrong
+                print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+                print(name_args)
+                stop("ERROR!")
+        } else {
+                # when the number of arguments is ok run the function()
+                for (k in 1:req_args) {
+                        if (args[k]=="") {
+                                args[k]=NA
+                        }
+                        assign(name_args[k],args[k])
+                        print(args[k])
+                }
         source(paste0(PROGDIR,"/script/basis_functions.R"))
-        miles.eof.figures(dataset,expid,ens,year1,year2,
-			  dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+        miles.eof.figures(project,dataset,expid,ens,year1,year2,
+			  project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
 			  season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT,tele)
-     }
+     	}
 }
-
 

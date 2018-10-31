@@ -4,8 +4,8 @@
 ######################################################
 
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
-miles.block.figures<-function(dataset,expid,ens,year1,year2,
-			      dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+miles.block.figures<-function(project,dataset,expid,ens,year1,year2,
+			      project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
 			      season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) {
 
 #figures configuration files
@@ -22,7 +22,7 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 for (field in fieldlist) {	
 
 	#use file.builder function
-	nomefile=file.builder(FILESDIR,"Block","BlockClim",dataset,expid,ens,year1,year2,season)
+	nomefile=file.builder(FILESDIR,"Block","BlockClim",project,dataset,expid,ens,year1,year2,season)
 	field_exp=ncdf.opener(nomefile,namevar=field,rotate="no")
 	assign(paste(field,"_exp",sep=""),field_exp)
 }
@@ -32,11 +32,14 @@ for (field in fieldlist) {
 	
 	# check for REFDIR==FILESDIR, i.e. if we are using the climatology provided by MiLES or another dataset MiLES-generated	
 	if (REFDIR!=FILESDIR) {
-		nomefile_ref=paste0(file.path(REFDIR,"Block"),"/BlockClim_",dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
+		nomefile_ref=paste0(file.path(REFDIR,"Block"),"/BlockClim_",
+				    dataset_ref,"_",year1_ref,"_",year2_ref,"_",season,".nc")
 	} else { 
 		
 		#use file.builder to create the path of the blocking files
-		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,season)
+		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",
+					  project_ref,dataset_ref,expid_ref,ens_ref,
+					  year1_ref,year2_ref,season)
 	}
     
 	field_ref=ncdf.opener(nomefile_ref,namevar=field,rotate="no")
@@ -62,7 +65,7 @@ for (field in fieldlist) {
     	field_exp=get(paste(field,"_exp",sep=""))
 
     	#create figure names with ad-hoc function
-    	figname=fig.builder(FIGDIR,"Block",field,dataset,expid,ens,year1,year2,season,output_file_type)
+    	figname=fig.builder(FIGDIR,"Block",field,project,dataset,expid,ens,year1,year2,season,output_file_type)
     	print(figname)
 
 	#special treatment for TM90: it is a 1D field!
@@ -136,22 +139,30 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
-req_args=length(name_args)
+name_args=c("project","dataset","expid","ens","year1","year2","project_ref","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
 
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-    	print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-		print(name_args)
-    } else {
-# when the number of arguments is ok run the function()
-	for (k in 1:req_args) {assign(name_args[k],args[k])}
-        source(file.path(PROGDIR,"script/basis_functions.R"))
-	miles.block.figures(dataset,expid,ens,year1,year2,
-			    dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
+        req_args=length(name_args)
+        if (length(args)!=req_args) {
+                #stop if something is wrong
+                print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+                print(name_args)
+                stop("ERROR!")
+        } else {
+                # when the number of arguments is ok run the function()
+                for (k in 1:req_args) {
+                        if (args[k]=="") {
+                                args[k]=NA
+                        }
+                        assign(name_args[k],args[k])
+			print(args[k])
+                }
+	source(file.path(PROGDIR,"script/basis_functions.R"))
+	miles.block.figures(project,dataset,expid,ens,year1,year2,
+			    project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
 			    season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
-    }
+    	}
 }
 
 
