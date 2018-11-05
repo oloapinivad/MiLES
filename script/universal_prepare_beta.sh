@@ -74,7 +74,7 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 	#updated with "level_select" command for special cases
 	varunit=$( $cdonc zaxisdes $TEMPDIR/fullfile.nc | grep units | cut -f2 -d'"') 
 	if [[ -z $varunit ]] ; then 
-		echo "WARNING: Unknown unit for vertical axis!!!"
+		echo -e "${RED}WARNING: Unknown unit for vertical axis!!!${NC}"
 		echo "Selecting the first available level..."
 	        echo "Assuming is $identifier ...it may be wrong!!!"
 		level_select="-sellevidx,1"

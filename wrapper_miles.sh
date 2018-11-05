@@ -124,6 +124,10 @@ if ${std_clim} ; then
 	year2_ref=2017
 	REFDIR=$PROGDIR/clim
 	datasets=$dataset_exp
+	project_ref=""
+	expid_ref=""
+	ens_ref=""
+
 else
 
         REFDIR=$FILESDIR
@@ -198,7 +202,9 @@ for dataset in $datasets ; do
 		fi
 		# blocking
 		if has_config block ; then
-			time $Rscript "$PROGDIR/script/block_fast.R" 	"$project" "$dataset" "$expid" "$ens" $year1 $year2 $season \
+			[[ $varname == "zg" ]] && blockscript="block_fast.R"
+			[[ $varname == "ua" ]] && blockscript="u500_block.R"
+			time $Rscript "$PROGDIR/script/$blockscript" 	"$project" "$dataset" "$expid" "$ens" $year1 $year2 $season \
 									$fullfilename $FILESDIR $PROGDIR $doforceanl
 		fi
 
@@ -238,7 +244,7 @@ for season in $seasons ; do
 	if has_config block ; then
 		time $Rscript "$PROGDIR/script/block_figures.R" 	"$project_exp" "$dataset_exp" "$expid_exp" "$ens_exp" "$year1_exp" "$year2_exp" \
 									"$project_ref" "$dataset_ref" "$expid_ref" "$ens_ref" "$year1_ref" "$year2_ref" \
-									$season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
+									$varname $season $FIGDIR $FILESDIR $REFDIR $CFGSCRIPT $PROGDIR
 	fi
 
 	# regimes figures

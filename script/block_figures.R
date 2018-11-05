@@ -6,13 +6,23 @@
 #DECLARING THE FUNCTION: EXECUTION IS AT THE BOTTOM OF THE SCRIPT
 miles.block.figures<-function(project,dataset,expid,ens,year1,year2,
 			      project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
-			      season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) {
+			      varname,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) {
 
 #figures configuration files
 source(CFGSCRIPT)
 
 #which fieds to load/plot
-fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
+
+# pointing to right blocking
+if (varname=="zg") {
+	varload="Block"
+	fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
+} else if (varname=="ua") {
+	varload="U500_Block"
+	fieldlist=c("InstBlock","ExtraBlock","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents","TM90")
+} else {
+	stop("ERROR: reequired a non-existing variable")
+}
 
 ##########################################################
 #-----------------Loading datasets-----------------------#
@@ -22,7 +32,7 @@ fieldlist=c("InstBlock","ExtraBlock","Z500","MGI","BI","CN","ACN","BlockEvents",
 for (field in fieldlist) {	
 
 	#use file.builder function
-	nomefile=file.builder(FILESDIR,"Block","BlockClim",project,dataset,expid,ens,year1,year2,season)
+	nomefile=file.builder(FILESDIR,varload,"BlockClim",project,dataset,expid,ens,year1,year2,season)
 	field_exp=ncdf.opener(nomefile,namevar=field,rotate="no")
 	assign(paste(field,"_exp",sep=""),field_exp)
 }
@@ -37,7 +47,7 @@ for (field in fieldlist) {
 	} else { 
 		
 		#use file.builder to create the path of the blocking files
-		nomefile_ref=file.builder(FILESDIR,"Block","BlockClim",
+		nomefile_ref=file.builder(FILESDIR,varload,"BlockClim",
 					  project_ref,dataset_ref,expid_ref,ens_ref,
 					  year1_ref,year2_ref,season)
 	}
@@ -65,7 +75,7 @@ for (field in fieldlist) {
     	field_exp=get(paste(field,"_exp",sep=""))
 
     	#create figure names with ad-hoc function
-    	figname=fig.builder(FIGDIR,"Block",field,project,dataset,expid,ens,year1,year2,season,output_file_type)
+    	figname=fig.builder(FIGDIR,varload,field,project,dataset,expid,ens,year1,year2,season,output_file_type)
     	print(figname)
 
 	#special treatment for TM90: it is a 1D field!
@@ -139,7 +149,7 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("project","dataset","expid","ens","year1","year2","project_ref","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
+name_args=c("project","dataset","expid","ens","year1","year2","project_ref","dataset_ref","expid_ref","ens_ref","year1_ref","year2_ref","varname","season","FIGDIR","FILESDIR","REFDIR","CFGSCRIPT","PROGDIR")
 
 # if there arguments, check them required args and assign
 if (length(args)!=0) {
@@ -161,7 +171,7 @@ if (length(args)!=0) {
 	source(file.path(PROGDIR,"script/basis_functions.R"))
 	miles.block.figures(project,dataset,expid,ens,year1,year2,
 			    project_ref,dataset_ref,expid_ref,ens_ref,year1_ref,year2_ref,
-			    season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
+			    varname,season,FIGDIR,FILESDIR,REFDIR,CFGSCRIPT) 
     	}
 }
 
