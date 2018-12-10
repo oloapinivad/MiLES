@@ -18,7 +18,7 @@ savefile2=file.builder(FILESDIR,"MI","MIFull",project,dataset,expid,ens,year1,ye
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
        print("Actually requested Meandering Index data is already there!")
-       if (doforce=="true") {
+       if (as.logical(doforce)) {
                print("Running with doforce=true... re-run!")
        } else  {
        print("Skipping... activate doforce=true if you want to re-run it"); q() 

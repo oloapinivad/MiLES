@@ -25,7 +25,7 @@ savefile1=file.builder(FILESDIR,"Regimes","RegimesPattern",project,dataset,expid
 if (file.exists(savefile1)) {
         print("Actually requested weather regimes data is already there!")
 	print(savefile1)
-	if (doforce=="true") {
+	if (as.logical(doforce)) {
                 print("Running with doforce=true... re-run!")
         } else  {
 	        print("Skipping... activate doforce=true if you want to re-run it"); q()

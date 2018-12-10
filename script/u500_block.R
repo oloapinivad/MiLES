@@ -31,7 +31,7 @@ savefile2=file.builder(FILESDIR,"U500_Block","BlockFull",project,dataset,expid,e
 if (file.exists(savefile1) & file.exists(savefile2)) {
 	print("Actually requested blocking data is already there!")
 	print(savefile1); print(savefile2)
-	if (doforce=="true") {
+	if (as.logical(doforce)) {
 	 	print("Running with doforce=true... re-run!")
 	} else	{
 	print("Skipping... activate doforce=true if you want to re-run it"); q() 

@@ -1,15 +1,15 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1237837.svg)](https://doi.org/10.5281/zenodo.1237837)
 
-# MiLES v0.6
+# MiLES v0.7
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Aug 2018
+Oct 2014  - Dec 2018
 
-by P. Davini (ISAC-CNR, p.davini@isac.cnr.it)
+by P. Davini (CNR-ISAC, p.davini@isac.cnr.it)
 
 Acknowledgements to:
-G. Di Capua (PIK), J. von Hardenberg (ISAC-CNR), 
-I. Mavilia (ISAC-CNR), E. Arnone (ISAC-CNR)
+G. Di Capua (PIK), J. von Hardenberg (CNR-ISAC), 
+I. Mavilia (CNR-ISAC), E. Arnone (University of Torino)
 
 ------------------------------
 
@@ -69,7 +69,7 @@ b). *"Davini  P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Di
 
 c). *"Di Capua G. and Coumou D. 2016: Changes in meandering of the Northern Hemisphere circulation. Environ. Res. Lett. 11 (2016) 094028 doi:10.1088/1748-9326/11/9/094028"* in case you use the Meandering Index.
 
-**MiLES v0.4** has been also included in the [ESMValTool Package](https://github.com/ESMValGroup/ESMValTool/releases).  
+**MiLES v0.6** has been also included in the [ESMValTool Package](https://github.com/ESMValGroup/ESMValTool/releases).  
 
 ----------------
 
@@ -130,7 +130,7 @@ IMPORTANT: the three above-mentioned vars are the core of the CMIP data structur
 - `project_ref`,`dataset_ref`, `expid_ref`, `ens_ref`, `year1_ref` and `year2_ref`  -> in analogy to the main variables, these controls the experiment to be compared when `std_clim=false` is set. 
 
 #### Config options
-Since v0.7 a configuration options sistem has been introduced. Adding specific keywords to the `options` variable will provide different results: you can set `block` for blocking, `eofs` for EOFs, `figures` for having figures and so on. 
+Since v0.7 a configuration options system has been introduced. Adding specific keywords to the `options` variable will provide different results: you can set `block` for blocking, `eofs` for EOFs, `figures` for having figures and so on. 
 
 #### Secondary variables
 - `teles` -> A list of one or teleconnection patterns. `NAO`,`PNA` or `AO` for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as `lon1_lon2_lat1_lat2`.
@@ -143,13 +143,13 @@ The chain of scripts will be executed as a sequence by the wrapper.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based scripts are written as R functions and thus can be called inside R if needed.  
 
-* `universal_prepare.sh`. **MiLES** is based on a pre-processing of data. 
-This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforcedata` flags to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
+* `assimilate.sh`. **MiLES** is based on a pre-processing of data. 
+This script expects geopotential height data (daily or higher frequency) in a single folder: from v0.5 it is able to identify 500hPa data among other levels. Since v0.7 replaces the older `z500_prepare.sh` since it is thought to work also on other type of data. The code interpolates data on a 2.5x2.5 grid, performs daily averaging and selects the NH only. Most importantly, it organizes the data structure in order to make it handable by **MiLES**. It produces a single NetCDF4 Zip files with all the data available. A check is performed in order to avoid useless run of the script: if your file is corrupted you can use the `doforcedata` flags to overwrite it. You can use both geopotential or geopotential height data, the former will be automatically converted. To simplify the analysis by R, the CDO `-a` is used to set an absolute time axis in the data.  
 
 * `eof_fast.R` and `eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * `blocking_fast.R` and `blocking_figures.R`. Blocking analysis is performed by the first R script. The second provides the figures. 
-Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts, as well a wide set of related dignostics. See Davini et al. (2012) for more details.
+Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts, as well a wide set of related dignostics. See Davini et al. (2012) for more details. Since v0.7 `u500_block.R` is included for a beta computation of blocking from zonalw wind at 500hPa.
 
 * `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. 
 It also tries to assign the right weather regimes to its name, saving all to NetCDF data. The second provides the figures.
@@ -174,14 +174,16 @@ It is recommended in such cases to split the analysis in different subsets.
 
 ## HISTORY
 
-*v0.7 - Nov 2018*
+*v0.7 - Dec 2018*
 - New wrapper structure using namelists
-- Generalized pre-processors
+- Beta blocking diagnostic based on zonal wind at 500hPa
+- Generalized pre-processor for dataa assimilation
 - Looper with great_loop.sh
 - Improvement in the ncdf.opener function (now working with relative time axis)
 - Introuction of the project variable and the has_config function to control flags
 - Moving back to CDO bilinear interpolation to allow extrapolation
-- Potential bug in season selection fixed
+- Bugs in season selection fixed
+- Minor bug in power.date.new() fixed (that was affecting Blocking Events) and function introduced
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)

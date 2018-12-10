@@ -65,13 +65,14 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 				return 1
 			fi
 		fi
+	# otherwise use expected input name
 	else
 		#create a single huge file: not efficient but universal
 		$cdonc cat $INDIR/${expected_input_name} $TEMPDIR/fullfile.nc
 	fi
 
-	#introducing a function to autofine geopotential height level in the file (looking for 500hPa or 50000Pa!)
-	#updated with "level_select" command for special cases
+	# introducing a function to autofine geopotential height level in the file (looking for 500hPa or 50000Pa!)
+	# updated with "level_select" command for special cases
 	varunit=$( $cdonc zaxisdes $TEMPDIR/fullfile.nc | grep units | cut -f2 -d'"') 
 	if [[ -z $varunit ]] ; then 
 		echo -e "${RED}WARNING: Unknown unit for vertical axis!!!${NC}"
@@ -85,14 +86,15 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 		level_select="-sellevel,$level"
 	fi
 
-	#main operations: sellevel and daymean + setlevel, setname, interpolation resolution and NH selection
-	#CDO flag for extrapolation is on to avoid missing values for low res grid
+	# main operations: sellevel and daymean + setlevel, setname, interpolation resolution and NH selection
+	# CDO flag for extrapolation is on to avoid missing values for low res grid
 	export REMAP_EXTRAPOLATE=on
 	$cdonc sellonlatbox,0,360,0,90 -remapbil,$resolution -setlevel,$((levelout*100))  \
 		-setname,$varname -setunit,Pa -daymean ${level_select} \
 		$TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
 
-	#in order to avoid issues, all data are forced to be geopotential height in case geopotential is identified (i.e. values too large for a Z500
+	# in order to avoid issues, all data are forced to be geopotential height 
+	# in case geopotential is identified (i.e. values too large for a Z500
 	sanityvalue=$($cdonc outputint -fldmean -seltimestep,1 $TEMPDIR/smallfile.nc)
 	echo $sanityvalue
 
@@ -105,7 +107,7 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 		echo "Geopotential height identified."
 	fi	
 
-	#copy to final file with absolute time axis
+	#copy to final file with absolute time axis which impoves R readability
 	$cdo4 -a copy $TEMPDIR/smallfile.nc $outputfilename
 
     	#check cleaning

@@ -3,7 +3,7 @@ set -eu
 ################################################
 #------- MidLatitude Evaluation System --------#
 #------------------MiLES v0.7------------------#
-#----------Nov 2018, P. Davini, CNR-ISAC-------#
+#----------Dec 2018, P. Davini, CNR-ISAC-------#
 #
 #
 #
@@ -124,9 +124,9 @@ if ${std_clim} ; then
 	year2_ref=2017
 	REFDIR=$PROGDIR/clim
 	datasets=$dataset_exp
-	project_ref=""
-	expid_ref=""
-	ens_ref=""
+	#project_ref=""
+	#expid_ref=""
+	#ens_ref=""
 
 else
 
@@ -172,7 +172,7 @@ for dataset in $datasets ; do
 	mkdir -p $ZDIR
 	zfile=${identifier}
 	for dcode in $dataset $expid $ens ; do
-		if [[ "$dcode" != "NO" ]] ; then
+		if [[ ! -z "$dcode"  ]] ; then
 			zfile=${zfile}_${dcode}
 			ZDIR=$ZDIR/$dcode
 		fi
@@ -182,9 +182,9 @@ for dataset in $datasets ; do
 	#echo $fullfilename
 
 	#fullfile prepare
-	time . $PROGDIR/script/universal_prepare_beta.sh -d "$dataset" -e "$expid" -r "$ens" -v $varname -l $level \
-							-o $fullfilename -c $machine -f $doforcedata
-	# exit if the prepare has gone wrong
+	time . $PROGDIR/script/assimilate.sh 	-d "$dataset" -e "$expid" -r "$ens" -v $varname -l $level \
+						-o $fullfilename -c $machine -f $doforcedata
+	# exit if the assimilation has gone wrong
 	if [ "$?" == 1  ] ; then
 		return 1
 	fi
