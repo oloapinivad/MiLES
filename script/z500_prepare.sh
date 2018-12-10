@@ -28,6 +28,7 @@ if [[ ! -f $z500filename ]] || [[ $doforcedata == "true" ]] ; then
     	
 	# machine dependent script (to call folder locations!)
 	. config/config_${config}.sh
+	echo $dataset
 
 	# step 1: do it for NetCDF
 	if [ -z ${expected_input_name} ] ; then 
