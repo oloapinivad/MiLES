@@ -523,6 +523,7 @@ ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NU
 	return(field$field)
 }
 
+
 ##########################################################
 #--------------Plotting functions------------------------#
 ##########################################################
