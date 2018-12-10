@@ -57,25 +57,25 @@ return(field)
 #sector details for blocking extra diagnostics and EOFs sectors
 sector.details<-function(SECTOR) {
 
-    if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
-    if (SECTOR=="Azores") {lons=c(-70,-10); lats=c(30,40); namesec="Central Atlantic"}
-    if (SECTOR=="Greenland") {lons=c(-65,-15); lats=c(62.5,72.5); namesec="Greenland"}
-    if (SECTOR=="FullPacific") {lons=c(130,-150); lats=c(60,75); namesec="North Pacific"}
-    if (SECTOR=="FullPacific2") {lons=c(130,210); lats=c(60,75); namesec="North Pacific"}
+    	if (SECTOR=="Euro") {lons=c(-15,25); lats=c(50,65); namesec="Central Europe"}
+    	if (SECTOR=="Azores") {lons=c(-70,-10); lats=c(30,40); namesec="Central Atlantic"}
+    	if (SECTOR=="Greenland") {lons=c(-65,-15); lats=c(62.5,72.5); namesec="Greenland"}
+    	if (SECTOR=="FullPacific") {lons=c(130,-150); lats=c(60,75); namesec="North Pacific"}
+    	if (SECTOR=="FullPacific2") {lons=c(130,210); lats=c(60,75); namesec="North Pacific"}
 
-    left1=which.min(abs(ics-lons[1]))
-    right1=which.min(abs(ics-lons[2]))
-    low1=which.min(abs(ipsilon-lats[1]))
-    high1=which.min(abs(ipsilon-lats[2]))
+    	left1=which.min(abs(ics-lons[1]))
+    	right1=which.min(abs(ics-lons[2]))
+   	low1=which.min(abs(ipsilon-lats[1]))
+    	high1=which.min(abs(ipsilon-lats[2]))
 
-    latssel=low1:high1
-    if (SECTOR=="FullPacific") {
-        lonssel=c(left1:length(ics),1:right1)
+    	latssel=low1:high1
+	if (SECTOR=="FullPacific") {
+        	lonssel=c(left1:length(ics),1:right1)
         } else {
-        lonssel=left1:right1
-    }
-out=list(lons=lons,lonssel=lonssel,lats=lats,latssel=latssel,name=namesec)
-return(out)
+        	lonssel=left1:right1
+	}
+	out=list(lons=lons,lonssel=lonssel,lats=lats,latssel=latssel,name=namesec)
+	return(out)
 }
 
 #weighted correlation
@@ -188,27 +188,27 @@ progression.bar<-function(index,total_length,each=10) {
 ##########################################################
 
 # to convert season charname to months number
-season2timeseason<-function(season)
-{
-    if (nchar(season)==3 & toupper(season)==season) {
-	    if (season=="ALL")  {timeseason=1:12}
-	    if (season=="JJA")  {timeseason=6:8}
-	    if (season=="DJF")  {timeseason=c(1,2,12)}
-	    if (season=="MAM")  {timeseason=3:5}
-	    if (season=="SON")  {timeseason=9:11}
-    } else {
-        charseason=strsplit(season,"_")[[1]]
-        print(charseason)
-        if (mean(nchar(charseason))==3) {
-            	timeseason=which(charseason==month.abb)
-            } else {
-            	timeseason=which(charseason==month.name)
-            } 
-    }
-    print(timeseason)
-    if (length(timeseason)==0 |  min(timeseason)<0 | max(timeseason)>13) {
-    	stop("wrong season selected!")
-    }
+season2timeseason<-function(season) {
+
+	if (nchar(season)==3 & toupper(season)==season) {
+		if (season=="ALL")  {timeseason=1:12}
+		if (season=="JJA")  {timeseason=6:8}
+		if (season=="DJF")  {timeseason=c(1,2,12)}
+		if (season=="MAM")  {timeseason=3:5}
+		if (season=="SON")  {timeseason=9:11}
+	} else {
+		charseason=strsplit(season,"_")[[1]]
+	        print(charseason)
+        	if (mean(nchar(charseason))==3) {
+        	        timeseason=which(month.abb %in% charseason)
+        	} else {
+        	        timeseason=which(month.name %in% charseason)
+        	}
+    	}
+    	print(timeseason)
+    	if (length(timeseason)==0 |  min(timeseason)<0 | max(timeseason)>13) {
+    		stop("wrong season selected!")
+    	}
 	return(timeseason)
 }
 
@@ -219,14 +219,18 @@ is.leapyear=function(year) {
 
 #check number of days for each month
 number.days.month <- function(datas) {
+
 	#evaluate the number of days in a defined month of a year
 	datas=as.Date(datas)
 	m=format(datas,format="%m")
-	while (format(datas,format="%m") == m) {datas=datas+1}
+	while (format(datas,format="%m") == m) {
+		datas=datas+1
+	}
 	return(as.integer(format(datas-1,format="%d")))
 }
 
-power.date.new<-function(datas,verbose=FALSE) {
+# function to create simple list with data values - deprecated
+power.date.old<-function(datas,verbose=FALSE) {
 
 	#verbose-only printing function
         printv<-function(value) {if (verbose) {print(value)} }
@@ -245,6 +249,26 @@ power.date.new<-function(datas,verbose=FALSE) {
 	printv(paste("Length:",length(seas)))
 	printv(paste("From",datas[1],"to",datas[length(seas)]))
 	return(etime)
+}
+
+# new function to create simple list with date values
+power.date.new<-function(datas,verbose=FALSE) {
+
+        #verbose-only printing function
+        printv<-function(value) {if (verbose) {print(value)} }
+
+        #create a "season" for continuous time, used by persistance tracking
+	startpoints=c(0,which(diff(datas)>1))
+	deltapoints=diff(c(startpoints,length(datas)))
+	seas=inverse.rle(list(lengths=deltapoints,values=seq(1,length(startpoints))))
+
+        etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),
+		   year=as.numeric(format(datas,"%Y")),data=datas,season=seas)
+
+        printv("Time Array Built")
+        printv(paste("Length:",length(seas)))
+        printv(paste("From",datas[1],"to",datas[length(seas)]))
+        return(etime)
 }
 
 ##########################################################
@@ -348,28 +372,6 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 			caldata="standard"
 		}
 
-		# original method: based on absolute time preprocessing by CDO time format
-        	#if ( grepl('day as',units,fixed=TRUE) | grepl('days as',units,fixed=TRUE) ) {
-           	#	timeline=as.PCICt(as.character(time),format="%Y%m%d",cal=caldata)
-		# extra method by JvH: use reference time (developed and tested tested for ESMValTool)
-        	#} else if (grepl('day since',units,fixed=TRUE) | grepl('days since',units,fixed=TRUE) ) {
-        	#      	origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
-        	#       	origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
-        	#       	timeline = origin.pcict + (floor(time) * 86400)
-		# extension to include seconds time axis
-		#} else if (grepl('secs since',units,fixed=TRUE) | grepl('seconds since',units,fixed=TRUE) ) {
-		#	origin = substr(gsub("[a-zA-Z ]", "", units),1,10)
-		#	origin.pcict = as.PCICt(origin, cal=caldata, format="%Y-%m-%d")
-        	#        timeline = origin.pcict + floor(time)
-		# stop if it is not in this format: may be further expanded for times axis based on seconds
-        	#} else {
-        	#       printv(units)
-		#	printv("Time units from NetCDF unsupported!!!")
-	       	#	printv("Disabling time selection")
-	       	#	printv("Reporting time variable as it is..")
-	       	#	timeflag=FALSE
-        	#}
-		
 		# new method including both absolute and releative time axis (Oct 2018)
 		# if "as" is present, this is an absolute time axis
 		if ( grepl("as",units,fixed=TRUE) ) {
@@ -414,10 +416,11 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 			lastday_base=paste0(max(tyears),"-",max(tmonths),"-28") #uses number.days.month, which loops to get the month change
 			lastday=as.PCICt(paste0(max(tyears),"-",max(tmonths),"-", number.days.month(lastday_base)), cal=caldata, format="%Y-%m-%d")
 			firstday=as.PCICt(paste0(min(tyears),"-",min(tmonths),"-01"),cal=caldata,format="%Y-%m-%d")
-			#printv(max(timeline)); printv(lastday); printv(min(timeline)); printv(firstday)
 
 			if (max(timeline)<lastday | min(timeline)>firstday) {
-		        	stop("You requested a time interval that is not present in the NetCDF. Stopping!!!")
+				print(paste("Dataset extend from",min(timeline),"up to",max(timeline)))
+		        	print(paste("Your request is from",firstday,"up to",lastday))
+				stop("This a time interval that is not present in the NetCDF. Stopping!!!")
 			}
 		}
 	}
@@ -561,8 +564,7 @@ filled.contour3 <-
             levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
             col = color.palette(length(levels) - 1), extend=TRUE, plot.title, plot.axes, 
             key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
-            axes = TRUE, frame.plot = axes,mar, ...) 
-{
+            axes = TRUE, frame.plot = axes,mar, ...)  {
   # modification by Ian Taylor of the filled.contour function
   # to remove the key and facilitate overplotting with contour()
   # further modified by Carey McGilliard and Bridget Ferris
@@ -1166,6 +1168,18 @@ regimes2<-function(lon,lat,field,ncluster=4,ntime=1000,minvar=0.8,
 #-------------------Time Avg functions-------------------#
 ##########################################################
 
+# generalized function for time averaging based on conditon, using preallocation, vectorization and rowMeans
+# use power.date.new or PCICt object to define the condition
+time.mean<-function(ics,ipsilon,field,condition) {
+
+        tmean=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
+        for (t in unique(condition)) {
+                tmean[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
+        }
+        return(tmean)
+}
+
+
 #fast function for monthly mean, using preallocation, vectorization and rowMeans
 monthly.mean<-function(ics,ipsilon,field,etime) {
 
@@ -1191,10 +1205,43 @@ run.mean<-function(field,n=5) {
 #use vectorization for a 5 day running mean ad-hoc function (to be generalized!)
 #about 10 times faster that a standard running mean function based on for loop
 run.mean5<-function(field) {
-         nn=2
-         newfield=rowMeans(cbind(c(field[3:length(field)],NA,NA),c(field[2:length(field)],NA),field,c(NA,field[1:(length(field)-1)]),c(NA,NA,field[1:(length(field)-2)])),na.rm=T)
+         newfield=rowMeans(cbind(
+				 c(field[3:length(field)],NA,NA),
+				 c(field[2:length(field)],NA),field,
+				 c(NA,field[1:(length(field)-1)]),
+				 c(NA,NA,field[1:(length(field)-2)])
+				 ),
+			   na.rm=T)
          return(newfield)
 }
+
+# this a generalization of run.mean5() using vectorization for a faster result
+# result is more accurate than run.mean() since on the edges it uses all possible points
+run.mean.fast<-function(field,n=5) {
+	
+	#check for even numbers
+	if (n %% 2 == 0) {
+		warning("Even number, replacing with its smaller odd one")
+		n=n-1
+	}
+
+	# prepare the loop and create n-dimensianal matrix of lagged vectors
+	nn=floor(n/2)
+	newfield=NULL
+	for (k in -nn:nn) {
+		if (k<0) {
+			newfield=cbind(newfield,c(rep(NA,abs(k)),field[1:(length(field)+k)]))
+		} else {
+			newfield=cbind(newfield,c(field[(1+k):length(field)],rep(NA,k)))
+		}
+	}
+	
+	# apply rowMeans to produce the final mean	
+	finalfield=rowMeans(newfield,na.rm=T)
+	return(finalfield)
+}
+
+
 
 #function for daily anomalies, use array predeclaration and rowMeans (40 times faster!)
 daily.anom.mean<-function(ics,ipsilon,field,etime) {

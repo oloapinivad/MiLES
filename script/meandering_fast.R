@@ -2,7 +2,7 @@
 #-----Meandering routines computation for MiLES------#
 #--------G. Di Capua & P. Davini (Apr 2018)----------#
 ######################################################
-miles.meandering<-function(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
+miles.meandering<-function(project,dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce) {
 
 #t0
 t0<-proc.time()
@@ -12,8 +12,8 @@ years=year1:year2
 timeseason=season2timeseason(season)
 
 #define folders using file.builder function (takes care of ensembles)
-savefile1=file.builder(FILESDIR,"MI","MIClim",dataset,expid,ens,year1,year2,season)
-savefile2=file.builder(FILESDIR,"MI","MIFull",dataset,expid,ens,year1,year2,season)
+savefile1=file.builder(FILESDIR,"MI","MIClim",project,dataset,expid,ens,year1,year2,season)
+savefile2=file.builder(FILESDIR,"MI","MIFull",project,dataset,expid,ens,year1,year2,season)
 
 #check if data is already there to avoid re-run
 if (file.exists(savefile1)) {
@@ -28,7 +28,6 @@ if (file.exists(savefile1)) {
 fieldlist=ncdf.opener.universal(z500filename,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
 print(str(fieldlist))
 
-
 #extract calendar and time unit from the original file
 tcal=attributes(fieldlist$time)$cal
 tunit=attributes(fieldlist$time)$units
@@ -39,6 +38,12 @@ totdays=length(fieldlist$time)
 
 #declare variable
 Z500=fieldlist$field
+
+# smoothing with 5-day running mean
+print("5-day running mean")
+runZ500=apply(Z500,c(1,2),run.mean5)
+runZ500=aperm(runZ500,c(2,3,1))
+runZ500[is.na(runZ500)]=Z500[is.na(runZ500)]
 
 # list of isohypses on which evaluate the MI
 isolvls=seq(4900,6200,5)
@@ -61,7 +66,7 @@ for (t in 1:totdays) {
 	progression.bar(t,totdays,each=20)
 
 	# computed MI
-	MI_list=sapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,t],x,ref_lat,verbose=F)})
+	MI_list=sapply(isolvls,function(x) {MI.fast(ics,ipsilon,runZ500[,,t],x,ref_lat,verbose=F)})
 	#MI_list=vapply(isolvls,function(x) {MI.fast(ics,ipsilon,Z500[,,1],x,ref_lat,verbose=F)},list(1,2))
 
 	# applyng bounds on latitude and longitudes 
@@ -150,20 +155,29 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args=c("dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
+name_args=c("project","dataset","expid","ens","year1","year2","season","z500filename","FILESDIR","PROGDIR","doforce")
 req_args=length(name_args)
 
-# print error message if uncorrect number of command 
+# if there arguments, check them required args and assign
 if (length(args)!=0) {
-    if (length(args)!=req_args) {
-        print(paste("Not enough or too many arguments received: please specify the following",req_args,"arguments:"))
-        print(name_args)
-    } else {
-# when the number of arguments is ok run the function()
-        for (k in 1:req_args) {assign(name_args[k],args[k])}
+        req_args=length(name_args)
+        if (length(args)!=req_args) {
+                #stop if something is wrong
+                print(paste(length(args),"arguments received: please specify the following",req_args,"arguments:"))
+                print(name_args)
+                stop("ERROR!")
+        } else {
+                # when the number of arguments is ok run the function()
+                for (k in 1:req_args) {
+                        if (args[k]=="") {
+                                args[k]=NA
+                        }
+                        assign(name_args[k],args[k])
+                }
+
         source(file.path(PROGDIR,"script/basis_functions.R"))
         source(file.path(PROGDIR,"script/meandering_functions.R"))
-        miles.meandering(dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
+        miles.meandering(project,dataset,expid,ens,year1,year2,season,z500filename,FILESDIR,doforce)
     }
 }
 

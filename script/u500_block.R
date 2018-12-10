@@ -54,7 +54,7 @@ totdays=length(fieldlist$time)
 
 #declare variable
 U500=fieldlist$field
-U500=sweep(U500,2,1/cos(ipsilon*pi/180),"*")
+#U500=sweep(U500,2,1/cos(ipsilon*pi/180),"*")
 
 #grid resolution
 yreso=ipsilon[2]-ipsilon[1]
@@ -89,7 +89,6 @@ tm90_north=whicher(ipsilon,tm90_fiN)
 tm90_range=seq(-5,5,yreso)/yreso #5 degrees to the north, 5 to the south (larger than TM90 or D'Andrea et al 1998)
 
 # from u500: define parameters for geostrophic approximation
-
 g0=9.80655; radius=6378137; omega=7.29211*10^(-5)
 sinphi=sin(ipsilon*pi/180)
 alfa=(2*radius*omega/g0)*((tm90_delta*pi/180))
@@ -98,13 +97,17 @@ ghgn=ghgs=array(NA,dim=c(length(ics),totdays,length(tm90_range)))
 # number of steps and weights for integrals 
 tm90_step=round(tm90_delta/yreso) 
 tm90_ww=c(0.5,rep(1,tm90_step-1),0.5)
+tm90_ww=c(0.5,rep(1,tm90_step-1),0.5)
+
 
 #introduce matrix for blocking computation
 
 # vectorization but on different ranges
 for (erre in tm90_range) {
-	ghgs[,,which(erre==tm90_range)]=apply(sweep(U500[,erre+tm90_south:tm90_central,],c(2),sinphi[erre+tm90_south:tm90_central]*tm90_ww,"*"),c(1,3),sum)/tm90_step
-	ghgn[,,which(erre==tm90_range)]=apply(sweep(U500[,erre+tm90_central:tm90_north,],c(2),sinphi[erre+tm90_central:tm90_north]*tm90_ww,"*"),c(1,3),sum)/tm90_step
+	ghgs[,,which(erre==tm90_range)]=apply(sweep(U500[,erre+tm90_south:tm90_central,],c(2),
+						    sinphi[erre+tm90_south:tm90_central]*tm90_ww,"*"),c(1,3),sum)/tm90_step
+	ghgn[,,which(erre==tm90_range)]=apply(sweep(U500[,erre+tm90_central:tm90_north,],c(2),
+						    sinphi[erre+tm90_central:tm90_north]*tm90_ww,"*"),c(1,3),sum)/tm90_step
 }
 
 # adapted condition from geostropich approximatin
@@ -158,9 +161,12 @@ for (t in 1:totdays) {
 
         for (erre in 0:range) {  # computing blocking for different latitudes
 
-        	ghgs[,which(erre==(0:range))]=apply(sweep(U500[,south:central+erre,t],c(2),sinphi[south:central+erre]*ww,"*"),c(1),sum)/step
-        	ghgn[,which(erre==(0:range))]=apply(sweep(U500[,central:north+erre,t],c(2),sinphi[central:north+erre]*ww,"*"),c(1),sum)/step
-		gh2gs[,which(erre==(0:range))]=apply(sweep(U500[,maxsouth:south+erre,t],c(2),sinphi[maxsouth:south+erre]*ww,"*"),c(1),sum)/step
+        	ghgs[,which(erre==(0:range))]=apply(sweep(U500[,south:central+erre,t],c(2),
+							  sinphi[south:central+erre]*ww,"*"),c(1),sum)/step
+        	ghgn[,which(erre==(0:range))]=apply(sweep(U500[,central:north+erre,t],c(2),
+							  sinphi[central:north+erre]*ww,"*"),c(1),sum)/step
+		gh2gs[,which(erre==(0:range))]=apply(sweep(U500[,maxsouth:south+erre,t],c(2),
+							   sinphi[maxsouth:south+erre]*ww,"*"),c(1),sum)/step
 		
 	}
 	check1=(ghgs<0 & ghgn>(10*delta/alfa))

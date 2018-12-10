@@ -3,7 +3,10 @@
 # script for consecutive calls of wrapper_miles on different datasets, experiments or ensembles
 
 project_exp=CMIP5
+varname=zg
+
 DIR=/work/users/paolo/data/${project_exp}
+#DIR=$ARCHIVE/work/${project_exp}
 
 #loop_dataset="ACCESS1-0  CMCC-CMS       EC-EARTH   GFDL-ESM2G  HadGEM2-CC_LT  IPSL-CM5A-MR  MIROC-ESM       MPI-ESM-P"
 #ACCESS1-3     CanAM4   CMCC-CESM      CNRM-CM5       FGOALS-g2  GFDL-ESM2M  HadGEM2-ES     IPSL-CM5B-LR  MIROC-ESM-CHEM  MRI-CGCM3 
@@ -12,7 +15,7 @@ DIR=/work/users/paolo/data/${project_exp}
 
 loop_dataset=$(ls $DIR) 
 #loop_dataset=GFDL-ESM2M
-expid="rcp85"
+expid="historical"
 
 
 # mandatory
@@ -20,12 +23,18 @@ if [[ ${expid} == "rcp85" ]] ; then
 	year1_exp=2050
 	year2_exp=2100
 elif [[ ${expid} == "historical" ]] ; then
-	year1_exp=1950
-	year2_exp=2005
+	#year1_exp=1950
+	#year2_exp=2005
+	year1_exp=1961
+        year2_exp=2000
+elif [[ ${expid} == "sresa2" ]] ; then
+        year1_exp=2050
+        year2_exp=2100
 fi
 
-seasons="DJF"
-project_exp=CMIP5
+
+
+seasons="DJF JJA"
 
 # part of the code you want to run. Possible options are:
 #"eofs": eofs parts
@@ -35,7 +44,7 @@ project_exp=CMIP5
 #"figures": figures for all selected parts
 #"forcedata": recompute the fullfile
 #"forceanl" : recompute the analysis of each part
-options="block"
+options="block figures"
 
 for dataset_exp in $loop_dataset ; do
 	loop_expid=$(ls $DIR/${dataset_exp}) 

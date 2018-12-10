@@ -181,6 +181,7 @@ It is recommended in such cases to split the analysis in different subsets.
 - Improvement in the ncdf.opener function (now working with relative time axis)
 - Introuction of the project variable and the has_config function to control flags
 - Moving back to CDO bilinear interpolation to allow extrapolation
+- Potential bug in season selection fixed
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)
