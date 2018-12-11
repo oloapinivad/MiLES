@@ -29,15 +29,15 @@ fieldlist=ncdf.opener.universal(z500filename,namevar="zg",tmonths=timeseason,tye
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
-tcal=attributes(fieldlist$time)$cal
-tunit=attributes(fieldlist$time)$units
+timeaxis=fieldlist$time
 
 #time array to simplify time filtering
-etime=power.date.new(fieldlist$time)
-totdays=length(fieldlist$time)
+etime=power.date.new(timeaxis,verbose=T)
+totdays=length(timeaxis)
 
-#declare variable
+#declare variable and clean
 Z500=fieldlist$field
+rm(fieldlist)
 
 # smoothing with 5-day running mean
 print("5-day running mean")
@@ -93,19 +93,22 @@ print(tf)
 print("saving NetCDF climatologies...")
 
 #which fieds to plot/save
-fieldlist=c("MI","MI_lat")
-full_fieldlist=c("MI","MI_lat")
+savelist=c("MI","MI_lat")
+full_savelist=c("MI","MI_lat")
 
-# dimensions definition
-fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-LEVEL=50000
+# dimension definition (using default 1850-01-01 reftime)
+dims=ncdf.defdims(ics,ipsilon,timeaxis)
+#fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+#TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+#LEVEL=50000
 x <- ncdim_def( "lon", "degrees_east", 0, longname="longitude")
-t1 <- ncdim_def( "time", TIME, 0, unlim=T, calendar=tcal, longname="time")
-t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
+#t1 <- ncdim_def( "time", TIME, 0, unlim=T, calendar=tcal, longname="time")
+#t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
 
-
-for (var in fieldlist)
+#pre-declare list for loading the variable definition and the fields
+nc_field=nc_var=sapply(savelist,function(x) NULL)
+nc_fullfield=nc_fullvar=sapply(full_savelist,function(x) NULL)
+for (var in savelist)
 {
         #name of the var
         if (var=="MI")
@@ -114,37 +117,53 @@ for (var in fieldlist)
                 {longvar="Meandering Index Latitude"; unit="deg"; field=mean(MI_lat); full_field=MI_lat}
 
         #variable definitions
-        var_ncdf=ncvar_def(var,unit,list(x,t=t1),-999,longname=longvar,prec="single",compression=1)
-        full_var_ncdf=ncvar_def(var,unit,list(x,t=t2),-999,longname=longvar,prec="single",compression=1)
+        var_ncdf=ncvar_def(var,unit,list(x,t=dims$tclim),-999,longname=longvar,prec="single",compression=1)
+        full_var_ncdf=ncvar_def(var,unit,list(x,t=dims$t),-999,longname=longvar,prec="single",compression=1)
 
-        assign(paste0("var",var),var_ncdf)
-        assign(paste0("full_var",var),full_var_ncdf)
-        assign(paste0("field",var),field)
-        assign(paste0("full_field",var),full_field)
+	#assign(paste0("var",var),var_ncdf)
+        #assign(paste0("full_var",var),full_var_ncdf)
+        if (var %in% savelist) {
+                nc_var[[which(var==savelist)]] <- var_ncdf
+                nc_field[[which(var==savelist)]] <- field
+        }
+        
+        #assign(paste0("field",var),field)
+        #assign(paste0("full_field",var),full_field)
+        if (var %in% full_savelist) {
+                nc_fullvar[[which(var==full_savelist)]] <- full_var_ncdf
+                nc_fullfield[[which(var==full_savelist)]] <- full_field
+        }
+
 }
+
+# save variables
+#Climatologies Netcdf file creation
+ncdf.writer(savefile1, nc_var, nc_field)
+ncdf.writer(savefile2, nc_fullvar, nc_fullfield)
+
 
 #Climatologies Netcdf file creation
-print(savefile1)
-namelist1=paste0("var",fieldlist)
-nclist1 <- mget(namelist1)
-ncfile1 <- nc_create(savefile1,nclist1)
-for (var in fieldlist) {
+#print(savefile1)
+#namelist1=paste0("var",savelist)
+#nclist1 <- mget(namelist1)
+#ncfile1 <- nc_create(savefile1,nclist1)
+#for (var in savelist) {
         # put variables into the ncdf file
-        ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste0("field",var)), start = c(1, 1),  count = c(-1,-1))
-}
-nc_close(ncfile1)
+        #ncvar_put(ncfile1, savelist[which(var==savelist)], get(paste0("field",var)), start = c(1, 1),  count = c(-1,-1))
+#}
+#nc_close(ncfile1)
 
 #Fullfield Netcdf file creation
-print(savefile2)
-namelist2=paste0("full_var",full_fieldlist)
-nclist2 <- mget(namelist2)
-ncfile2 <- nc_create(savefile2,nclist2)
-for (var in full_fieldlist) {
-        # put variables into the ncdf file
-        ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste0("full_field",var)), start = c(1, 1),  count = c(-1,-1))
-
-}
-nc_close(ncfile2)
+#print(savefile2)
+#namelist2=paste0("full_var",full_savelist)
+#nclist2 <- mget(namelist2)
+#ncfile2 <- nc_create(savefile2,nclist2)
+#for (var in full_savelist) {
+        ## put variables into the ncdf file
+        #ncvar_put(ncfile2, full_savelist[which(var==full_savelist)], get(paste0("full_field",var)), start = c(1, 1),  count = c(-1,-1))
+#
+#}
+#nc_close(ncfile2)
 
 }
 

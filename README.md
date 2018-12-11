@@ -149,7 +149,7 @@ This script expects geopotential height data (daily or higher frequency) in a si
 * `eof_fast.R` and `eof_figures.R`. EOFs are computed using Singular Value Decompositon (SVD) R function by the former script, while the latter provides the figures. EOFs signs for the main EOFs are checked in order to maintain consistency with the reference dataset.
 
 * `blocking_fast.R` and `blocking_figures.R`. Blocking analysis is performed by the first R script. The second provides the figures. 
-Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts, as well a wide set of related dignostics. See Davini et al. (2012) for more details. Since v0.7 `u500_block.R` is included for a beta computation of blocking from zonalw wind at 500hPa.
+Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts, as well a wide set of related dignostics. See Davini et al. (2012) for more details. Since v0.7 `u500_block.R` is included for a beta computation of blocking from zonal wind at 500hPa.
 
 * `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. 
 It also tries to assign the right weather regimes to its name, saving all to NetCDF data. The second provides the figures.
@@ -177,13 +177,14 @@ It is recommended in such cases to split the analysis in different subsets.
 *v0.7 - Dec 2018*
 - New wrapper structure using namelists
 - Beta blocking diagnostic based on zonal wind at 500hPa
-- Generalized pre-processor for dataa assimilation
-- Looper with great_loop.sh
-- Improvement in the ncdf.opener function (now working with relative time axis)
-- Introuction of the project variable and the has_config function to control flags
-- Moving back to CDO bilinear interpolation to allow extrapolation
+- Generalized pre-processor for data assimilation
+- Improvement in the ncdf.opener.universal() function (now working with relative time axis)
+- Introuction of the project variable and the has_config() function to control flags
+- Rolling back to CDO bilinear interpolation to allow extrapolation
 - Bugs in season selection fixed
-- Minor bug in power.date.new() fixed (that was affecting Blocking Events) and function introduced
+- Fixed minor bug in power.date.new() (that was affecting Blocking Events calculation)
+- Refactored NetCDF output writer with ncdf.writer() and ncdf.defdims() functions
+- NetCDF output has now a fixed reference time (1850-01-01)
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)

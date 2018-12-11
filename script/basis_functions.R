@@ -439,7 +439,7 @@ ncdf.opener.universal<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,
 		printv(paste("This is a",caldata,"calendar"))
 		printv(paste(length(time),"days selected from",time[1],"to",time[length(time)]))
 
-		printv(paste("Months that have been loaded are.. "))
+		printv(paste("Months that have been loaded are... "))
 		printv(unique(format(time,"%Y-%m")))
 	}
 
@@ -522,6 +522,63 @@ ncdf.opener<-function(namefile,namevar=NULL,namelon=NULL,namelat=NULL,tmonths=NU
 	field=ncdf.opener.universal(namefile,namevar,namelon,namelat,tmonths,tyears,rotate,interp2grid,grid,remap_method,exportlonlat,verbose)
 	return(field$field)
 }
+
+##########################################################
+#--------------NetCDF writing functions------------------#
+##########################################################
+
+# simple function which defines the x,y,t,z dimensions to be written in NetCDF files
+# produces also an "average" climatological time and monthly time axis for EOFs
+# ics and ipsilon are vectors, tempus is a PCICt object, level a numeric
+ncdf.defdims <- function(ics, ipsilon, tempus, level=50000, reftime="1850-01-01") {
+
+	#use reftime to create daily time axis
+	tcal=attributes(tempus)$cal
+	fulltime=as.numeric(tempus - as.PCICt(reftime, cal=tcal)) + 86400 / 2
+	nametime=paste0("secs since ",reftime," 00:00:00")
+
+	# define core dimensions
+	x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
+	y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
+	t <- ncdim_def( "time", nametime, fulltime, calendar=tcal, longname="time", unlim=T)
+	z <- ncdim_def( "plev", "Pa", level, longname="pressure")
+
+	# climatological time (median time!)
+	climtime=as.numeric(median(tempus) - as.PCICt(reftime, cal=tcal))
+	tclim <- ncdim_def( "time", nametime, climtime, unlim=T, calendar=tcal, longname="time")
+
+	#monthly time (for EOFs)
+	montime=as.numeric(tempus[which(format(tempus,"%d")==15)] -  as.PCICt(reftime, cal=tcal))
+	tmon <- ncdim_def( "time", nametime, montime, calendar=tcal, longname="time", unlim=T)
+
+	# return the 3 basic dimensions
+	return(list(x=x, y=y, t=t, tmon=tmon, tclim=tclim, z=z))
+}
+
+# zero-order common NetCDF common writer
+# filename is the output file
+# varlist and fieldlist are two list with respectively the netcdf variables definition and 
+# the field that should be associated to each variable.
+# Their name must be the the name of the variables
+# Of course varlist and fieldlist must have the same length.
+ncdf.writer <- function(filename, varlist, fieldlist) {
+
+	print(filename)
+	
+	# get the netcdr varlist and create the file
+	ncfile <- nc_create(filename, varlist)
+
+	savelist=names(varlist)	
+	# for each var, check the dims and 
+	for (var in savelist) {
+		print(var)
+		ndims=varlist[which(savelist==var)][[1]]$ndims
+		ncvar_put(ncfile, var, fieldlist[which(savelist==var)][[1]], start = rep(1,ndims),  count = rep(-1,ndims))
+	}
+	nc_close(ncfile)
+}
+
+
 
 
 ##########################################################
@@ -1250,6 +1307,9 @@ daily.anom.mean<-function(ics,ipsilon,field,etime) {
         daily=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
 	anom=field*NA
 	for (t in unique(condition)) {
+		if (sum(t==condition)==1) {
+			stop("Cannot compute a mean with a single value")
+		}
 		daily[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
 		anom[,,which(t==condition)]=sweep(field[,,which(t==condition)],c(1,2),daily[,,which(t==unique(condition))],"-")
 	}
@@ -1257,10 +1317,13 @@ daily.anom.mean<-function(ics,ipsilon,field,etime) {
 }
 
 #beta function for daily anomalies plus running mean (only 50% slower that standard daily avg)
-daily.anom.run.mean<-function(ics,ipsilon,field,etime) {
+daily.anom.run.mean5<-function(ics,ipsilon,field,etime) {
 	condition=paste(etime$day,etime$month)
         daily=array(NA,dim=c(length(ics),length(ipsilon),length(unique(condition))))
 	for (t in unique(condition)) {
+		if (sum(t==condition)==1) {
+                        stop("Cannot compute a mean with a single value")
+                }
 	        daily[,,which(t==unique(condition))]=rowMeans(field[,,t==condition],dims=2)
 	}
 	rundaily=apply(daily,c(1,2),run.mean5)

@@ -51,19 +51,19 @@ timeseason=season2timeseason(season)
 fieldlist=ncdf.opener.universal(z500filename,namevar="zg",tmonths=timeseason,tyears=years,rotate="full")
 
 #extract calendar and time unit from the original file
-tcal=attributes(fieldlist$time)$cal
-tunit=attributes(fieldlist$time)$units
+timeaxis=fieldlist$time
 
 #time array
-etime=power.date.new(fieldlist$time)
+etime=power.date.new(timeaxis)
 
 #declare variable
 Z500=fieldlist$field
+rm(fieldlist)
 
 print("Compute anomalies based on daily mean")
 #smoothing flag and daily anomalies
 if (smoothing) {
-	Z500anom=daily.anom.run.mean(ics,ipsilon,Z500,etime)
+	Z500anom=daily.anom.run.mean5(ics,ipsilon,Z500,etime)
 } else {
 	Z500anom=daily.anom.mean(ics,ipsilon,Z500,etime)
 }
@@ -123,23 +123,35 @@ print(t1)
 #saving output to netcdf files
 print("saving NetCDF climatologies...")
 
+# dimension definition (using default 1850-01-01 reftime)
+dims=ncdf.defdims(ics,ipsilon,timeaxis)
+
 # dimensions definition
-fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-LEVEL=50000
-x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
-y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
-t <- ncdim_def( "time", TIME, fulltime,calendar=tcal, longname="time", unlim=T)
+# new version, using fixed reference time: PCICt use always seconds
+# shift by 12 hours in order to have the value at midday since we have daily averages (under testing)
+#reftime="1850-01-01"
+#fulltime=as.numeric(fieldlist$time-as.PCICt(reftime,cal=tcal)) + 86400 / 2
+#TIME=paste0("secs since ",reftime," 00:00:00")
+
+# older version, deprecated
+#fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
+#TIME=paste0(tunit," since ",reftime,"-01 00:00:00")
+
+#set level and define dimensions
+#LEVEL=50000
+#x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
+#y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
+#t <- ncdim_def( "time", TIME, fulltime,calendar=tcal, longname="time", unlim=T)
 
 # extra dimensions definition
 cl <- ncdim_def( "lev", "cluster index", 1:nclusters, longname="pressure")
 
 #var definition
 unit="m"; longvar="Weather Regimes Pattern"
-pattern_ncdf=ncvar_def("Regimes",unit,list(x,y,cl),-999,longname=longvar,prec="single",compression=1)
+pattern_ncdf=ncvar_def("Regimes",unit,list(dims$x,dims$y,cl),-999,longname=longvar,prec="single",compression=1)
 
 unit=paste0("0-",nclusters); longvar="Weather Regimes Cluster Index"
-cluster_ncdf=ncvar_def("Indices",unit,list(t),-999,longname=longvar,prec="single",compression=1)
+cluster_ncdf=ncvar_def("Indices",unit,list(dims$t),-999,longname=longvar,prec="single",compression=1)
 
 unit="%"; longvar="Weather Regimes Frequencies"
 frequencies_ncdf=ncvar_def("Frequencies",unit,list(cl),-999,longname=longvar,prec="single",compression=1)
@@ -148,13 +160,18 @@ frequencies_ncdf=ncvar_def("Frequencies",unit,list(cl),-999,longname=longvar,pre
 dimnchar=ncdim_def("nchar","", 1:max(nchar(names)), create_dimvar=FALSE )
 names_ncdf=ncvar_def("Names","", list(dimnchar, cl), prec="char" )
 
-#saving file
-ncfile1 <- nc_create(savefile1,list(pattern_ncdf,cluster_ncdf,frequencies_ncdf,names_ncdf))
-ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1),  count = c(-1,-1,-1))
-ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1),  count = c(-1))
-ncvar_put(ncfile1, "Frequencies", weather_regimes$frequencies, start = c(1),  count = c(-1))
-ncvar_put(ncfile1, "Names", names) 
-nc_close(ncfile1)
+#saving files (new list based method with ncdf.writer())
+nc_var <- list(pattern_ncdf,cluster_ncdf,frequencies_ncdf,names_ncdf)
+nc_field <- list(weather_regimes$regimes,weather_regimes$cluster,weather_regimes$frequencies,names)
+names(nc_field)=names(nc_var) <- c("Regimes","Indices","Frequencies","Names")
+ncdf.writer(savefile1,nc_var,nc_field)
+
+#ncfile1 <- nc_create(savefile1,list(pattern_ncdf,cluster_ncdf,frequencies_ncdf,names_ncdf))
+#ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1),  count = c(-1,-1,-1))
+#ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1),  count = c(-1))
+#ncvar_put(ncfile1, "Frequencies", weather_regimes$frequencies, start = c(1),  count = c(-1))
+#ncvar_put(ncfile1, "Names", names) 
+#nc_close(ncfile1)
 
 }
 

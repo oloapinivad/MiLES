@@ -1,2 +1,3 @@
 namelist/*.sh
-great_loop.sh
+*_loop.sh
+

@@ -53,19 +53,18 @@ if (file.exists(savefile1)) {
 }
 
 #new file opening
-nomefile=z500filename
-fieldlist=ncdf.opener.universal(nomefile,"zg",tmonths=timeseason,tyears=years,rotate=rotation)
+fieldlist=ncdf.opener.universal(z500filename,"zg",tmonths=timeseason,tyears=years,rotate=rotation)
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
-tcal=attributes(fieldlist$time)$cal
-tunit=attributes(fieldlist$time)$units
+timeaxis=fieldlist$time
 
-#time array
-etime=power.date.new(fieldlist$time)
+#time array to simplify time filtering
+etime=power.date.new(timeaxis,verbose=T)
 
 #declare variable
 Z500=fieldlist$field
+rm(fieldlist)
 
 #monthly averaging
 print("monthly mean...")
@@ -136,39 +135,48 @@ print(t1)
 print("saving NetCDF climatologies...")
 print(savefile1)
 
+#dims
+dims=ncdf.defdims(ics,ipsilon,timeaxis)
+
 #monthly specific time
-monthtime=as.numeric(etime$data[etime$day==15])
+#monthtime=as.numeric(etime$data[etime$day==15])
 
 # dimensions definition
-TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-LEVEL=50000
-x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
-y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
-z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
+#TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
+#LEVEL=50000
+#x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
+#y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
+#z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
 ef <- ncdim_def( "PC", "-", 1:neofs)
-t <- ncdim_def( "time", TIME, monthtime,calendar=tcal, longname="time", unlim=T)
+#t <- ncdim_def( "time", TIME, monthtime,calendar=tcal, longname="time", unlim=T)
 
 #defining vars
 unit="m"; longvar="EOFs Loading Pattern"
-pattern_ncdf=ncvar_def("Patterns",unit,list(x,y,z,ef),-999,longname=longvar,prec="single",compression=1)
+pattern_ncdf=ncvar_def("Patterns",unit,list(dims$x,dims$y,dims$z,ef),-999,longname=longvar,prec="single",compression=1)
 
 unit="m"; longvar="EOFs Linear Regressions"
-regression_ncdf=ncvar_def("Regressions",unit,list(x,y,z,ef),-999,longname=longvar,prec="single",compression=1)
+regression_ncdf=ncvar_def("Regressions",unit,list(dims$x,dims$y,dims$z,ef),-999,longname=longvar,prec="single",compression=1)
 
 unit=paste0("0-",neofs); longvar="PCs timeseries"
-pc_ncdf=ncvar_def("PCs",unit,list(ef,t),-999,longname=longvar,prec="single",compression=1)
+pc_ncdf=ncvar_def("PCs",unit,list(ef,dims$tmon),-999,longname=longvar,prec="single",compression=1)
 
 unit="%"; longvar="EOFs variance"
 variance_ncdf=ncvar_def("Variances",unit,list(ef),-999,longname=longvar,prec="single",compression=1)
 
-#saving files
-ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf))
-ncvar_put(ncfile1, "Patterns", expanded_pattern, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-ncvar_put(ncfile1, "Regressions", EOFS$regression, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-#ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
-ncvar_put(ncfile1, "PCs", EOFS$coeff, start = c(1, 1),  count = c(-1,-1))
-ncvar_put(ncfile1, "Variances", EOFS$variance, start = c(1),  count = c(-1))
-nc_close(ncfile1)
+#saving files (new list based method with ncdf.writer())
+nc_var <- list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf)
+nc_field <- list(expanded_pattern,EOFS$coeff,EOFS$variance,EOFS$regression)
+names(nc_field)=names(nc_var) <- c("Patterns","PCs","Variances","Regressions")
+ncdf.writer(savefile1,nc_var,nc_field)
+
+
+#ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf))
+#ncvar_put(ncfile1, "Patterns", expanded_pattern, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+#ncvar_put(ncfile1, "Regressions", EOFS$regression, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
+##ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
+#ncvar_put(ncfile1, "PCs", EOFS$coeff, start = c(1, 1),  count = c(-1,-1))
+#ncvar_put(ncfile1, "Variances", EOFS$variance, start = c(1),  count = c(-1))
+#nc_close(ncfile1)
 
 
 }

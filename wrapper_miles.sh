@@ -95,10 +95,12 @@ if ${std_clim} ; then
 	done
 	
 	for season in $seasons ; do
-        	if ! { [ "$season" = DJF ] || [ "$season" = MAM ] || [ "$season" = SON ] || [ "$season" = JJA ]; } ; then 
-                	echo "Error: you cannot use non-standard seasons with std_clim=true"
-                	exit
-        	fi        
+		if has_config figures ; then
+        		if ! { [ "$season" = DJF ] || [ "$season" = MAM ] || [ "$season" = SON ] || [ "$season" = JJA ]; } ; then 
+                		echo "Error: you cannot use non-standard seasons with std_clim=true"
+                		exit
+        		fi        
+		fi
 	done
 
 fi
@@ -179,7 +181,7 @@ for dataset in $datasets ; do
 	done
 	fullfilename=$ZDIR/${zfile}_fullfile.nc
 	
-	#echo $fullfilename
+	echo $fullfilename
 
 	#fullfile prepare
 	time . $PROGDIR/script/assimilate.sh 	-d "$dataset" -e "$expid" -r "$ens" -v $varname -l $level \
@@ -305,6 +307,4 @@ fi
 		#done
 	#done
 #fi
-
-rm -f $PROGDIR/Rplots.pdf #remove sporious file creation by R	
 
