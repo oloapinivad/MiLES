@@ -43,17 +43,15 @@ fieldlist=ncdf.opener.universal(nomefile,namevar="ua",tmonths=timeseason,tyears=
 print(str(fieldlist))
 
 #extract calendar and time unit from the original file
-tcal=attributes(fieldlist$time)$cal
-tunit=attributes(fieldlist$time)$units
+timeaxis=fieldlist$time
 
 #time array to simplify time filtering
-#datas=fieldlist$time
-#etime=list(day=as.numeric(format(datas,"%d")),month=as.numeric(format(datas,"%m")),year=as.numeric(format(datas,"%Y")),data=datas)
-etime=power.date.new(fieldlist$time,verbose=T)
-totdays=length(fieldlist$time)
+etime=power.date.new(timeaxis,verbose=T)
+totdays=length(timeaxis)
 
 #declare variable
 U500=fieldlist$field
+rm(fieldlist)
 #U500=sweep(U500,2,1/cos(ipsilon*pi/180),"*")
 
 #grid resolution
@@ -126,7 +124,6 @@ print("Done!")
 
 
 # decleare main variables to be computed (considerable speed up!)
-totrwb=totmeridional=totBI=U500*NA
 totblocked=totblocked2=U500*0
 
 # Davini et al. 2012: parameters to be set for blocking detection
@@ -190,12 +187,6 @@ print("-------------------------")
 frequency=rowMeans(totblocked,dims=2)*100               #frequency of Instantaneous Blocking days
 frequency2=rowMeans(totblocked2,dims=2)*100               #frequency of Instantaneous Blocking days with GHGS2
 U500mean=rowMeans(U500,dims=2)                          #U500 mean value
-BI=apply(totBI,c(1,2),mean,na.rm=T)                     #Blocking Intensity Index as Wiedenmann et al. (2002)
-MGI=apply(totmeridional,c(1,2),mean,na.rm=T)   		 #Value of meridional gradient inversion
-
-#anticyclonic and cyclonic averages RWB
-CN=apply(totrwb,c(1,2),function(x) sum(x[x==(-10)],na.rm=T))/(totdays)*(-10)
-ACN=apply(totrwb,c(1,2),function(x) sum(x[x==(10)],na.rm=T))/(totdays)*(10)
 
 t1=proc.time()-t0
 print(t1)
@@ -232,93 +223,85 @@ print(tf)
 print("saving NetCDF climatologies...")
 
 #which fieds to plot/save
-fieldlist=c("TM90","InstBlock","ExtraBlock","U500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
-full_fieldlist=c("TM90","InstBlock","ExtraBlock","U500","MGI","BI","CN","ACN","BlockEvents","LongBlockEvents")
+savelist=c("TM90","InstBlock","ExtraBlock","U500","BlockEvents","LongBlockEvents","DurationEvents","NumberEvents")
+full_savelist=c("TM90","InstBlock","ExtraBlock","U500","BlockEvents","LongBlockEvents")
 
-# dimensions definition
-fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-LEVEL=50000
-x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
-y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
-z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
-t1 <- ncdim_def( "time", TIME, 0, unlim=T, calendar=tcal, longname="time")
-t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
+# dimension definition (using default 1850-01-01 reftime)
+dims=ncdf.defdims(ics,ipsilon,timeaxis)
 
-for (var in fieldlist)
-{
+#pre-declare list for loading the variable definition and the fields
+nc_field=nc_var=sapply(savelist,function(x) NULL)
+nc_fullfield=nc_fullvar=sapply(full_savelist,function(x) NULL)
+
+# loop on vars to save
+for (var in union(savelist,full_savelist)) {
+
+        # default dimensions for climatological and full file
+        dim_ncdf=list(dims$x,dims$y,dims$z,t=dims$tclim)
+        dim_fullncdf=list(dims$x,dims$y,dims$z,t=dims$t)
+
         #name of the var
-	if (var=="TM90") 
-		{longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90}
-   	if (var=="InstBlock")
-        	{longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
-   	if (var=="ExtraBlock")
-                {longvar="Instantaneous Blocking frequency (GHGS2)"; unit="%"; field=frequency2; full_field=totblocked2}
-   	if (var=="U500")
-                {longvar="Zonal wind"; unit="m/s"; field=U500mean; full_field=U500}
-   	if (var=="BI")
-                {longvar="BI index"; unit=""; field=BI; full_field=totBI}
-   	if (var=="MGI")
-                {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
-   	if (var=="ACN")
-                {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
-   	if (var=="CN")
-                {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
-    	if (var=="BlockEvents")
-                {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
-	if (var=="LongBlockEvents")
-                {longvar="10-day Blocking Events frequency"; unit="%"; field=longblock$percentage; full_field=longblock$track}
-	if (var=="DurationEvents")
-                {longvar="Blocking Events duration"; unit="days"; field=block$duration}
-    	if (var=="NumberEvents")
-                {longvar="Blocking Events number"; unit=""; field=block$nevents}
-
+        if (var=="TM90") {
+                dim_ncdf=list(dims$x,t=dims$tclim)
+                dim_fullncdf=list(dims$x,t=dims$t)
+                longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"
+                unit="%"; field=TM90; full_field=totTM90
+        }
+        if (var=="InstBlock") {
+                longvar="Instantaneous Blocking frequency"
+                unit="%"; field=frequency; full_field=totblocked
+        }
+        if (var=="ExtraBlock") {
+                longvar="Instantaneous Blocking frequency (GHGS2)"
+                unit="%"; field=frequency2; full_field=totblocked2
+	}
+   	if (var=="U500") {
+		longvar="Zonal wind"; 
+		unit="m/s"; field=U500mean; full_field=U500
+	}
+	if (var=="BlockEvents") {
+                longvar="Blocking Events frequency";
+                unit="%"; field=block$percentage; full_field=block$track
+        }
+        if (var=="LongBlockEvents") {
+                longvar="10-day Blocking Events frequency";
+                unit="%"; field=longblock$percentage; full_field=longblock$track
+        }
+        if (var=="DurationEvents") {
+                longvar="Blocking Events duration";
+                unit="days"; field=block$duration
+        }
+        if (var=="NumberEvents") {
+                longvar="Blocking Events number";
+                unit=""; field=block$nevents
+        }
+	
 	#fix eventual NaN	
 	field[is.nan(field)]=NA
 
-        #variable definitions
-        if (var=="TM90") {
-		var_ncdf=ncvar_def(var,unit,list(x,t=t1),-999,longname=longvar,prec="single",compression=1)
-		full_var_ncdf=ncvar_def(var,unit,list(x,t=t2),-999,longname=longvar,prec="single",compression=1)
-	} else {
-		var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t1),-999,longname=longvar,prec="single",compression=1)
-		full_var_ncdf=ncvar_def(var,unit,list(x,y,z,t=t2),-999,longname=longvar,prec="single",compression=1)
-	}
-	
-        assign(paste0("var",var),var_ncdf)
-	assign(paste0("full_var",var),full_var_ncdf)
-        assign(paste0("field",var),field)
-	assign(paste0("full_field",var),full_field)
-}
+	# define the list for variables and fields
+	if (var %in% savelist) {
+                nc_var[[which(var==savelist)]] <- ncvar_def(var,unit,dim_ncdf,-999,
+                                                            longname=longvar,prec="single",
+                                                            compression=1)
+                nc_field[[which(var==savelist)]] <- field
+        }
 
-#Climatologies Netcdf file creation
-print(savefile1)
-namelist1=paste0("var",fieldlist)
-nclist1 <- mget(namelist1)
-ncfile1 <- nc_create(savefile1,nclist1)
-for (var in fieldlist)
-{
-        # put variables into the ncdf file
-	#ncvar_put(ncfile1, fieldlist[which(var==fieldlist)], get(paste0("field",var)), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-	ndims=get(paste0("var",var))$ndims
-	ncvar_put(ncfile1, var, get(paste0("field",var)), start = rep(1,ndims),  count = rep(-1,ndims))
-}
-nc_close(ncfile1)
+        if (var %in% full_savelist) {
+                nc_fullvar[[which(var==full_savelist)]] <- ncvar_def(var,unit,dim_fullncdf,-999,
+                                                                     longname=longvar,prec="single",
+                                                                     compression=1)
+                nc_fullfield[[which(var==full_savelist)]] <- full_field
+        }
 
-#Fullfield Netcdf file creation
-print(savefile2)
-namelist2=paste0("full_var",full_fieldlist)
-nclist2 <- mget(namelist2)
-ncfile2 <- nc_create(savefile2,nclist2)
-for (var in full_fieldlist)
-{
-        # put variables into the ncdf file
-        #ncvar_put(ncfile2, full_fieldlist[which(var==full_fieldlist)], get(paste0("full_field",var)), start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-	ndims=get(paste0("full_var",var))$ndims
-	ncvar_put(ncfile2, var, get(paste0("full_field",var)), start = rep(1,ndims),  count = rep(-1,ndims))
 
 }
-nc_close(ncfile2)
+
+# save variables
+# Climatologies Netcdf file creation
+ncdf.writer(savefile1, nc_var, nc_field)
+ncdf.writer(savefile2, nc_fullvar, nc_fullfield)
+
 
 }
 

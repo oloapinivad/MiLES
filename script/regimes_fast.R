@@ -129,9 +129,6 @@ dims=ncdf.defdims(ics,ipsilon,timeaxis)
 # dimensions definition
 # new version, using fixed reference time: PCICt use always seconds
 # shift by 12 hours in order to have the value at midday since we have daily averages (under testing)
-#reftime="1850-01-01"
-#fulltime=as.numeric(fieldlist$time-as.PCICt(reftime,cal=tcal)) + 86400 / 2
-#TIME=paste0("secs since ",reftime," 00:00:00")
 
 # older version, deprecated
 #fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]

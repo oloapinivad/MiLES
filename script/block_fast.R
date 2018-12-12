@@ -238,57 +238,93 @@ nc_field=nc_var=sapply(savelist,function(x) NULL)
 nc_fullfield=nc_fullvar=sapply(full_savelist,function(x) NULL)
 
 # loop on vars to save
-for (var in union(savelist,full_savelist))
-{
+for (var in union(savelist,full_savelist)) {
+
+	# default dimensions for climatological and full file
+	dim_ncdf=list(dims$x,dims$y,dims$z,t=dims$tclim)
+	dim_fullncdf=list(dims$x,dims$y,dims$z,t=dims$t)
+
         #name of the var
-	if (var=="TM90") 
-		{longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency"; unit="%"; field=TM90; full_field=totTM90}
-   	if (var=="InstBlock")
-        	{longvar="Instantaneous Blocking frequency"; unit="%"; field=frequency; full_field=totblocked}
-   	if (var=="ExtraBlock")
-                {longvar="Instantaneous Blocking frequency (GHGS2)"; unit="%"; field=frequency2; full_field=totblocked2}
-   	if (var=="Z500")
-                {longvar="Geopotential Height"; unit="m"; field=Z500mean; full_field=Z500}
-   	if (var=="BI")
-                {longvar="BI index"; unit=""; field=BI; full_field=totBI}
-   	if (var=="MGI")
-                {longvar="MGI index"; unit=""; field=MGI; full_field=totmeridional}
-   	if (var=="ACN")
-                {longvar="Anticyclonic RWB frequency"; unit="%"; field=ACN; full_field=totrwb/10; full_field[full_field==(-1)]=NA}
-   	if (var=="CN")
-                {longvar="Cyclonic RWB frequency"; unit="%"; field=CN; full_field=totrwb/10; full_field[full_field==(1)]=NA}
-    	if (var=="BlockEvents")
-                {longvar="Blocking Events frequency"; unit="%"; field=block$percentage; full_field=block$track}
-	if (var=="LongBlockEvents")
-                {longvar="10-day Blocking Events frequency"; unit="%"; field=longblock$percentage; full_field=longblock$track}
-	if (var=="DurationEvents")
-                {longvar="Blocking Events duration"; unit="days"; field=block$duration}
-    	if (var=="NumberEvents")
-                {longvar="Blocking Events number"; unit=""; field=block$nevents}
+	if (var=="TM90") {
+		dim_ncdf=list(dims$x,t=dims$tclim)
+		dim_fullncdf=list(dims$x,t=dims$t)
+		longvar="Tibaldi-Molteni 1990 Instantaneous Blocking frequency" 
+		unit="%"; field=TM90; full_field=totTM90
+	}
+   	if (var=="InstBlock") {
+		longvar="Instantaneous Blocking frequency" 
+		unit="%"; field=frequency; full_field=totblocked
+	}
+   	if (var=="ExtraBlock") {
+		longvar="Instantaneous Blocking frequency (GHGS2)"
+	        unit="%"; field=frequency2; full_field=totblocked2
+	}
+   	if (var=="Z500") {
+		longvar="Geopotential Height" 
+		unit="m"; field=Z500mean; full_field=Z500
+	}
+   	if (var=="BI") {
+		longvar="BI index"
+		unit=""; field=BI; full_field=totBI
+	}
+   	if (var=="MGI") {
+		longvar="MGI index" 
+		unit=""; field=MGI; full_field=totmeridional
+	}
+   	if (var=="ACN"){
+		longvar="Anticyclonic RWB frequency" 
+		unit="%"; field=ACN; full_field=totrwb/10; 
+		full_field[full_field==(-1)]=NA
+	}
+   	if (var=="CN") {
+		longvar="Cyclonic RWB frequency"; 
+		unit="%"; field=CN; full_field=totrwb/10; 
+		full_field[full_field==(1)]=NA
+	}
+    	if (var=="BlockEvents") {
+		longvar="Blocking Events frequency"; 
+		unit="%"; field=block$percentage; full_field=block$track
+	}
+	if (var=="LongBlockEvents") {
+		longvar="10-day Blocking Events frequency"; 
+		unit="%"; field=longblock$percentage; full_field=longblock$track
+	}
+	if (var=="DurationEvents") {
+		longvar="Blocking Events duration"; 
+		unit="days"; field=block$duration
+	}
+    	if (var=="NumberEvents") {
+		longvar="Blocking Events number"; 
+		unit=""; field=block$nevents
+	}
 
 	#fix eventual NaN	
 	field[is.nan(field)]=NA
 
         #variable definitions
-        if (var=="TM90") {
-		var_ncdf=ncvar_def(var,unit,list(dims$x,t=dims$tclim),-999,longname=longvar,prec="single",compression=1)
-		full_var_ncdf=ncvar_def(var,unit,list(dims$x,t=dims$t),-999,longname=longvar,prec="single",compression=1)
-	} else {
-		var_ncdf=ncvar_def(var,unit,list(dims$x,dims$y,dims$z,t=dims$tclim),-999,longname=longvar,prec="single",compression=1)
-		full_var_ncdf=ncvar_def(var,unit,list(dims$x,dims$y,dims$z,t=dims$t),-999,longname=longvar,prec="single",compression=1)
-	}
+        #if (var=="TM90") {
+	#	var_ncdf=ncvar_def(var,unit,list(dims$x,t=dims$tclim),-999,longname=longvar,prec="single",compression=1)
+	#	full_var_ncdf=ncvar_def(var,unit,list(dims$x,t=dims$t),-999,longname=longvar,prec="single",compression=1)
+	#} else {
+	#	var_ncdf=ncvar_def(var,unit,list(dims$x,dims$y,dims$z,t=dims$tclim),-999,longname=longvar,prec="single",compression=1)
+	#	full_var_ncdf=ncvar_def(var,unit,list(dims$x,dims$y,dims$z,t=dims$t),-999,longname=longvar,prec="single",compression=1)
+	#}
 	
         #assign(paste0("var",var),var_ncdf)
 	#assign(paste0("full_var",var),full_var_ncdf)
 	if (var %in% savelist) {
-		nc_var[[which(var==savelist)]] <- var_ncdf	
+		nc_var[[which(var==savelist)]] <- ncvar_def(var,unit,dim_ncdf,-999,
+							    longname=longvar,prec="single",
+							    compression=1)
 		nc_field[[which(var==savelist)]] <- field
 	}
 
         #assign(paste0("field",var),field)
 	#assign(paste0("full_field",var),full_field)
 	if (var %in% full_savelist) {
-		nc_fullvar[[which(var==full_savelist)]] <- full_var_ncdf
+		nc_fullvar[[which(var==full_savelist)]] <- ncvar_def(var,unit,dim_fullncdf,-999,
+								     longname=longvar,prec="single",
+								     compression=1)
         	nc_fullfield[[which(var==full_savelist)]] <- full_field
 	}
 }
