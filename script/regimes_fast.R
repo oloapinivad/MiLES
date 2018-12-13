@@ -48,18 +48,24 @@ miles.regimes.fast <- function(project, dataset, expid, ens, year1, year2, seaso
   # 	}
   # }
 
-  # new file opening
-  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full")
+  # file opening
+  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+  print(str(fieldlist))
+
+  # assign variables
+  ics <- fieldlist$lon
+  ipsilon <- fieldlist$lat
 
   # extract calendar and time unit from the original file
   timeaxis <- fieldlist$time
 
-  # time array
-  etime <- power.date.new(timeaxis)
-
-  # declare variable
+  # declare variable and clean
   Z500 <- fieldlist$field
   rm(fieldlist)
+
+  # time array to simplify time filtering
+  etime <- power.date.new(timeaxis, verbose = T)
+  totdays <- length(timeaxis)
 
   print("Compute anomalies based on daily mean")
   # smoothing flag and daily anomalies
@@ -126,22 +132,8 @@ miles.regimes.fast <- function(project, dataset, expid, ens, year1, year2, seaso
   # dimension definition (using default 1850-01-01 reftime)
   dims <- ncdf.defdims(ics, ipsilon, timeaxis)
 
-  # dimensions definition
-  # new version, using fixed reference time: PCICt use always seconds
-  # shift by 12 hours in order to have the value at midday since we have daily averages (under testing)
-
-  # older version, deprecated
-  # fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-  # TIME=paste0(tunit," since ",reftime,"-01 00:00:00")
-
-  # set level and define dimensions
-  # LEVEL=50000
-  # x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
-  # y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
-  # t <- ncdim_def( "time", TIME, fulltime,calendar=tcal, longname="time", unlim=T)
-
   # extra dimensions definition
-  cl <- ncdim_def("lev", "cluster index", 1:nclusters, longname = "pressure")
+  cl <- ncdim_def("clust", units = "" , 1:nclusters, longname = "Cluster index")
 
   # var definition
   unit <- "m"
@@ -166,12 +158,6 @@ miles.regimes.fast <- function(project, dataset, expid, ens, year1, year2, seaso
   names(nc_field) <- names(nc_var) <- c("Regimes", "Indices", "Frequencies", "Names")
   ncdf.writer(savefile1, nc_var, nc_field)
 
-  # ncfile1 <- nc_create(savefile1,list(pattern_ncdf,cluster_ncdf,frequencies_ncdf,names_ncdf))
-  # ncvar_put(ncfile1, "Regimes", weather_regimes$regimes, start = c(1, 1, 1),  count = c(-1,-1,-1))
-  # ncvar_put(ncfile1, "Indices", weather_regimes$cluster, start = c(1),  count = c(-1))
-  # ncvar_put(ncfile1, "Frequencies", weather_regimes$frequencies, start = c(1),  count = c(-1))
-  # ncvar_put(ncfile1, "Names", names)
-  # nc_close(ncfile1)
 }
 
 # blank line

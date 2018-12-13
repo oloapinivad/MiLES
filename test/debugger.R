@@ -6,7 +6,7 @@ dataset="ERAI"
 project=expid=ens=NA
 year1=1979
 year2=1980
-season="DJF"
+season="Nov_Dec_Jan"
 z500filename="/work/users/paolo/miles/data/zg500/ERAI/zg500_ERAI_fullfile.nc"
 #z500filename="/work/users/paolo/miles/data/zg500/CMIP5/bcc-csm1-1/historical/r1/zg500_bcc-csm1-1_historical_r1_fullfile.nc"
 
@@ -26,8 +26,51 @@ etime=power.date.new(timeaxis,verbose=T)
 
 
 #declare variable
-Z500=fieldlist$field
+field=Z500=fieldlist$field
 Z500mean=apply(Z500,c(1,2),mean)
+
+# function for daily anomalies from a 5-day running mean seasonal cycle:
+# This that takes into account correctly the cross-year season as DJF
+daily.anom.run.mean5 <- function(ics, ipsilon, field, etime) {
+  
+  # define condition
+  condition <- format(etime$data,"%m%d")
+
+  # evaluted the time-ordered condition: if there is a jump, it means that there is a cross-year
+  sorted <- sort(unique(condition))
+  breakpoint <- which(diff(as.numeric(sorted)) > 100)
+  #print(breakpoint)
+
+  # if there is a cross-year, re-arrenge in order to have them as consecutive dates
+  if (length(breakpoint) > 0 ) {
+    sorted = c(sorted[(breakpoint + 1):length(sorted)], sorted[1:breakpoint])
+  }
+
+  #print(sorted)
+  # compute the seasonal cycle
+  daily <- array(NA, dim = c(length(ics), length(ipsilon), length(sorted)))
+  for (t in sorted) {
+    if (sum(t == condition) == 1) {
+      warning("Cannot compute a mean with a single value: using the value as it is!")
+      daily[, , which(t == sorted)] <- field[, , t == condition]
+    } else {
+      daily[, , which(t == sorted)] <- rowMeans(field[, , t == condition], dims = 2)
+    }
+  }
+
+  # apply running mean on the rightly orderded seasonal cycle
+  rundaily <- apply(daily, c(1, 2), run.mean5)
+
+  # remove seasonal cycle
+  anom <- field * NA
+  for (t in sorted) {
+    anom[, , which(t == condition)] <- sweep(field[, , which(t == condition)], c(1, 2), daily[, , which(t == sorted)], "-")
+  }
+
+  return(anom)
+}
+
+test=daily.anom.run.mean5(ics, ipsilon, field, etime)
 
 # list of isohypses on which evaluate the MI
 isolvls=seq(4900,6200,5)

@@ -29,8 +29,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   }
 
   # new file opening
-  nomefile <- z500filename
-  fieldlist <- ncdf.opener.universal(nomefile, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
   print(str(fieldlist))
 
   # assign variables

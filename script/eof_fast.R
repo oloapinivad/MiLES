@@ -59,18 +59,23 @@ miles.eofs.fast <- function(project, dataset, expid, ens, year1, year2, season, 
   }
 
   # new file opening
-  fieldlist <- ncdf.opener.universal(z500filename, "zg", tmonths = timeseason, tyears = years, rotate = rotation)
+  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = rotation, exportlonlat = F)
   print(str(fieldlist))
+
+  # assign variables
+  ics <- fieldlist$lon
+  ipsilon <- fieldlist$lat
 
   # extract calendar and time unit from the original file
   timeaxis <- fieldlist$time
 
-  # time array to simplify time filtering
-  etime <- power.date.new(timeaxis, verbose = T)
-
-  # declare variable
+  # declare variable and clean
   Z500 <- fieldlist$field
   rm(fieldlist)
+
+  # time array to simplify time filtering
+  etime <- power.date.new(timeaxis, verbose = T)
+  totdays <- length(timeaxis)
 
   # monthly averaging
   print("monthly mean...")
@@ -154,26 +159,17 @@ miles.eofs.fast <- function(project, dataset, expid, ens, year1, year2, season, 
   # dims
   dims <- ncdf.defdims(ics, ipsilon, timeaxis)
 
-  # monthly specific time
-  # monthtime=as.numeric(etime$data[etime$day==15])
-
-  # dimensions definition
-  # TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-  # LEVEL=50000
-  # x <- ncdim_def( "lon", "degrees_east", ics, longname="longitude")
-  # y <- ncdim_def( "lat", "degrees_north", ipsilon, longname="latitude")
-  # z <- ncdim_def( "plev", "Pa", LEVEL, longname="pressure")
-  ef <- ncdim_def("PC", "-", 1:neofs)
-  # t <- ncdim_def( "time", TIME, monthtime,calendar=tcal, longname="time", unlim=T)
+  # extra dimensions definition
+  ef <- ncdim_def("eof", units = "", 1:neofs, longname = "EOF Number")
 
   # defining vars
   unit <- "m"
   longvar <- "EOFs Loading Pattern"
-  pattern_ncdf <- ncvar_def("Patterns", unit, list(dims$x, dims$y, dims$z, ef), -999, longname = longvar, prec = "single", compression = 1)
+  pattern_ncdf <- ncvar_def("Patterns", unit, list(dims$x, dims$y, ef), -999, longname = longvar, prec = "single", compression = 1)
 
   unit <- "m"
   longvar <- "EOFs Linear Regressions"
-  regression_ncdf <- ncvar_def("Regressions", unit, list(dims$x, dims$y, dims$z, ef), -999, longname = longvar, prec = "single", compression = 1)
+  regression_ncdf <- ncvar_def("Regressions", unit, list(dims$x, dims$y, ef), -999, longname = longvar, prec = "single", compression = 1)
 
   unit <- paste0("0-", neofs)
   longvar <- "PCs timeseries"
@@ -190,13 +186,6 @@ miles.eofs.fast <- function(project, dataset, expid, ens, year1, year2, season, 
   ncdf.writer(savefile1, nc_var, nc_field)
 
 
-  # ncfile1 <- nc_create(savefile1,list(pattern_ncdf,pc_ncdf,variance_ncdf,regression_ncdf))
-  # ncvar_put(ncfile1, "Patterns", expanded_pattern, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-  # ncvar_put(ncfile1, "Regressions", EOFS$regression, start = c(1, 1, 1, 1),  count = c(-1,-1,-1,-1))
-  ## ncvar_put(ncfile1, "PCs", COEFF, start = c(1, 1),  count = c(-1,-1))
-  # ncvar_put(ncfile1, "PCs", EOFS$coeff, start = c(1, 1),  count = c(-1,-1))
-  # ncvar_put(ncfile1, "Variances", EOFS$variance, start = c(1),  count = c(-1))
-  # nc_close(ncfile1)
 }
 
 # blank line
@@ -223,7 +212,6 @@ if (length(args) != 0) {
         args[k] <- NA
       }
       assign(name_args[k], args[k])
-      print(args[k])
     }
     source(file.path(PROGDIR, "script/basis_functions.R"))
     miles.eofs.fast(project, dataset, expid, ens, year1, year2, season, tele, z500filename, FILESDIR, doforce)

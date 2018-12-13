@@ -181,7 +181,7 @@ for dataset in $datasets ; do
 	done
 	fullfilename=$ZDIR/${zfile}_fullfile.nc
 	
-	echo $fullfilename
+	echo "Full filename is: $fullfilename"
 
 	#fullfile prepare
 	time . $PROGDIR/script/assimilate.sh 	-d "$dataset" -e "$expid" -r "$ens" -v $varname -l $level \

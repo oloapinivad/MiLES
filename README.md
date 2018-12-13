@@ -185,6 +185,7 @@ It is recommended in such cases to split the analysis in different subsets.
 - Fixed minor bug in power.date.new() (that was affecting Blocking Events calculation)
 - Refactored NetCDF output writer with ncdf.writer() and ncdf.defdims() functions
 - NetCDF output has now a fixed reference time (1850-01-01)
+- Reformatting MiLES code according to standards (using styler package): some linters still failing
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)

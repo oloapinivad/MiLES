@@ -26,11 +26,13 @@ miles.meandering <- function(project, dataset, expid, ens, year1, year2, season,
     }
   }
 
-  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full")
+  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
   print(str(fieldlist))
 
   # extract calendar and time unit from the original file
   timeaxis <- fieldlist$time
+  ics <- fieldlist$lon
+  ipsilon <- fieldlist$lat
 
   # time array to simplify time filtering
   etime <- power.date.new(timeaxis, verbose = T)
@@ -100,12 +102,7 @@ miles.meandering <- function(project, dataset, expid, ens, year1, year2, season,
 
   # dimension definition (using default 1850-01-01 reftime)
   dims <- ncdf.defdims(ics, ipsilon, timeaxis)
-  # fulltime=as.numeric(etime$data)-as.numeric(etime$data)[1]
-  # TIME=paste(tunit," since ",year1,"-",timeseason[1],"-01 00:00:00",sep="")
-  # LEVEL=50000
   x <- ncdim_def("lon", "degrees_east", 0, longname = "longitude")
-  # t1 <- ncdim_def( "time", TIME, 0, unlim=T, calendar=tcal, longname="time")
-  # t2 <- ncdim_def( "time", TIME, fulltime,unlim=T, calendar=tcal, longname="time")
 
   # pre-declare list for loading the variable definition and the fields
   nc_field <- nc_var <- sapply(savelist, function(x) NULL)
@@ -130,15 +127,11 @@ miles.meandering <- function(project, dataset, expid, ens, year1, year2, season,
     var_ncdf <- ncvar_def(var, unit, list(x, t = dims$tclim), -999, longname = longvar, prec = "single", compression = 1)
     full_var_ncdf <- ncvar_def(var, unit, list(x, t = dims$t), -999, longname = longvar, prec = "single", compression = 1)
 
-    # assign(paste0("var",var),var_ncdf)
-    # assign(paste0("full_var",var),full_var_ncdf)
     if (var %in% savelist) {
       nc_var[[which(var == savelist)]] <- var_ncdf
       nc_field[[which(var == savelist)]] <- field
     }
 
-    # assign(paste0("field",var),field)
-    # assign(paste0("full_field",var),full_field)
     if (var %in% full_savelist) {
       nc_fullvar[[which(var == full_savelist)]] <- full_var_ncdf
       nc_fullfield[[which(var == full_savelist)]] <- full_field
@@ -151,28 +144,6 @@ miles.meandering <- function(project, dataset, expid, ens, year1, year2, season,
   ncdf.writer(savefile2, nc_fullvar, nc_fullfield)
 
 
-  # Climatologies Netcdf file creation
-  # print(savefile1)
-  # namelist1=paste0("var",savelist)
-  # nclist1 <- mget(namelist1)
-  # ncfile1 <- nc_create(savefile1,nclist1)
-  # for (var in savelist) {
-  # put variables into the ncdf file
-  # ncvar_put(ncfile1, savelist[which(var==savelist)], get(paste0("field",var)), start = c(1, 1),  count = c(-1,-1))
-  # }
-  # nc_close(ncfile1)
-
-  # Fullfield Netcdf file creation
-  # print(savefile2)
-  # namelist2=paste0("full_var",full_savelist)
-  # nclist2 <- mget(namelist2)
-  # ncfile2 <- nc_create(savefile2,nclist2)
-  # for (var in full_savelist) {
-  ## put variables into the ncdf file
-  # ncvar_put(ncfile2, full_savelist[which(var==full_savelist)], get(paste0("full_field",var)), start = c(1, 1),  count = c(-1,-1))
-  #
-  # }
-  # nc_close(ncfile2)
 }
 
 # blank lines

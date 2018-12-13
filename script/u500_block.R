@@ -41,8 +41,12 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   }
 
   # new file opening
-  fieldlist <- ncdf.opener.universal(nomefile, namevar = "ua", tmonths = timeseason, tyears = years, rotate = "full", verbose = F)
+  fieldlist <- ncdf.opener.universal(nomefile, namevar = "ua", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
   print(str(fieldlist))
+
+  # assign variables
+  ics <- fieldlist$lon
+  ipsilon <- fieldlist$lat
 
   # extract calendar and time unit from the original file
   timeaxis <- fieldlist$time
@@ -54,7 +58,6 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   # declare variable
   U500 <- fieldlist$field
   rm(fieldlist)
-  # U500=sweep(U500,2,1/cos(ipsilon*pi/180),"*")
 
   # grid resolution
   yreso <- ipsilon[2] - ipsilon[1]

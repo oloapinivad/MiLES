@@ -1479,7 +1479,7 @@ daily.anom.mean <- function(ics, ipsilon, field, etime) {
 }
 
 # beta function for daily anomalies plus running mean (only 50% slower that standard daily avg)
-daily.anom.run.mean5 <- function(ics, ipsilon, field, etime) {
+daily.anom.run.mean5.old <- function(ics, ipsilon, field, etime) {
   condition <- paste(etime$day, etime$month)
   daily <- array(NA, dim = c(length(ics), length(ipsilon), length(unique(condition))))
   for (t in unique(condition)) {
@@ -1495,3 +1495,45 @@ daily.anom.run.mean5 <- function(ics, ipsilon, field, etime) {
   }
   return(anom)
 }
+
+# function for daily anomalies from a 5-day running mean seasonal cycle:
+# This that takes into account correctly the cross-year season as DJF
+daily.anom.run.mean5 <- function(ics, ipsilon, field, etime) {
+
+  # define condition for time selection: use numeric-compatible format
+  condition <- format(etime$data,"%m%d")
+
+  # evalute the time-ordered condition: if there is a jump, it means that there is a cross-year
+  sorted <- sort(unique(condition))
+  breakpoint <- which(diff(as.numeric(sorted)) > 100)
+  #print(breakpoint)
+  
+  # if there is a cross-year, re-arrenge in order to have them as consecutive dates
+  if (length(breakpoint) > 0 ) {
+    sorted = c(sorted[(breakpoint + 1):length(sorted)], sorted[1:breakpoint])
+  }
+
+  #print(sorted)
+  # compute the seasonal cycle
+  daily <- array(NA, dim = c(length(ics), length(ipsilon), length(sorted)))
+  for (t in sorted) {
+    if (sum(t == condition) == 1) {
+      warning("Cannot compute a mean with a single value: using the value as it is!")
+      daily[, , which(t == sorted)] <- field[, , t == condition]
+    } else {
+      daily[, , which(t == sorted)] <- rowMeans(field[, , t == condition], dims = 2)
+    }
+  }
+
+  # apply running mean on the rightly orderded seasonal cycle
+  rundaily <- apply(daily, c(1, 2), run.mean5)
+  
+  # remove seasonal cycle
+  anom <- field * NA
+  for (t in sorted) {
+    anom[, , which(t == condition)] <- sweep(field[, , which(t == condition)], c(1, 2), daily[, , which(t == sorted)], "-")
+  }
+  
+  return(anom)
+} 
+
