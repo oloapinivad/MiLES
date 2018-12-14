@@ -15,10 +15,10 @@ I. Mavilia (CNR-ISAC), E. Arnone (University of Torino)
 
 ## WHAT IS MiLES?
 
-**MiLES** is a diagnostic suite based on R and CDO aimed at estimating the properties of Northern Hemisphere mid-latitude climate in Global Climate Models and Reanalysis datasets. It has been originally thought for EC-Earth GCM output and then it has been extended to any model or Reanalysis datasets. 
-It requires only daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs and climatological figures over the chosen time period and season.
+**MiLES** is a diagnostic suite based on R and CDO aimed at estimating the properties of Northern Hemisphere mid-latitude climate variability in Global Climate Models and Reanalysis datasets. It has been originally thought for EC-Earth GCM output and then it has been extended to any model or Reanalysis datasets. 
+It relies only daily 500hPa Northern Hemisphere geopotential height data and produces NetCDF4 outputs and climatological figures over the chosen time period and season.
 Before performing analysis, data are preprocessed and interpolated on a common 2.5x2.5 grid using CDO.  
-Model data can be compared against ECMWF ERA-Interim Reanalysis for a standard period (1979-2017) or with any other MiLES-generated data.
+Model data can be compared against ECMWF ERA-Interim Reanalysis over a standard period (1979-2017) or with any other MiLES-generated data.
 
 Current version includes:
 
@@ -35,9 +35,8 @@ Current version includes:
 	A supplementary Instantaneous Blocking index with the GHGS2 conditon is also evaluted. 
 	Full timeseries and climatologies are provided in NetCDF4 Zip format.
 
-3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R using SVD.
-	First 4 EOFs for North Atlantic (over the 90W-40E, 20N-85N box), North Pacific (140E-80W, 20N-85N) and Northern Hemisphere (20N-85N).
-	North Atlantic Oscillation, Pacific North American pattern and Arctic Oscillation are thus computed. 
+3. 	**Z500 Empirical Orthogonal Functions**: Based on EOFs computed by R using Singular Value Decomposition.
+	First 4 EOFs for North Atlantic (over the 90W-40E, 20N-85N box), North Pacific (140E-80W, 20N-85N) and Northern Hemisphere (20N-85N) can be computed
 	Figures showing linear regression of PCs on monthly Z500 are provided.
 	PCs and eigenvectors, as well as the variances explained are provided in NetCDF4 Zip format.
 
@@ -46,13 +45,13 @@ Current version includes:
 	anomalies from daily seasonal cycle. North Atlantic first EOFs (retaining the 80% of variance) are computed to reduce 
 	the phase-space dimension and then k-means clustering using Hartigan-Wong algorithm with k=4 is computed. 
 	Cluster assignment is performed analyzing positions of absolute minima and maxima.
-	Figures report patterns and frequencies of occurrence. NetCDF4 Zip data are saved.
+	Figures report patterns, regimes assignation and frequencies of occurrence. NetCDF4 Zip data are saved.
 	*Only 4 regimes and DJF season is supported so far.*
 
 5. 	**Meandering Index (beta)** : following the index introduced by *Di Capua and Coumou (2016)*. It evaluates the 
-	waviness of the atmosphere (i.e. the length of the longest isopleth) at a reference latitude of 60N. Original
-	code can be found at https://github.com/giorgiadicapua/MeanderingIndex. NetCDF4 Zip data are saved 
-	but no figures are provided.
+	waviness of the atmosphere (i.e. the length of the longest isopleth) at a reference latitude of 60N. 
+	Original code can be found at https://github.com/giorgiadicapua/MeanderingIndex. 
+	NetCDF4 Zip data are saved but no figures are provided.
 
 ----------------
 
@@ -79,7 +78,7 @@ c). *"Di Capua G. and Coumou D. 2016: Changes in meandering of the Northern Hemi
 - b. CDO version > 1.6.5 (1.8 at least for complete GRIB support), compiled with netCDF4
 - c. Compiling environment (gcc)
 
-IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) needed to run **MiLES**.
+IMPORTANT: there are 5 R packages (ncdf4, maps, PCICt, akima and mapproj) currently needed to run **MiLES**.
 You have to run `Rscript config/installpack.R` as first step in order to install the packages.
 If everything runs fine, their installation is performed by an automated routine that brings the user through the standard web-based installation.
 Packages are also included in **MiLES** and can be installed offline setting `web=0` in the script.
@@ -103,7 +102,7 @@ Two configuration scripts control the program options:
 1. 	`config/config_$MACHINE.sh` controls the properties of your environment. 
 	It should be set accordingly to your local configuration. Two template `.tmpl` files for Unix and Mac Os X machines are provided. 
 	It is a trivial configuration, needing only information on CDO/R paths and some folders definition.
-    	_IMPORTANT_: this file also includes the directory tree for your model NetCDF files and the expected input files format. 
+    	_IMPORTANT_: this file also includes the directory tree for NetCDF data files and the expected input files format. 
     	It's extremely important that you **create OUR OWN config file**: in this way it will not be overwritten by further pull.   
 2.	`config/R_config.R` controls the plot properties. If everything is ok, you should not touch this file.
 	However, from here you can change in the properties of the plots (as figure size, palettes, axis font, etc.).
@@ -123,23 +122,24 @@ can specified since v0.7 through the namelists. Here below a list of the variabl
 - `dataset_exp` -> identifier for the dataset used to create files and paths structure (mandatory!)
 - `expid_exp` ->  identifier for the experiment type used to create files and paths structure (unset if you do not want to use it)
 - `ens_exp` -> identifier for the ensemble members used to create files and paths structure (unset if you do not want to use it).
-IMPORTANT: the three above-mentioned vars are the core of the CMIP data structure and they have been introduced to this aim.
+IMPORTANT: the three above-mentioned vars are the core of the CMIP-like data structure and they have been introduced to this aim.
 - `year1_exp` and `year2_exp` -> the years on which MiLES will run. 
 - `std_clim` -> can be `true` to use standard ERAI 1979-2017 climatology, `false` for custom comparison.
-- `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use `ALL` to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. `Jan_Feb_Mar`). This last functionality is under testing.
+- `seasons` -> specify one or more of the 4 standard seasons using 3 characters (DJF-MAM-JJA-SON). Use `ALL` to cover the full year. Otherwise, use 3 character for each month divided by an underscore to create your own season (e.g. `Jan_Feb_Mar_Apr`).
 - `project_ref`,`dataset_ref`, `expid_ref`, `ens_ref`, `year1_ref` and `year2_ref`  -> in analogy to the main variables, these controls the experiment to be compared when `std_clim=false` is set. 
 
 #### Config options
-Since v0.7 a configuration options system has been introduced. Adding specific keywords to the `options` variable will provide different results: you can set `block` for blocking, `eofs` for EOFs, `figures` for having figures and so on. 
+Since v0.7 a configuration options system has been introduced. Adding specific keywords to the `options` variable will provide different results: you can set `block` for blocking, `eofs` for EOFs, `figures` for having figures and so on. See the `namelist.tmpl` for the full description of the options. 
 
 #### Secondary variables
-- `teles` -> A list of one or teleconnection patterns. `NAO`,`PNA` or `AO` for standard EOFs over North Atlantic and Northern Hemisphere. Custorm regions can be specifieds as `lon1_lon2_lat1_lat2`.
-- `output_file_type` -> pdf, eps or png figures format.
+- `teles` -> A list of one or teleconnection patterns. `NAO`,`PNA` or `AO` for standard EOFs over North Atlantic, North Pacific and Northern Hemisphere respectively. Custorm regions can be specifieds as `lon1_lon2_lat1_lat2`.
+- `output_file_type` -> pdf, eps or png figures format (pdf is default).
 - `map_projection` -> set `no` for standard plot (fast). Use `azequalarea` for polar plots (default). All projection from mapproj R package are supported (but not all of them have been tested).
+- `varname` and `level` -> do not change these: this changes the variables the pre-processor will extract and analyse.   
 
-### Other Scripts 
+### MiLES scripts 
 
-The chain of scripts will be executed as a sequence by the wrapper.
+The chain of scripts will be executed by the wrapper.
 However, each **MiLES** script can be run autonomously from command line providing the correct sequence of arguments.
 R-based scripts are written as R functions and thus can be called inside R if needed.  
 
@@ -151,8 +151,8 @@ This script expects geopotential height data (daily or higher frequency) in a si
 * `blocking_fast.R` and `blocking_figures.R`. Blocking analysis is performed by the first R script. The second provides the figures. 
 Both the Davini et al. (2012) and the Tibaldi and Molteni (1990) blocking index are computed and plotted by these scripts, as well a wide set of related dignostics. See Davini et al. (2012) for more details. Since v0.7 `u500_block.R` is included for a beta computation of blocking from zonal wind at 500hPa.
 
-* `regimes_fast.R` and `regimes_figures.R`. Weather regimes analysis is performed by the first R script. 
-It also tries to assign the right weather regimes to its name, saving all to NetCDF data. The second provides the figures.
+* `regimes_fast.R` and `regimes_figures.R`. North Atlntic weather regimes analysis is performed by the first R script. 
+Weather regimes assignation is performed using spatial positioning of maxima and minima, saving all to NetCDF data. The second script provides the figures.
 
 * `meandering_fast.R`. It computes the Meandering Index following the Di Capua and Coumou (2016). No figures are yet provided. 
 
@@ -161,9 +161,9 @@ It also tries to assign the right weather regimes to its name, saving all to Net
 ### Execution times
 
 **MiLES** is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on v0.6):
-- EOFs: 12 seconds
-- Blocking: 59 seconds
-- Regimes: 28 seconds
+- EOFs: 14 seconds
+- Blocking: 61 seconds
+- Regimes: 30 seconds
 - Meandering: 182 seconds
 - Figures (together): 20 seconds
 
@@ -176,23 +176,25 @@ It is recommended in such cases to split the analysis in different subsets.
 
 *v0.7 - Dec 2018*
 - New wrapper structure using namelists
-- Beta blocking diagnostic based on zonal wind at 500hPa
+- Introducing blocking diagnostic based on zonal wind at 500hPa (beta)
 - Generalized pre-processor for data assimilation
 - Improvement in the ncdf.opener.universal() function (now working with relative time axis)
 - Introuction of the project variable and the has_config() function to control flags
 - Rolling back to CDO bilinear interpolation to allow extrapolation
-- Bugs in season selection fixed
-- Fixed minor bug in power.date.new() (that was affecting Blocking Events calculation)
+- Fixed bug in season2timeseason() selection (that was failing with long char names)
+- Fixed bug in power.date.new() (that was affecting Blocking Events calculation)
 - Refactored NetCDF output writer with ncdf.writer() and ncdf.defdims() functions
 - NetCDF output has now a fixed reference time (1850-01-01)
 - Reformatting MiLES code according to standards (using styler package): some linters still failing
+- Fixed bug in daily.anom.running.mean5() (that was mixing up the seasonal cycle)
+- Fixed bug in NetCDF output for EOFs (that was avoiding CDO readability)
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)
 - CMIP-like (dataset+experiment+ensemble member) data structure is introduced, allowing also for experiment type definition
 - Minor updates to the functions variables names, structure and layout
 - Packages update
-- Beta support for cross-dateline EOFs
+- Support for cross-dateline EOFs (beta)
 
 *v0.51 - Apr 2018*
 - Consolidation of weather regimes functions (shift to variance minimum)

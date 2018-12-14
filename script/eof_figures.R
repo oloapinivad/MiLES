@@ -140,7 +140,6 @@ if (length(args) != 0) {
         args[k] <- NA
       }
       assign(name_args[k], args[k])
-      print(args[k])
     }
     source(paste0(PROGDIR, "/script/basis_functions.R"))
     miles.eof.figures(

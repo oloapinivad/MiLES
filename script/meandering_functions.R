@@ -31,12 +31,13 @@ MI.fast <- function(longitudes, latitudes, hgt_field, isolvl, ref_lat = ref_lat,
   curv <- NA
   curv_lat <- NA
 
-  # PD: introduce resolution independet more versatil2e rotation
+  # PD: introduce resolution independet more versatile rotation
   # PD: automatic start from no rotation, then try 90 deg every time
   nlon <- length(longitudes)
   idxlon <- 1:nlon
   deltas <- seq(0, , nlon / 4, 4) # 4 steps rotation, this can be further improved
   for (ii in 1:length(deltas)) {
+
     # avoid translation if it is not necessary, save time
     printv(paste0("Rotation #", ii))
     if (ii == 1) {
@@ -45,15 +46,13 @@ MI.fast <- function(longitudes, latitudes, hgt_field, isolvl, ref_lat = ref_lat,
     } else {
       idxlon_trasl <- c(idxlon[(deltas[ii] + 1):length(idxlon)], idxlon[1:deltas[ii]])
       longitudes_trasl <- c(longitudes[(deltas[ii] + 1):length(longitudes)], longitudes[1:deltas[ii]] + 360)
-      # slower alternative
+      # Deprecated: slower alternative
       # idxlon_trasl=c(tail(idxlon,length(idxlon)-deltas[ii]),head(idxlon,deltas[ii]))
       # longitudes_trasl=c(tail(longitudes,length(idxlon)-deltas[ii]),head(longitudes+360,deltas[ii]))
     }
 
     # calculate position of the isoplet
-    isopleth <- contourLines(longitudes_trasl, latitudes, hgt_field[idxlon_trasl, ],
-      nlevels = 1, levels = isolvl
-    )
+    isopleth <- contourLines(longitudes_trasl, latitudes, hgt_field[idxlon_trasl, ], nlevels = 1, levels = isolvl)
 
     # longest_iso returns 0 if the isopleth does not exist,
     # or alternatively the index of the longest found isopleth
@@ -73,9 +72,7 @@ MI.fast <- function(longitudes, latitudes, hgt_field, isolvl, ref_lat = ref_lat,
 
       # if you find something plot the line!
       if (verbose == TRUE) { # add option to avoid plots
-        contour(longitudes_trasl, latitudes, hgt_field[idxlon_trasl, ],
-          nlevel = 10, levels = seq(4800, 6200, 100), main = curv
-        )
+        contour(longitudes_trasl, latitudes, hgt_field[idxlon_trasl, ], nlevel = 10, levels = seq(4800, 6200, 100), main = curv)
         lines(longest_isop$x, longest_isop$y, col = 189, lwd = 3)
       }
 
@@ -88,8 +85,7 @@ MI.fast <- function(longitudes, latitudes, hgt_field, isolvl, ref_lat = ref_lat,
       }
 
       # if the longest_isop is outside of the reasonable latitude range, exit!
-      if ((min(longest_isop$y) < ipsilon[2]) |
-        (max(longest_isop$y) > ipsilon[length(ipsilon) - 1])) {
+      if ((min(longest_isop$y) < latitudes[2]) | (max(longest_isop$y) > latitudes[length(latitudes) - 1])) {
         curv <- -2
         curv_lat <- -2
         printv("Isopleth is outside latitudinal range")
@@ -102,16 +98,12 @@ MI.fast <- function(longitudes, latitudes, hgt_field, isolvl, ref_lat = ref_lat,
       printv(paste("isop[1]", longest_isop$y[1], "isop[last]", longest_isop$y[nisop]))
 
       # if isohypse is closed and circles the globe compute the curviness
-      if (abs(longest_isop$y[1] - longest_isop$y[nisop]) < diff(latitudes)[1] &
-        (min(longest_isop$x) == longitudes_trasl[1]) &
+      if (abs(longest_isop$y[1] - longest_isop$y[nisop]) < diff(latitudes)[1] & (min(longest_isop$x) == longitudes_trasl[1]) &
         (max(longest_isop$x) == longitudes_trasl[nlon])) {
 
         # compute curviness
         printv("Closed isohypse found!")
-        output <- ref.lat.fast(longitudes_trasl, latitudes, hgt_field[idxlon_trasl, ],
-          longest_isop, ref_lat,
-          verbose = verbose
-        )
+        output <- ref.lat.fast(longitudes_trasl, latitudes, hgt_field[idxlon_trasl, ], longest_isop, ref_lat, verbose = verbose)
         curv <- output[[1]]
         curv_lat <- output[[2]]
         # you have your isohypse, break the cycle!

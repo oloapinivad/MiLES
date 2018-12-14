@@ -1,20 +1,8 @@
 ######################################################
-#-----Blocking routines computation for MiLES--------#
-#-------------P. Davini (Oct 2014)-------------------#
+#-Zonal wind blocking routines computation for MiLES-#
+#-------------P. Davini (Dec 2018)-------------------#
 ######################################################
-miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season, nomefile, FILESDIR, doforce) {
-
-  # rm(list=ls())
-  # PROGDIR="/home/paolo/MiLES"
-  # FILESDIR="/work/users/paolo/miles/files"
-  # source(file.path(PROGDIR,"script/basis_functions.R"))
-  # dataset="ERAI"
-  # year1=1979
-  # year2=1990
-  # season="DJF"
-  # nomefile="/work/users/paolo/miles/data/ua500/ERAI/ua500_ERAI_fullfile.nc"
-  # project=expid=ens=NA
-  # doforce="true"
+miles.u500block.fast <- function(project, dataset, expid, ens, year1, year2, season, filename, FILESDIR, doforce) {
 
   # t0
   t0 <- proc.time()
@@ -41,7 +29,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   }
 
   # new file opening
-  fieldlist <- ncdf.opener.universal(nomefile, namevar = "ua", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+  fieldlist <- ncdf.opener.universal(filename, namevar = "ua", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
   print(str(fieldlist))
 
   # assign variables
@@ -92,21 +80,14 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   tm90_north <- whicher(ipsilon, tm90_fiN)
   tm90_range <- seq(-5, 5, yreso) / yreso # 5 degrees to the north, 5 to the south (larger than TM90 or D'Andrea et al 1998)
 
-  # from u500: define parameters for geostrophic approximation
-  g0 <- 9.80655
-  radius <- 6378137
-  omega <- 7.29211 * 10^(-5)
+  # from u500: define parameters for geostrophic approximation (constant are defined in basis_functions.R)
   sinphi <- sin(ipsilon * pi / 180)
-  alfa <- (2 * radius * omega / g0) * ((tm90_delta * pi / 180))
+  alfa <- (2 * Earth.Radius * omega / g0) * ((tm90_delta * pi / 180))
   ghgn <- ghgs <- array(NA, dim = c(length(ics), totdays, length(tm90_range)))
 
   # number of steps and weights for integrals
   tm90_step <- round(tm90_delta / yreso)
   tm90_ww <- c(0.5, rep(1, tm90_step - 1), 0.5)
-  tm90_ww <- c(0.5, rep(1, tm90_step - 1), 0.5)
-
-
-  # introduce matrix for blocking computation
 
   # vectorization but on different ranges
   for (erre in tm90_range) {
@@ -124,8 +105,6 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   tm90_check <- (ghgs < 0 & ghgn > (10 * tm90_delta / alfa)) # D'Andrea et al. 97 condition: adapted to Scaife et al. 2010
   tm90_check[tm90_check == T] <- 1
   tm90_check[tm90_check == F] <- 0
-  # blocked=apply(tm90_check,c(1),max,na.rm=T)
-  # frequency=apply(blocked,c(1),mean,na.rm=T)*100
   totTM90 <- apply(tm90_check, c(1, 2), max, na.rm = T)
   TM90 <- apply(totTM90, 1, mean) * 100
   print("Done!")
@@ -343,7 +322,7 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "z500filename", "FILESDIR", "PROGDIR", "doforce")
+name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "u500filename", "FILESDIR", "PROGDIR", "doforce")
 
 # if there arguments, check them required args and assign
 if (length(args) != 0) {
@@ -362,6 +341,6 @@ if (length(args) != 0) {
       assign(name_args[k], args[k])
     }
     source(file.path(PROGDIR, "script/basis_functions.R"))
-    miles.block.fast(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce)
+    miles.u500block.fast(project, dataset, expid, ens, year1, year2, season, u500filename, FILESDIR, doforce)
   }
 }

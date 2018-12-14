@@ -25,8 +25,9 @@ R_version <- as.numeric(R.Version()$major) + as.numeric(R.Version()$minor) / 10
 ##########################################################
 
 # constants
-Earth.Radius <- 6367500
-g0 <- 9.81
+g0 <- 9.80655
+Earth.Radius <- 6378137
+omega <- 7.29211 * 10^(-5)
 
 # normalize a time series
 standardize <- function(timeseries) {
@@ -811,8 +812,7 @@ image.scale3 <- function(z, levels, color.palette = heat.colors, colorbar.label 
 
   # creating polygons for legend
   poly <- vector(mode = "list", length(col))
-  for (i in seq(poly))
-  {
+  for (i in seq(poly)) {
     poly[[i]] <- c(levels[i], levels[i + 1], levels[i + 1], levels[i])
   }
 
@@ -825,8 +825,7 @@ image.scale3 <- function(z, levels, color.palette = heat.colors, colorbar.label 
     ylim <- range(levels)
   }
   plot(1, 1, t = "n", ylim = ylim, xlim = xlim, axes = FALSE, xlab = "", ylab = "", xaxs = "i", yaxs = "i", ...)
-  for (i in seq(poly))
-  {
+  for (i in seq(poly)) {
     polygon(c(0, 0, 1, 1), poly[[i]], col = col[i], border = NA)
   }
 
@@ -1055,7 +1054,9 @@ field.details <- function(field) {
     legend_unit <- "RWB frequency (%)"
   }
 
-  out <- list(color_field = color_field, color_diff = color_diff, lev_field = lev_field, lev_diff = lev_diff, lev_hist = lev_hist, legend_unit = legend_unit, legend_distance = legend_distance, title_name = title_name)
+  out <- list(color_field = color_field, color_diff = color_diff, lev_field = lev_field,
+	      lev_diff = lev_diff, lev_hist = lev_hist, legend_unit = legend_unit,
+	      legend_distance = legend_distance, title_name = title_name)
   return(out)
 }
 
@@ -1143,7 +1144,6 @@ largescale.extension.if <- function(ics, ipsilon, field) {
     control[control > 0] <- 1
     return(control)
   }
-
 
   tt <- length(time)
   for (t in time) {
