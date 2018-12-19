@@ -14,27 +14,31 @@ DIR=/work/users/paolo/data/${project_exp}
 #bcc-csm1-1-m  CCSM4    CMCC-CM        EC-Earth       GFDL-CM3   HadGEM2-CC  IPSL-CM5A-LR   MIROC5        MPI-ESM-MR      NorESM1-M"
 
 loop_dataset=$(ls $DIR) 
-#loop_dataset=GFDL-ESM2M
+#loop_dataset="ACCESS1-0 GFDL-ESM2M IPSL-CM5A-MR IPSL-CM5A-LR IPSL-CM5B-LR MRI-CGCM3"
 expid="historical"
 
 
 # mandatory
 if [[ ${expid} == "rcp85" ]] ; then
-	year1_exp=2050
+	#year1_exp=2061
+	#year2_exp=2100
+	year1_exp=2006
 	year2_exp=2100
 elif [[ ${expid} == "historical" ]] ; then
-	#year1_exp=1950
-	#year2_exp=2005
-	year1_exp=1961
-        year2_exp=2000
+	year1_exp=1950
+	year2_exp=2005
+	#year1_exp=1961
+        #year2_exp=2000
 elif [[ ${expid} == "sresa2" ]] ; then
-        year1_exp=2050
+        #year1_exp=2061
+        #year2_exp=2100
+	year1_exp=2046
         year2_exp=2100
 fi
 
 
 
-seasons="DJF JJA"
+seasons="DJF"
 
 # part of the code you want to run. Possible options are:
 #"eofs": eofs parts

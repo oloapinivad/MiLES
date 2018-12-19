@@ -93,6 +93,19 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 		-setname,$varname -setunit,Pa -daymean ${level_select} \
 		$TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
 
+	# new check: are there any missing values in the file?
+	# use the CDO info output, slow
+	missing=$(cdo info $TEMPDIR/smallfile.nc | awk -v x=1 '$7 >= x' | awk '{print $7}' | tail -n +2)
+	echo $missing
+
+	if [[ ! -z $missing ]] ; then
+		echo -e "${RED}WARNING: $missing grid points have been found!!!${NC}"
+		echo "Using CDO fillmiss to fill them, be careful!"
+		$cdonc fillmiss $TEMPDIR/smallfile.nc $TEMPDIR/smallfile2.nc
+		mv $TEMPDIR/smallfile2.nc $TEMPDIR/smallfile.nc
+	fi
+
+
 	# in order to avoid issues, all data are forced to be geopotential height 
 	# in case geopotential is identified (i.e. values too large for a Z500
 	sanityvalue=$($cdonc outputint -fldmean -seltimestep,1 $TEMPDIR/smallfile.nc)

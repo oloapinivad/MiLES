@@ -509,7 +509,13 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
         stop("This a time interval that is not present in the NetCDF. Stopping!!!")
       }
     }
+  } else {
+    if (timeflag) {
+      warning("Unknown time axis, disabling time selection!")
+      timeflag <- FALSE
+    }
   }
+
 
   # time selection and variable loading
   printv("loading full field...")
@@ -714,7 +720,7 @@ filled.contour3 <-
              y = seq(0, 1, length.out = ncol(z)), z, xlim = range(x, finite = TRUE),
              ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE),
              levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors,
-             col = color.palette(length(levels) - 1), extend = TRUE, plot.title, plot.axes,
+             col = color.palette(length(levels) - 1), extend = FALSE, plot.title, plot.axes,
              key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1,
              axes = TRUE, frame.plot = axes, mar, ...) {
     # modification by Ian Taylor of the filled.contour function
@@ -799,7 +805,8 @@ image.scale3 <- function(z, levels, color.palette = heat.colors, colorbar.label 
   lw <- colorbar.width
   lp <- line.colorbar / 100
   new.fig <- c(old.fig[2] - 0.07 * xscal * lw - lp, old.fig[2] - 0.03 * xscal - lp, old.fig[3] + 0.1 * yscal, old.fig[4] - 0.1 * yscal)
-  # print(new.fig)
+  #print(old.fig)
+  #print(new.fig)
 
   if (missing(levels)) {
     levels <- seq(min(z), max(z), , 12)
@@ -1415,7 +1422,11 @@ run.mean <- function(field, n = 5) {
   nn <- floor(n / 2)
   newfield <- field
   for (t in (1 + nn):(length(field) - nn)) {
-    newfield[t] <- mean(field[(t - nn):(t + nn)])
+    if (!is.na(field[t])) {
+      newfield[t] <- mean(field[(t - nn):(t + nn)], na.rm = T)
+    } else {
+      newfield[t] <- NA 
+    }
   }
   return(newfield)
 }
