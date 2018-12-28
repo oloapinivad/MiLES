@@ -253,13 +253,15 @@ is.leapyear <- function(year) {
 }
 
 # check number of days for each month
-number.days.month <- function(datas) {
+number.days.month <- function(datas, calendar) {
 
+  # Dec-18 update to handle 360 and 365 calendars in file opening
+  require(PCICt)
   # evaluate the number of days in a defined month of a year
-  datas <- as.Date(datas)
+  datas <- as.PCICt(datas, cal = calendar, format = "%Y-%m-%d")
   m <- format(datas, format = "%m")
   while (format(datas, format = "%m") == m) {
-    datas <- datas + 1
+    datas <- datas + 86400
   }
   return(as.integer(format(datas - 1, format = "%d")))
 }
@@ -500,7 +502,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
       printv("selecting years and months")
       # break if the data requested is not there
       lastday_base <- paste0(max(tyears), "-", max(tmonths), "-28") # uses number.days.month, which loops to get the month change
-      lastday <- as.PCICt(paste0(max(tyears), "-", max(tmonths), "-", number.days.month(lastday_base)), cal = caldata, format = "%Y-%m-%d")
+      lastday <- as.PCICt(paste0(max(tyears), "-", max(tmonths), "-", number.days.month(lastday_base, caldata)), cal = caldata, format = "%Y-%m-%d")
       firstday <- as.PCICt(paste0(min(tyears), "-", min(tmonths), "-01"), cal = caldata, format = "%Y-%m-%d")
 
       if (max(timeline) < lastday | min(timeline) > firstday) {
