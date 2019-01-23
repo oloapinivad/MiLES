@@ -94,20 +94,20 @@ miles.eof.figures <- function(project, dataset, expid, ens, year1, year2,
     im <- plot.prepare(ics, ipsilon, linear_exp, proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_exp), levels = lev_field, color.palette = palette3, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
     mtext(title_name, side = 3, line = .5, outer = TRUE, cex = 2, font = 2)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     text(varpoints[1], varpoints[2], paste("Variance Explained: ", round(variance_exp[neof], 2), "%", sep = ""), cex = 2)
 
     im <- plot.prepare(ics, ipsilon, linear_ref, proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_ref), levels = lev_field, color.palette = palette3, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
     mtext(title_name, side = 3, line = .5, outer = TRUE, cex = 2, font = 2)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     image.scale3(volcano, levels = lev_field, color.palette = palette3, colorbar.label = "m", cex.colorbar = imgscl_colorbar, cex.label = imgscl_label, colorbar.width = 1 * af, line.label = imgscl_line)
     text(varpoints[1], varpoints[2], paste("Variance Explained: ", round(variance_ref[neof], 2), "%", sep = ""), cex = 2)
 
     # delta field plot
     im <- plot.prepare(ics, ipsilon, linear_exp - linear_ref, proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste("Difference"), levels = lev_diff, color.palette = palette2, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     image.scale3(volcano, levels = lev_diff, color.palette = palette2, colorbar.label = "m", cex.colorbar = imgscl_colorbar, cex.label = imgscl_label, colorbar.width = 1 * af, line.label = imgscl_line)
 
 

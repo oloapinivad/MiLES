@@ -6,9 +6,6 @@
 
 # Interpolation on regolar 2.5x2.5 grid, NH selection, daily averages, level extraction
 
-# options controller
-set +e  
-
 # options
 OPTIND=1
 while getopts "h:p:d:e:r:v:l:o:c:f:" OPT; do

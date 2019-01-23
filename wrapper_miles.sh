@@ -126,10 +126,6 @@ if ${std_clim} ; then
 	year2_ref=2017
 	REFDIR=$PROGDIR/clim
 	datasets=$dataset_exp
-	#project_ref=""
-	#expid_ref=""
-	#ens_ref=""
-
 else
 
         REFDIR=$FILESDIR

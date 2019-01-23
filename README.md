@@ -181,6 +181,7 @@ It is recommended in such cases to split the analysis in different subsets.
 - Improvement in the ncdf.opener.universal() function (now working with relative time axis)
 - Introuction of the project variable and the has_config() function to control flags
 - Rolling back to CDO bilinear interpolation to allow extrapolation
+- Setting up a CDO fillmiss operator to fix possible missing points
 - Fixed bug in season2timeseason() selection (that was failing with long char names)
 - Fixed bug in power.date.new() (that was affecting Blocking Events calculation)
 - Refactored NetCDF output writer with ncdf.writer() and ncdf.defdims() functions
@@ -188,6 +189,7 @@ It is recommended in such cases to split the analysis in different subsets.
 - Reformatting MiLES code according to standards (using styler package): some linters still failing
 - Fixed bug in daily.anom.running.mean5() (that was mixing up the seasonal cycle)
 - Fixed bug in NetCDF output for EOFs (that was avoiding CDO readability)
+- Fixed bug in ncdf.opener.universal() that was limiting the reading of 360-day calendar
 
 *v0.6 - Aug 2018*
 - Introducing the Meandering Index from Di Capua and Coumou (2016)

@@ -14,10 +14,10 @@ miles.block.figures <- function(project, dataset, expid, ens, year1, year2,
   # which fieds to load/plot
   if (varname == "zg") {
     varload <- "Block"
-    fieldlist <- c("InstBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents", "TM90")
+    fieldlist <- c("TM90","InstBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
   } else if (varname == "ua") {
     varload <- "U500_Block"
-    fieldlist <- c("InstBlock", "ExtraBlock", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents", "TM90")
+    fieldlist <- c("TM90","InstBlock", "ExtraBlock", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
   } else {
     stop("ERROR: required a non-existing variable")
   }
@@ -47,7 +47,7 @@ miles.block.figures <- function(project, dataset, expid, ens, year1, year2,
       nomefile_ref <- file.builder(FILESDIR, varload, "BlockClim", project_ref, dataset_ref, expid_ref, ens_ref,year1_ref, year2_ref, season)
     }
 
-    field_ref <- ncdf.opener(nomefile_ref, namevar = field, rotate = "no")
+    field_ref <- ncdf.opener(nomefile_ref, namevar = field, rotate = "no", exportlonlat = T)
     assign(paste(field, "_ref", sep = ""), field_ref)
   }
 
@@ -114,18 +114,18 @@ miles.block.figures <- function(project, dataset, expid, ens, year1, year2,
     im <- plot.prepare(ics, ipsilon, field_exp, proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_exp), levels = fp$lev_field, color.palette = fp$color_field, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
     mtext(fp$title_name, side = 3, line = .5, outer = TRUE, cex = 2, font = 2)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
 
     # reference field plot
     im <- plot.prepare(ics, ipsilon, field_ref, proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_ref), levels = fp$lev_field, color.palette = fp$color_field, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     image.scale3(volcano, levels = fp$lev_field, color.palette = fp$color_field, colorbar.label = fp$legend_unit, cex.colorbar = imgscl_colorbar, cex.label = imgscl_label, colorbar.width = 1 * af, line.label = fp$legend_distance)
 
     # delta field plot
     im <- plot.prepare(ics, ipsilon, field_exp - field_ref, proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste("Difference"), levels = fp$lev_diff, color.palette = fp$color_diff, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     image.scale3(volcano, levels = fp$lev_diff, color.palette = fp$color_diff, colorbar.label = fp$legend_unit, cex.colorbar = imgscl_colorbar, cex.label = imgscl_label, colorbar.width = 1 * af, line.label = fp$legend_distance)
 
     dev.off()

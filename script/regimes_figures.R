@@ -97,19 +97,19 @@ miles.regimes.figures <- function(project, dataset, expid, ens, year1, year2,
     im <- plot.prepare(ics, ipsilon, regimes_exp[, , ii], proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_exp), levels = lev_field, color.palette = palette3, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
     mtext(name, side = 3, line = .5, outer = TRUE, cex = 2, font = 2)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     text(varpoints[1], varpoints[2], paste("Frequencies: ", round(frequencies_exp[ii], 2), "%", sep = ""), cex = 2)
 
     im <- plot.prepare(ics, ipsilon, regimes_ref[, , jj], proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_ref), levels = lev_field, color.palette = palette3, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     text(varpoints[1], varpoints[2], paste("Frequencies: ", round(frequencies_ref[ii], 2), "%", sep = ""), cex = 2)
     image.scale3(volcano, levels = lev_field, color.palette = palette3, colorbar.label = "m", cex.colorbar = imgscl_colorbar, cex.label = imgscl_label, colorbar.width = 1 * af, line.label = imgscl_line)
 
     # delta field plot
     im <- plot.prepare(ics, ipsilon, regimes_exp[, , ii] - regimes_ref[, , jj], proj = map_projection, lat_lim = lat_lim)
     filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste("Difference"), levels = lev_diff, color.palette = palette2, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
-    proj.addland(proj = map_projection)
+    proj.addland(ics, ipsilon, proj = map_projection)
     image.scale3(volcano, levels = lev_diff, color.palette = palette2, colorbar.label = "m", cex.colorbar = imgscl_colorbar, cex.label = imgscl_label, colorbar.width = 1 * af, line.label = imgscl_line)
 
     dev.off()
