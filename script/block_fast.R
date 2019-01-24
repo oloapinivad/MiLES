@@ -91,6 +91,26 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   print("Done!")
 
   ##########################################################
+  #--------------Schwierz et al. 2004----------------------#
+  ##########################################################
+
+  print("Schwierz et al. (2004) index...")
+  # compute anomalies
+  Z500anom <- daily.anom.mean(ics, ipsilon, Z500, etime)
+
+  # threshold definition
+  threshold <- quantile(Z500anom[, whicher(ipsilon,50):whicher(ipsilon,80), ], probs = 0.9)
+
+  # defining blocking
+  absblocked <- Z500anom
+  absblocked[absblocked < threshold] <- 0
+  absblocked[absblocked >= threshold] <- 1
+
+  # climatology
+  absfrequency <- rowMeans(absblocked, dims = 2) * 100
+  print("Done!")
+
+  ##########################################################
   #--------------Davini et al. 2012------------------------#
   ##########################################################
 
@@ -223,8 +243,8 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   print("saving NetCDF climatologies...")
 
   # which fieds to plot/save
-  savelist <- c("TM90", "InstBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
-  full_savelist <- c("TM90", "InstBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents")
+  savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
+  full_savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents")
 
   # dimension definition (using default 1850-01-01 reftime)
   dims <- ncdf.defdims(ics, ipsilon, timeaxis)
@@ -254,6 +274,12 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
       unit <- "%"
       field <- frequency
       full_field <- totblocked
+    }
+    if (var == "AbsBlock") {
+      longvar <- "Instantaneous Blocking frequency (Schwierz et al)"
+      unit <- "%"
+      field <- absfrequency
+      full_field <- absblocked
     }
     if (var == "ExtraBlock") {
       longvar <- "Instantaneous Blocking frequency (GHGS2)"

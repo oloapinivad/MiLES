@@ -162,6 +162,7 @@ array_indexing <- function(field, dim, value, drop = FALSE) {
 
 # n-dimensional generalized evolution of flipper()
 # it reverts the ipsilon a required dimension: by default uses the second dimension
+# used by ncdf.opener.universal()
 flipper <- function(field, dim = 2) {
   ydim <- dim
   ll <- dim(field)[ydim]
@@ -169,43 +170,48 @@ flipper <- function(field, dim = 2) {
   return(field)
 }
 
-# define rotate function (faster than with apply)
-# used by ncdf.opener.universal() to rotate the array along the longitude
+# define rotate along longitudes based on array_indexing (Jan 2019)
+# universal to every dimension, 50% faster than previous rotation() functon
+# can be used also for ad hoc rotation
+# used by ncdf.opener.universal() 
 rotation <- function(line, rotate) {
 
-  if (rotate == "full") {
-    # 180 degrees rotation of longitude
-    move1 <- move2 <- 1 / 2
-  } else if (rotate == "half") {
-    # 90 degree rotation (useful for TM90)
-    move1 <- 1 / 4
-    move2 <- 3 / 4
-  } else if (rotate == "no") {
-    return(line)
+  # dimension of the first dimension (the one to be rotated)
+  ll <- dim(line)[1]
+  dims <- length(dim(line))
+
+  # default options
+  if (is.character(rotate)) {
+    if (rotate == "full") {
+      # 180 degrees rotation of longitude
+      move1 <- 1 / 2 * ll
+    } else if (rotate == "half") {
+      # 90 degree rotation (useful for TM90)
+      move1 <- 1 / 4 * ll
+    } else if (rotate == "no") {
+      return(line)
+    }
+
+  # numeric options
+  } else {
+    if (rotate == 0 | rotate >= ll) {
+      print("Nothing to do")
+      return(line)
+    } else {
+      move1 <- rotate + 1 #always add one to avoid crash
+    }
   }
 
-  vettore <- line
-  dims <- length(dim(vettore))
-  if (dims == 1) { # for longitudes
-    ll <- length(line)
-    line[(ll * move1):ll] <- vettore[1:(ll * move2 + 1)]
-    line[1:(ll * move1 - 1)] <- vettore[(ll * move2 + 2):ll] - 360
-  } else if (dims == 2) { # for x,y data
-    ll <- length(line[, 1])
-    line[(ll * move1):ll, ] <- vettore[1:(ll * move2 + 1), ]
-    line[1:(ll * move1 - 1), ] <- vettore[(ll * move2 + 2):ll, ]
-  } else if (dims == 3) { # for x,y,t data
-    ll <- length(line[, 1, 1])
-    line[(ll * move1):ll, , ] <- vettore[1:(ll * move2 + 1), , ]
-    line[1:(ll * move1 - 1), , ] <- vettore[(ll * move2 + 2):ll, , ]
-  } else if (dims == 4) { # for x,y,z,t data
-    ll <- length(line[, 1, 1, 1])
-    line[(ll * move1):ll, , , ] <- vettore[1:(ll * move2 + 1), , , ]
-    line[1:(ll * move1 - 1), , , ] <- vettore[(ll * move2 + 2):ll, , , ]
-  } else {
-    stop("too many dimensions, I don't know what to do!")
-  }
-  return(line)
+  # move2 as the difference of the number of points  
+  move2 <- ll - move1
+
+  # create new elements order
+  elements <- c((move2 + 2):ll, 1:(move2 + 1))
+
+  # run the selection using array_indexing
+  newline <- array_indexing(line, 1, elements)
+
+  return(newline)
 }
 
 
@@ -987,22 +993,31 @@ field.details <- function(field) {
     lev_field <- c(0, 30)
     lev_diff <- NULL
     legend_unit <- "Blocked Days (%)"
-    title_name <- "TM90 Instantaneous Blocking"
+    title_name <- "Instantaneous Blocking (Tibaldi & Molteni, 1990):"
   }
 
   if (field == "InstBlock") {
     color_field <- palette1
     color_diff <- palette2
-    lev_field <- seq(0, 36, 3)
+    lev_field <- seq(0, 27, 3)
     lev_diff <- seq(-10.5, 10.5, 1)
     legend_unit <- "Blocked Days (%)"
     title_name <- "Instantaneous Blocking frequency:"
   }
 
+  if (field == "AbsBlock") {
+    color_field <- palette1
+    color_diff <- palette2
+    lev_field <- seq(0, 27, 3)
+    lev_diff <- seq(-10.5, 10.5, 1)
+    legend_unit <- "Blocked Days (%)"
+    title_name <- "Instantaneous Blocking frequency (Schwierz et al., 2004):"
+  }
+
   if (field == "ExtraBlock") {
     color_field <- palette1
     color_diff <- palette2
-    lev_field <- seq(0, 36, 3)
+    lev_field <- seq(0, 27, 3)
     lev_diff <- seq(-10.5, 10.5, 1)
     legend_unit <- "Blocked Days (%)"
     title_name <- "Instantaneous Blocking frequency (GHGS2 condition):"

@@ -254,6 +254,15 @@ for season in $seasons ; do
 done
 fi
 
+# clean empty folders
+echo "Checking if there are empty folders..."
+find $OUTPUTDIR -type d -empty -delete -print
+
+echo    "###########################################################"
+echo -e "${BLUE} MiLES is over, go and enjoy your life outside! ${NC}"
+echo    "###########################################################"
+
+
 ################################################
 #--------------Ensemble mean-------------------#
 ################################################

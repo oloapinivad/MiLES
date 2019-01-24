@@ -14,7 +14,7 @@ miles.block.figures <- function(project, dataset, expid, ens, year1, year2,
   # which fieds to load/plot
   if (varname == "zg") {
     varload <- "Block"
-    fieldlist <- c("TM90","InstBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
+    fieldlist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
   } else if (varname == "ua") {
     varload <- "U500_Block"
     fieldlist <- c("TM90","InstBlock", "ExtraBlock", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
@@ -40,7 +40,7 @@ miles.block.figures <- function(project, dataset, expid, ens, year1, year2,
 
     # check for REFDIR==FILESDIR, i.e. if we are using the climatology provided by MiLES or another dataset MiLES-generated
     if (REFDIR != FILESDIR) {
-      nomefile_ref <- file.path(REFDIR, "Block",paste0("BlockClim_", dataset_ref, "_", year1_ref, "_", year2_ref, "_", season, ".nc"))
+      nomefile_ref <- file.path(REFDIR, "Block", paste0("BlockClim_", dataset_ref, "_", year1_ref, "_", year2_ref, "_", season, ".nc"))
     } else {
 
       # use file.builder to create the path of the blocking files
