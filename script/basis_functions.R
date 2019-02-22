@@ -174,11 +174,16 @@ flipper <- function(field, dim = 2) {
 # universal to every dimension, 50% faster than previous rotation() functon
 # can be used also for ad hoc rotation
 # used by ncdf.opener.universal() 
-rotation <- function(line, rotate) {
+rotation <- function(line, rotate, longitude.case = FALSE) {
 
   # dimension of the first dimension (the one to be rotated)
-  ll <- dim(line)[1]
-  dims <- length(dim(line))
+  if (is.null(dim(line))) {
+    dims <- 1
+    ll <- length(line)
+  } else {
+    ll <- dim(line)[1]
+    dims <- length(dim(line))
+  }
 
   # default options
   if (is.character(rotate)) {
@@ -205,11 +210,18 @@ rotation <- function(line, rotate) {
   # move2 as the difference of the number of points  
   move2 <- ll - move1
 
-  # create new elements order
-  elements <- c((move2 + 2):ll, 1:(move2 + 1))
+  # special case for flipping longitudes
+  if (longitude.case) {
+    #newline <- c(tail(line, move1)-360, head(x, move2))
+    newline <- c(line[(move2 + 2):ll]-360, line[1:(move2 + 1)])
 
-  # run the selection using array_indexing
-  newline <- array_indexing(line, 1, elements)
+  } else {
+    # create new elements order
+    elements <- c((move2 + 2):ll, 1:(move2 + 1))
+
+    # run the selection using array_indexing
+    newline <- array_indexing(line, 1, elements)
+  }
 
   return(newline)
 }
@@ -408,6 +420,8 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
       timeline <- origin.pcict + floor(time)
     } else if (grepl("hours", substr(units, 1, 5), fixed = TRUE)) {
       timeline <- origin.pcict + floor(time) * 3600
+    } else if (grepl("years", substr(units, 1, 5), fixed = TRUE)) {
+      timeline <- origin.pcict + floor(time) * 86400 * 365
     } else {
       warning("Not recognised relative time axis!")
     }
@@ -604,7 +618,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
   # if dimension have been recognized modified them
   if (any(!is.na(x))) {
     printv("rotating (if needed)...",verbose)
-    x <- rotation(x, rotate)
+    x <- rotation(x, rotate, longitude.case = TRUE)
     field <- rotation(field, rotate)
     assign(naxis[naxis %in% c(xlist, namelon)], x)
   }
