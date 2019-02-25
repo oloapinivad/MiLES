@@ -3,7 +3,7 @@
 # MiLES v0.7
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Jan 2019
+Oct 2014  - Feb 2019
 
 by P. Davini (CNR-ISAC, p.davini@isac.cnr.it)
 
@@ -48,7 +48,7 @@ Current version includes:
 	Figures report patterns, regimes assignation and frequencies of occurrence. NetCDF4 Zip data are saved.
 	*Only 4 regimes and DJF season is supported so far.*
 
-5. 	**Meandering Index (beta)** : following the index introduced by *Di Capua and Coumou (2016)*. It evaluates the 
+5. 	**Meandering Index** : following the index introduced by *Di Capua and Coumou (2016)*. It evaluates the 
 	waviness of the atmosphere (i.e. the length of the longest isopleth) at a reference latitude of 60N. 
 	Original code can be found at https://github.com/giorgiadicapua/MeanderingIndex. 
 	NetCDF4 Zip data are saved but no figures are provided.
@@ -62,7 +62,7 @@ Be aware that this is a free scientific tool in continous development, then it m
 Please cite **MiLES** in your publication: *"P. Davini, 2018: MiLES - Mid Latitude Evaluation System. Zenodo. http://doi.org/10.5281/zenodo.1237837"*. If you want to cite a specific version of check on [Zenodo](https://zenodo.org/record/1237838#.WumJkNOFPUI) which DOI to use. 
 Extra references to specific indices are:
 
-a). *"Tibaldi S. and Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600- 0870.1990.t01- 2- 00003.x."* in case you  use the 1D blocking index.
+a). *"Tibaldi S. and Molteni F. 1990. On the operational predictability of blocking. Tellus A 42(3): 343–365, doi:10.1034/j.1600-0870.1990.t01-2-00003.x."* in case you  use the 1D blocking index.
 
 b). *"Davini  P., C. Cagnazzo, S. Gualdi, and A. Navarra, 2012: Bidimensional Diagnostics, Variability, and Trends of Northern Hemisphere Blocking. J. Climate, 25, 6496–6509, doi: 10.1175/JCLI-D-12-00032.1."* in case you use the 2D blocking index.
 
@@ -174,12 +174,12 @@ It is recommended in such cases to split the analysis in different subsets.
 
 ## HISTORY
 
-*v0.7 - Jan 2019*
+*v0.7 - Feb 2019*
 - New wrapper structure using namelists
 - Introducing blocking diagnostic based on zonal wind at 500hPa (beta)
 - Introducing blocking diagnostic based on Schwierz et al. (2004)  (beta)
-- Generalized pre-processor for data assimilation
-- Improvement in the ncdf.opener.universal() function (now working with relative time axis)
+- Generalized pre-processor for data assimilation (assimilate.sh)
+- Improvement in the ncdf.opener.universal() function (now working with several relative time axes)
 - Introuction of the project variable and the has_config() function to control flags
 - Rolling back to CDO bilinear interpolation to allow extrapolation
 - Setting up a CDO fillmiss operator to fix possible missing points
