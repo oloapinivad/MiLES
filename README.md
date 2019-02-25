@@ -160,11 +160,11 @@ Weather regimes assignation is performed using spatial positioning of maxima and
 
 ### Execution times
 
-**MiLES** is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on v0.6):
-- EOFs: 14 seconds
-- Blocking: 61 seconds
+**MiLES** is pretty fast: on iMac 2017  (MacOS High Sierra 10.13, 3.4 GHz Intel Core i5, 16GB DDR4) 30 years of analysis for a single season takes about (test on v0.7):
+- EOFs: 18 seconds
+- Blocking: 62 seconds
 - Regimes: 30 seconds
-- Meandering: 182 seconds
+- Meandering: 175 seconds
 - Figures (together): 20 seconds
 
 Please be aware that issues may arise with large datasets (i.e. larger than 100 years) where the single file approach may be problematic. 
