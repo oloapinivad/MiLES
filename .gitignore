@@ -1,0 +1,4 @@
+namelist/*.sh
+*_loop.sh
+test/*.R
+

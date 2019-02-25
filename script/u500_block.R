@@ -1,8 +1,8 @@
 ######################################################
-#-----Blocking routines computation for MiLES--------#
-#-------------P. Davini (Oct 2014)-------------------#
+#-Zonal wind blocking routines computation for MiLES-#
+#-------------P. Davini (Dec 2018)-------------------#
 ######################################################
-miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce) {
+miles.u500block.fast <- function(project, dataset, expid, ens, year1, year2, season, filename, FILESDIR, doforce) {
 
   # t0
   t0 <- proc.time()
@@ -12,8 +12,8 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   timeseason <- season2timeseason(season)
 
   # define folders using file.builder function (takes care of ensembles)
-  savefile1 <- file.builder(FILESDIR, "Block", "BlockClim", project, dataset, expid, ens, year1, year2, season)
-  savefile2 <- file.builder(FILESDIR, "Block", "BlockFull", project, dataset, expid, ens, year1, year2, season)
+  savefile1 <- file.builder(FILESDIR, "U500_Block", "BlockClim", project, dataset, expid, ens, year1, year2, season)
+  savefile2 <- file.builder(FILESDIR, "U500_Block", "BlockFull", project, dataset, expid, ens, year1, year2, season)
 
   # check if data is already there to avoid re-run
   if (file.exists(savefile1) & file.exists(savefile2)) {
@@ -29,23 +29,23 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   }
 
   # new file opening
-  fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+  fieldlist <- ncdf.opener.universal(filename, namevar = "ua", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
   print(str(fieldlist))
 
   # assign variables
   ics <- fieldlist$lon
   ipsilon <- fieldlist$lat
-  
+
   # extract calendar and time unit from the original file
   timeaxis <- fieldlist$time
-
-  # declare variable and clean
-  Z500 <- fieldlist$field
-  rm(fieldlist)
 
   # time array to simplify time filtering
   etime <- power.date.new(timeaxis, verbose = T)
   totdays <- length(timeaxis)
+
+  # declare variable
+  U500 <- fieldlist$field
+  rm(fieldlist)
 
   # grid resolution
   yreso <- ipsilon[2] - ipsilon[1]
@@ -53,7 +53,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
 
   # reso checks: this are not needed with default 2.5 grid, but they may be relevant with
   # future envisaged power up to finer grids
-  # xcritical factor is due to RWB longitudinal jump of 7.5
+  # xcritical factor is due to RWB longitudinal delta of 7.5
   # ycritical factor is due to Large Scale Extension of 2.5
   xcritical <- 2.5
   ycritical <- 2.5
@@ -69,71 +69,74 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   #--------------Tibaldi and Molteni 1990------------------#
   ##########################################################
 
-  print("Tibaldi and Molteni (1990) index...")
+  print("Zonald wind based tibaldi and Molteni (1990) index...")
   # TM90: parametres for blocking detection
   tm90_fi0 <- 60 # central_lat
-  tm90_fiN <- tm90_fi0 + 20
-  tm90_fiS <- tm90_fi0 - 20 # south and north lat, 80N and 40N
+  tm90_delta <- 20 # delta in degree from between lats
+  tm90_fiN <- tm90_fi0 + tm90_delta
+  tm90_fiS <- tm90_fi0 - tm90_delta # south and north lat, 80N and 40N
   tm90_central <- whicher(ipsilon, tm90_fi0)
   tm90_south <- whicher(ipsilon, tm90_fiS)
   tm90_north <- whicher(ipsilon, tm90_fiN)
   tm90_range <- seq(-5, 5, yreso) / yreso # 5 degrees to the north, 5 to the south (larger than TM90 or D'Andrea et al 1998)
 
-  # TM90: beta version, the amazing power of R vectorization!
-  # 6 lines to get the climatology
-  tm90_ghgn <- (Z500[, tm90_north + tm90_range, ] - Z500[, tm90_central + tm90_range, ]) / (tm90_fiN - tm90_fi0)
-  tm90_ghgs <- (Z500[, tm90_central + tm90_range, ] - Z500[, tm90_south + tm90_range, ]) / (tm90_fi0 - tm90_fiS)
-  tm90_check <- (tm90_ghgs > 0 & tm90_ghgn < (-10)) # TM90 conditions
+  # from u500: define parameters for geostrophic approximation (constant are defined in basis_functions.R)
+  sinphi <- sin(ipsilon * pi / 180)
+  alfa <- (2 * Earth.Radius * omega / g0) * ((tm90_delta * pi / 180))
+  ghgn <- ghgs <- array(NA, dim = c(length(ics), totdays, length(tm90_range)))
+
+  # number of steps and weights for integrals
+  tm90_step <- round(tm90_delta / yreso)
+  tm90_ww <- c(0.5, rep(1, tm90_step - 1), 0.5)
+
+  # vectorization but on different ranges
+  for (erre in tm90_range) {
+    ghgs[, , which(erre == tm90_range)] <- apply(sweep(
+      U500[, erre + tm90_south:tm90_central, ], c(2),
+      sinphi[erre + tm90_south:tm90_central] * tm90_ww, "*"
+    ), c(1, 3), sum) / tm90_step
+    ghgn[, , which(erre == tm90_range)] <- apply(sweep(
+      U500[, erre + tm90_central:tm90_north, ], c(2),
+      sinphi[erre + tm90_central:tm90_north] * tm90_ww, "*"
+    ), c(1, 3), sum) / tm90_step
+  }
+
+  # adapted condition from geostropich approximatin
+  tm90_check <- (ghgs < 0 & ghgn > (10 * tm90_delta / alfa)) # D'Andrea et al. 97 condition: adapted to Scaife et al. 2010
   tm90_check[tm90_check == T] <- 1
   tm90_check[tm90_check == F] <- 0
-  totTM90 <- apply(tm90_check, c(1, 3), max, na.rm = T)
+  totTM90 <- apply(tm90_check, c(1, 2), max, na.rm = T)
   TM90 <- apply(totTM90, 1, mean) * 100
   print("Done!")
 
-  ##########################################################
-  #--------------Schwierz et al. 2004----------------------#
-  ##########################################################
-
-  print("Schwierz et al. (2004) index...")
-  # compute anomalies
-  Z500anom <- daily.anom.mean(ics, ipsilon, Z500, etime)
-
-  # threshold definition
-  threshold <- quantile(Z500anom[, whicher(ipsilon,50):whicher(ipsilon,80), ], probs = 0.9)
-
-  # defining blocking
-  absblocked <- Z500anom
-  absblocked[absblocked < threshold] <- 0
-  absblocked[absblocked >= threshold] <- 1
-
-  # climatology
-  absfrequency <- rowMeans(absblocked, dims = 2) * 100
-  print("Done!")
 
   ##########################################################
   #--------------Davini et al. 2012------------------------#
   ##########################################################
 
+
   # decleare main variables to be computed (considerable speed up!)
-  totrwb <- totmeridional <- totBI <- Z500 * NA
-  totblocked <- totblocked2 <- Z500 * 0
+  totblocked <- totblocked2 <- U500 * 0
 
   # Davini et al. 2012: parameters to be set for blocking detection
   fi0 <- 30 # lowest latitude to be analyzed
-  jump <- 15 # distance on which compute gradients
-  step0 <- jump / yreso # number of grid points to be used
+  delta <- 15 # distance on which compute gradients
+  step <- round(delta / yreso)
   central <- which.min(abs(ipsilon - fi0)) # lowest starting latitude
-  north <- central + step0 # lowest north latitude
-  south <- central - step0 # lowest sourth latitude
-  maxsouth <- central - 2 * step0
+  north <- central + step # lowest north latitude
+  south <- central - step # lowest sourth latitude
+  maxsouth <- central - 2 * step
   fiN <- ipsilon[north]
   fiS <- ipsilon[south]
-  range <- (90 - fi0 - jump) / yreso # escursion to the north for computing blocking (from 30 up to 75)
+  range <- (90 - fi0 - delta) / yreso # escursion to the north for computing blocking (from 30 up to 75)
+
+  # number of steps and weights for integrals
+  ww <- c(0.5, rep(1, step - 1), 0.5)
 
   print("--------------------------------------------------")
-  print("Davini et al. (2012) index and diagnostics...")
-  print(c("distance for gradients:", step0 * diff(ics)[1]))
-  print(paste("range of latitudes ", fi0, "-", 90 - step0 * diff(ics)[1], " N", sep = ""))
+  print("Zonal wind Davini et al. (2012) index and diagnostics...")
+  print(c("distance for gradients:", step * yreso))
+  print(paste("range of latitudes ", fi0, "-", 90 - step * yreso, " N", sep = ""))
 
   ##########################################################
   #--------------Istantaneous Blocking---------------------#
@@ -143,53 +146,33 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   for (t in 1:totdays) {
     progression.bar(t, totdays)
 
-    # multidim extension
-    new_field <- rbind(Z500[, , t], Z500[, , t], Z500[, , t])
+    ghgn <- ghgs <- gh2gs <- array(NA, dim = c(length(ics), length(0:range)))
 
-    for (delta in 0:range) { # computing blocking for different latitudes
-      ghgn <- (Z500[, north + delta, t] - Z500[, central + delta, t]) / (fiN - fi0)
-      ghgs <- (Z500[, central + delta, t] - Z500[, south + delta, t]) / (fi0 - fiS)
-      gh2gs <- (Z500[, south + delta, t] - Z500[, maxsouth + delta, t]) / (fi0 - fiS)
-      check1 <- which(ghgs > 0 & ghgn < (-10))
-      check2 <- which(ghgs > 0 & ghgn < (-10) & gh2gs < (-5)) # supplementary condition
+    for (erre in 0:range) { # computing blocking for different latitudes
 
-      if (length(check2) > 0) {
-        totblocked2[check2, central + delta, t] <- 1
-      }
-
-      if (length(check1) > 0) {
-        # 1-MATRIX FOR INSTANTANEOUS BLOCKING
-        totblocked[check1, central + delta, t] <- 1
-
-        # 2-PART ON COMPUTATION OF ROSSBY WAVEBREAKING
-        r <- check1 + length(ics)
-        rwb_jump <- jump / 2
-        steprwb <- rwb_jump / xreso
-        rwb_west <- new_field[(r - steprwb), south + delta + steprwb]
-        rwb_east <- new_field[(r + steprwb), south + delta + steprwb]
-        fullgh <- (rwb_west - rwb_east)
-
-        totrwb[check1[fullgh < 0], central + delta, t] <- (-10) # gradient decreasing: cyclonic RWB
-        totrwb[check1[fullgh > 0], central + delta, t] <- 10 # gradient increasing: anticyclonic RWB
-
-        # 4-part about adapted version of blocking intensity by Wiedenmann et al. (2002)
-        step <- 60 / xreso
-        ii <- check1 + length(ics)
-        zu <- zd <- NULL
-        for (ll in ii) {
-          zu <- c(zu, min(new_field[(ll - step):ll, central + delta]))
-          zd <- c(zd, min(new_field[ll:(ll + step), central + delta]))
-        }
-        mz <- Z500[check1, central + delta, t]
-        rc <- 0.5 * ((zu + mz) / 2 + (zd + mz) / 2)
-        totBI[check1, central + delta, t] <- 100 * (mz / rc - 1)
-
-        # 5 - part about meridional gradient index
-        totmeridional[check1, central + delta, t] <- ghgs[check1]
-      }
+      ghgs[, which(erre == (0:range))] <- apply(sweep(
+        U500[, south:central + erre, t], c(2),
+        sinphi[south:central + erre] * ww, "*"
+      ), c(1), sum) / step
+      ghgn[, which(erre == (0:range))] <- apply(sweep(
+        U500[, central:north + erre, t], c(2),
+        sinphi[central:north + erre] * ww, "*"
+      ), c(1), sum) / step
+      gh2gs[, which(erre == (0:range))] <- apply(sweep(
+        U500[, maxsouth:south + erre, t], c(2),
+        sinphi[maxsouth:south + erre] * ww, "*"
+      ), c(1), sum) / step
     }
-  }
+    check1 <- (ghgs < 0 & ghgn > (10 * delta / alfa))
+    check1[check1 == T] <- 1
+    check1[check1 == F] <- 0
+    totblocked[, central:(central + range), t] <- check1
 
+    check2 <- (ghgs < 0 & ghgn > (10 * delta / alfa) & gh2gs > (5 * delta / alfa))
+    check2[check2 == T] <- 1
+    check2[check2 == F] <- 0
+    totblocked2[, central:(central + range), t] <- check2
+  }
   print(paste("Total # of days:", t))
   print("-------------------------")
 
@@ -200,13 +183,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   # compute mean values (use rowMeans that is faster when there are no NA values)
   frequency <- rowMeans(totblocked, dims = 2) * 100 # frequency of Instantaneous Blocking days
   frequency2 <- rowMeans(totblocked2, dims = 2) * 100 # frequency of Instantaneous Blocking days with GHGS2
-  Z500mean <- rowMeans(Z500, dims = 2) # Z500 mean value
-  BI <- apply(totBI, c(1, 2), mean, na.rm = T) # Blocking Intensity Index as Wiedenmann et al. (2002)
-  MGI <- apply(totmeridional, c(1, 2), mean, na.rm = T) # Value of meridional gradient inversion
-
-  # anticyclonic and cyclonic averages RWB
-  CN <- apply(totrwb, c(1, 2), function(x) sum(x[x == (-10)], na.rm = T)) / (totdays) * (-10)
-  ACN <- apply(totrwb, c(1, 2), function(x) sum(x[x == (10)], na.rm = T)) / (totdays) * (10)
+  U500mean <- rowMeans(U500, dims = 2) # U500 mean value
 
   t1 <- proc.time() - t0
   print(t1)
@@ -219,11 +196,11 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
 
   # spatial filtering on fixed longitude distance
   spatial <- longitude.filter(ics, ipsilon, totblocked)
-  # Deprecated: CUT=apply(spatial,c(1,2),sum,na.rm=T)/ndays*100
+  # CUT=apply(spatial,c(1,2),sum,na.rm=T)/ndays*100
 
   # large scale extension on 10x5 box
   large <- largescale.extension.if(ics, ipsilon, spatial)
-  # Deprecated: LARGE=apply(large,c(1,2),sum,na.rm=T)/ndays*100
+  # LARGE=apply(large,c(1,2),sum,na.rm=T)/ndays*100
 
   # 5-day persistence filter
   block <- blocking.persistence(large, minduration = 5, time.array = etime)
@@ -243,8 +220,8 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   print("saving NetCDF climatologies...")
 
   # which fieds to plot/save
-  savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
-  full_savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents")
+  savelist <- c("TM90", "InstBlock", "ExtraBlock", "U500", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
+  full_savelist <- c("TM90", "InstBlock", "ExtraBlock", "U500", "BlockEvents", "LongBlockEvents")
 
   # dimension definition (using default 1850-01-01 reftime)
   dims <- ncdf.defdims(ics, ipsilon, timeaxis)
@@ -275,49 +252,17 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
       field <- frequency
       full_field <- totblocked
     }
-    if (var == "AbsBlock") {
-      longvar <- "Instantaneous Blocking frequency (Schwierz et al)"
-      unit <- "%"
-      field <- absfrequency
-      full_field <- absblocked
-    }
     if (var == "ExtraBlock") {
       longvar <- "Instantaneous Blocking frequency (GHGS2)"
       unit <- "%"
       field <- frequency2
       full_field <- totblocked2
     }
-    if (var == "Z500") {
-      longvar <- "Geopotential Height"
-      unit <- "m"
-      field <- Z500mean
-      full_field <- Z500
-    }
-    if (var == "BI") {
-      longvar <- "BI index"
-      unit <- ""
-      field <- BI
-      full_field <- totBI
-    }
-    if (var == "MGI") {
-      longvar <- "MGI index"
-      unit <- ""
-      field <- MGI
-      full_field <- totmeridional
-    }
-    if (var == "ACN") {
-      longvar <- "Anticyclonic RWB frequency"
-      unit <- "%"
-      field <- ACN
-      full_field <- totrwb / 10
-      full_field[full_field == (-1)] <- NA
-    }
-    if (var == "CN") {
-      longvar <- "Cyclonic RWB frequency"
-      unit <- "%"
-      field <- CN
-      full_field <- totrwb / 10
-      full_field[full_field == (1)] <- NA
+    if (var == "U500") {
+      longvar <- "Zonal wind"
+      unit <- "m/s"
+      field <- U500mean
+      full_field <- U500
     }
     if (var == "BlockEvents") {
       longvar <- "Blocking Events frequency"
@@ -345,23 +290,28 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
     # fix eventual NaN
     field[is.nan(field)] <- NA
 
-    # variable definitions
+    # define the list for variables and fields
     if (var %in% savelist) {
-      nc_var[[which(var == savelist)]] <- ncvar_def(var, unit, dim_ncdf, -999, longname = longvar, prec = "single", compression = 1)
+      nc_var[[which(var == savelist)]] <- ncvar_def(var, unit, dim_ncdf, -999,
+        longname = longvar, prec = "single",
+        compression = 1
+      )
       nc_field[[which(var == savelist)]] <- field
     }
 
-    # field definitions
     if (var %in% full_savelist) {
-      nc_fullvar[[which(var == full_savelist)]] <- ncvar_def(var, unit, dim_fullncdf, -999, longname = longvar, prec = "single", compression = 1)
+      nc_fullvar[[which(var == full_savelist)]] <- ncvar_def(var, unit, dim_fullncdf, -999,
+        longname = longvar, prec = "single",
+        compression = 1
+      )
       nc_fullfield[[which(var == full_savelist)]] <- full_field
     }
   }
 
+  # save variables
   # Climatologies Netcdf file creation
   ncdf.writer(savefile1, nc_var, nc_field)
   ncdf.writer(savefile2, nc_fullvar, nc_fullfield)
-
 }
 
 # blank lines
@@ -372,20 +322,17 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "z500filename", "FILESDIR", "PROGDIR", "doforce")
+name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "u500filename", "FILESDIR", "PROGDIR", "doforce")
 
 # if there arguments, check them required args and assign
 if (length(args) != 0) {
-
   req_args <- length(name_args)
   if (length(args) != req_args) {
-
     # stop if something is wrong
     print(paste(length(args), "arguments received: please specify the following", req_args, "arguments:"))
     print(name_args)
     stop("ERROR!")
   } else {
-
     # when the number of arguments is ok run the function()
     for (k in 1:req_args) {
       if (args[k] == "") {
@@ -393,8 +340,7 @@ if (length(args) != 0) {
       }
       assign(name_args[k], args[k])
     }
-
     source(file.path(PROGDIR, "script/basis_functions.R"))
-    miles.block.fast(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce)
+    miles.u500block.fast(project, dataset, expid, ens, year1, year2, season, u500filename, FILESDIR, doforce)
   }
 }
