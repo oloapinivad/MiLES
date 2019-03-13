@@ -1037,6 +1037,15 @@ field.details <- function(field) {
     title_name <- "Instantaneous Blocking frequency (GHGS2 condition):"
   }
 
+  if (field == "TestBlock") {
+    color_field <- palette1
+    color_diff <- palette2
+    lev_field <- seq(0, 27, 3)
+    lev_diff <- seq(-10.5, 10.5, 1)
+    legend_unit <- "Blocked Days (%)"
+    title_name <- "Instantaneous Blocking frequency (TEST INDEX):"
+  }
+
   if (field == "BlockEvents") {
     color_field <- palette1
     color_diff <- palette2

@@ -116,7 +116,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
 
   # decleare main variables to be computed (considerable speed up!)
   totrwb <- totmeridional <- totBI <- Z500 * NA
-  totblocked <- totblocked2 <- Z500 * 0
+  totblocked <- totblocked2 <- totblocked_test <- Z500 * 0
 
   # Davini et al. 2012: parameters to be set for blocking detection
   fi0 <- 30 # lowest latitude to be analyzed
@@ -152,9 +152,14 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
       gh2gs <- (Z500[, south + delta, t] - Z500[, maxsouth + delta, t]) / (fi0 - fiS)
       check1 <- which(ghgs > 0 & ghgn < (-10))
       check2 <- which(ghgs > 0 & ghgn < (-10) & gh2gs < (-5)) # supplementary condition
+      check3 <- which(ghgs > 0 & ghgn < 0 & gh2gs < 0) # test condition
 
       if (length(check2) > 0) {
         totblocked2[check2, central + delta, t] <- 1
+      }
+
+      if (length(check3) > 0) {
+        totblocked_test[check3, central + delta, t] <- 1
       }
 
       if (length(check1) > 0) {
@@ -200,6 +205,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   # compute mean values (use rowMeans that is faster when there are no NA values)
   frequency <- rowMeans(totblocked, dims = 2) * 100 # frequency of Instantaneous Blocking days
   frequency2 <- rowMeans(totblocked2, dims = 2) * 100 # frequency of Instantaneous Blocking days with GHGS2
+  frequency_test <- rowMeans(totblocked_test, dims = 2) * 100 # frequency of Instantaneous Blocking days test
   Z500mean <- rowMeans(Z500, dims = 2) # Z500 mean value
   BI <- apply(totBI, c(1, 2), mean, na.rm = T) # Blocking Intensity Index as Wiedenmann et al. (2002)
   MGI <- apply(totmeridional, c(1, 2), mean, na.rm = T) # Value of meridional gradient inversion
@@ -243,8 +249,8 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   print("saving NetCDF climatologies...")
 
   # which fieds to plot/save
-  savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
-  full_savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents")
+  savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "TestBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents", "DurationEvents", "NumberEvents")
+  full_savelist <- c("TM90", "InstBlock", "AbsBlock", "ExtraBlock", "TestBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "LongBlockEvents")
 
   # dimension definition (using default 1850-01-01 reftime)
   dims <- ncdf.defdims(ics, ipsilon, timeaxis)
@@ -286,6 +292,12 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
       unit <- "%"
       field <- frequency2
       full_field <- totblocked2
+    }
+    if (var == "TestBlock") {
+      longvar <- "Instantaneous Blocking frequency - TEST INDEX"
+      unit <- "%"
+      field <- frequency_test
+      full_field <- totblocked_test
     }
     if (var == "Z500") {
       longvar <- "Geopotential Height"
