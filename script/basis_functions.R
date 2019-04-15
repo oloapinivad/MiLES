@@ -1561,10 +1561,13 @@ daily.anom.mean <- function(ics, ipsilon, field, etime) {
   anom <- field * NA
   for (t in unique(condition)) {
     if (sum(t == condition) == 1) {
-      stop("Cannot compute a mean with a single value")
+      print("Cannot compute a mean with a single value: using climatological mean")
+      #anom <- sweep(field, 1:2, apply(field, 1:2, mean), "-")
+      anom[, , which(t == condition)] <- rowMeans(field, dims = 2)
+    } else {
+      daily[, , which(t == unique(condition))] <- rowMeans(field[, , t == condition], dims = 2)
+      anom[, , which(t == condition)] <- sweep(field[, , which(t == condition)], c(1, 2), daily[, , which(t == unique(condition))], "-")
     }
-    daily[, , which(t == unique(condition))] <- rowMeans(field[, , t == condition], dims = 2)
-    anom[, , which(t == condition)] <- sweep(field[, , which(t == condition)], c(1, 2), daily[, , which(t == unique(condition))], "-")
   }
   return(anom)
 }
