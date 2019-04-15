@@ -1165,7 +1165,12 @@ blocking.persistence <- function(field, minduration = 5, time.array) {
   print("Events detection...")
   maxdim <- max(apply(newfield, c(1, 2), function(x) length(rle(x)$length[which(rle(x)$values == 1)])))
   events <- apply(newfield, c(1, 2), function(x) c(rle(x)$lengths[which(rle(x)$values == 1)], rep(NA, maxdim - length(rle(x)$length[which(rle(x)$values == 1)]))))
-  events <- aperm(events, c(2, 3, 1))
+  if (length(dim(events)) == 2) {
+    print("Few events, collapsing recognized")
+    events <- array(events, dim = c(dim(events),1))
+  } else {
+    events <- aperm(events, c(2, 3, 1))
+  }
   print("Mean Duration...")
   duration <- apply(events, c(1, 2), mean, na.rm = T)
   print("Number of Events...")
