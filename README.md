@@ -174,6 +174,9 @@ It is recommended in such cases to split the analysis in different subsets.
 
 ## HISTORY
 
+*next version - May 2019
+- Expanding possibilities for ncdf.opener.universal()
+
 *v0.7 - Feb 2019*
 - New wrapper structure using namelists
 - Introducing blocking diagnostic based on zonal wind at 500hPa (beta)

@@ -139,6 +139,10 @@ printv <- function(value, verbosity = TRUE) {
   }
 }
 
+print.break<- function(n=50) {
+  return(paste(rep("-",50),collapse=""))
+}
+
 
 ##########################################################
 #-----------Array manipulations functions----------------#
@@ -402,25 +406,34 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
      caldata <- "standard"
   }
 
+  printv(paste("This is a", caldata, "calendar"), verbose)
+
   # new method including both absolute and releative time axis (Oct 2018)
   # if "as" is present, this is an absolute time axis
   if (grepl("as", units, fixed = TRUE)) {
-    printv("Absolute time axis!", verbose)
+    kind <- "absolute"
+    freq <- NULL
     timeline <- as.PCICt(as.character(time), format = "%Y%m%d", cal = caldata)
     # if a "since" is present, this is a relative time axis
   } else if (grepl("since", units, fixed = TRUE)) {
-    printv("Relative time axis!", verbose)
-    origin <- substr(gsub("[a-zA-Z ]", "", units), 1, 10)
+    kind <- "relative"
+    #origin <- substr(gsub("[a-zA-Z ]", "", units), 1, 10)
+    origin <- unlist(strsplit(units, "[a-zA-Z ]+"))[2]
     origin.pcict <- as.PCICt(origin, cal = caldata, format = "%Y-%m-%d")
+    printv(paste("Origin of the time axis is:",origin.pcict), verbose)
 
     # distinguish between day and seconds based axis
     if (grepl("day", substr(units, 1, 3), fixed = TRUE)) {
+      freq <- "(days)"
       timeline <- origin.pcict + (floor(time) * 86400)
     } else if (grepl("sec", substr(units, 1, 3), fixed = TRUE)) {
+      freq <- "(seconds)"
       timeline <- origin.pcict + floor(time)
-    } else if (grepl("hours", substr(units, 1, 5), fixed = TRUE)) {
+    } else if (grepl("hour", substr(units, 1, 4), fixed = TRUE)) {
+      freq <- "(hours)"
       timeline <- origin.pcict + floor(time) * 3600
-    } else if (grepl("years", substr(units, 1, 5), fixed = TRUE)) {
+    } else if (grepl("year", substr(units, 1, 4), fixed = TRUE)) {
+      freq <- "(years)"
       timeline <- origin.pcict + floor(time) * 86400 * 365
     } else {
       warning("Not recognised relative time axis!")
@@ -433,9 +446,12 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
   if (any(is.na(timeline))) {
     print("Calendar from NetCDF is unsupported or not present")
     timeline <- time
+    kind <- "unsupported"
   }
+  print(paste("Calendar:", kind, "time axis", freq))
 
-  return(timeline)
+
+  return(list(timeline=timeline,calendar=kind))
 }
 
 
@@ -446,25 +462,29 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
 # universal function to open a single var 4D (x,y,z,time) ncdf files: it includes rotation, y-axis flipping, possible time selection and CDO-based interpolation
 # automatically rotate matrix to place greenwich at the center (flag "rotate") and flip the latitudes in order to have increasing values
 # if required (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the target grid name
-# time selection based on package PCICt must be specifed with both "tmonths" and "tyears" flags
+# time selection based on package PCICt can be specifed with both "tmonths" and "tyears" flags
 # level selection can be done with "tlev"
 # it returns a list including its own dimensions
-# last update in Jan-19
+# last update in May-19
 ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, namelat = NULL, namelev = NULL, 
-                                  tmonths = 1:12, tyears = NULL, tlev = NULL,
+                                  tmonths = NULL, tyears = NULL, tlev = NULL,
                                   rotate = "full", interp2grid = F, grid = "r144x73", remap_method = "remapbil",
                                   exportlonlat = FALSE, verbose = FALSE) {
 
   # load package
   require(ncdf4)
 
-  # check if timeflag (by tyears) is activated or full file must be loaded
-  if (is.null(tyears)) {
+  # check if timeflag (by tyears or tmomths) is activated or full file must be loaded
+  if (is.null(tyears) & is.null(tmonths)) {
     timeflag <- FALSE
-    printv("No years have been specified, loading all the data", verbose)
+    printv("No years or months have been specified, loading all the data", verbose)
   } else {
     timeflag <- TRUE
-    printv("tyears is set!", verbose)
+    # load all the data if tmonths is not defined
+    if (is.null(tmonths)) {
+      tmonths <- 1:12
+    }
+    printv("tyears or tmonths are set!", verbose)
   }
 
   # interpolation made with CDO: second order conservative remapping
@@ -482,7 +502,6 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
   # opening file: getting variable (if namevar is given, that variable is extracted)
   printv(paste("opening file:", namefile), verbose)
   a <- nc_open(namefile)
-  print(paste("Loading", namevar, "..."))
 
   # if no name provided load the only variable available
   if (is.null(namevar)) {
@@ -498,6 +517,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
       stop("Requested a non-existeng variable. Stopping!")
     }
   }
+  print(paste("Loading", namevar, "..."))
 
   # load axis: updated version, looking for dimension directly stored inside the variable
   naxis <- unlist(lapply(a$var[[namevar]]$dim, function(x) x["name"]))
@@ -506,7 +526,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
     printv(paste(axis, ":", length(get(axis)), "records"), verbose)
   }
 
-  # axis definition: this are standard axis names that are used for recognition
+  # axis definition: these are standard axis names that are used for recognition
   xlist <- c("lon", "Lon", "longitude", "Longitude", "x")
   ylist <- c("lat", "Lat", "latitude", "Latitude", "y")
   zlist <- c("lev", "Lev", "plev", "Plev", "z")
@@ -533,6 +553,8 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
 
   # if a time dimension exists, activate the PCICt package
   if (exists("time", mode = "numeric")) {
+    printv(print.break(),verbose)
+    printv("Time axis found, trying to recognize it...", verbose)
     require(PCICt)
 
     # extract units and calendary type to deal with PCICt package
@@ -540,58 +562,68 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
     caldata <- ncatt_get(a, "time", "calendar")$value
 
     # create a PCICt objecti with create.timeline()
-    timeline <- create.timeline(time, units, caldata, verbose = verbose)
+    timeinfo <- create.timeline(time, units, caldata, verbose = verbose)
+    time <- timeline <- timeinfo$timeline
 
-    if (timeflag) {
-      # day frequency case
-      if (min(diff(timeline)) == 1) {
-        lastday_base <- paste0(max(tyears), "-", max(tmonths), "-28") # uses number.days.month, which loops to get the month change
-        lastday <- as.PCICt(paste0(max(tyears), "-", max(tmonths), "-", number.days.month(lastday_base, caldata)), 
-                            cal = caldata, format = "%Y-%m-%d")
-        firstday <- as.PCICt(paste0(min(tyears), "-", min(tmonths), "-01"), 
-                             cal = caldata, format = "%Y-%m-%d")
-      } 
-      # monthly data case
-      if (min(diff(timeline) >= 28)) {
-        firstday <- as.PCICt(paste0(min(tyears), "-", min(tmonths), "-28"), cal = caldata, format = "%Y-%m-%d")
-        lastday <- as.PCICt(paste0(min(tyears), "-", min(tmonths), "-01"), cal = caldata, format = "%Y-%m-%d")
-      }
-      # break if the data requested is not there
-      if (max(trunc(timeline,"days")) < lastday | min(trunc(timeline,"days")) > firstday) {
-        print(paste("Dataset extend from", min(timeline), "up to", max(timeline)))
-        print(paste("Your request is from", firstday, "up to", lastday))
-        stop("This a time interval that is not present in the NetCDF. Stopping!!!")
-      }
+    # optional information on dataset properties: only informative
+    delta_time <- min(diff(timeline))
+    if (delta_time == 1) {
+      printv("Daily data found!", verbose)
+    } else if (delta_time >= 28 & delta_time <=31) {
+      printv("Monthly data found!", verbose)
+    } else if (delta_time > 360) {
+      printv("Yearly data found!", verbose)
+    } else {
+      printv(paste("Time difference of", delta_time,"days: irregular time axis?"),verbose)
     }
-  } else {
-    if (timeflag) {
-      warning("Unknown time axis, disabling time selection!")
-      timeflag <- FALSE
+
+    if (timeinfo$calendar == "unsupported") {
+      print("Unsupported calendar, disabling time selection...")
+      timeflag = FALSE
     }
+
   }
 
-
   # time selection and variable loading
+  printv(print.break(),verbose)
   printv("loading full field...", verbose)
   field <- ncvar_get(a, namevar)
 
   if (timeflag) {
 
-    # needed time window
+    # needed time window: updated in May 2019 to be more versatile 
+    # removed check on months/daily time axis
     printv("selecting years and months", verbose)
-    time_select <- which(as.numeric(format(timeline, "%Y")) %in% tyears & as.numeric(format(timeline, "%m")) %in% tmonths)
+    if (is.null(tyears)) {
+      time_select <- which(as.numeric(format(timeline, "%m")) %in% tmonths)
+      ff<-format(timeline,"%m")
+      gg<-sprintf("%02d",tmonths)
+    } else {
+      time_select <- which(as.numeric(format(timeline, "%Y")) %in% tyears & as.numeric(format(timeline, "%m")) %in% tmonths)
+      ff<-format(timeline,"%Y-%m")
+      gg<-paste(rep(tyears,each=length(tmonths)),sprintf("%02d",tmonths),sep="-")
+    }
+    if (length(time_select)==0) {
+      print(paste("Dataset extend from", min(timeline), "up to", max(timeline)))
+      stop("You requested a time interval not present in the NetCDF")
+    }
+    if (!all(gg %in% ff)) {
+      print("WARNING: Not all the data you requested has been loaded")
+      print("WARNING: Following years/months are not present in the NetCDF:")
+      print(gg[!gg%in%ff])
+    }
 
     # Selection of data: array_indexing() replace the previous 3d selection (Jan 2019)
     time_dim <- which(dim(field) == length(time))
     field <- array_indexing(field, time_dim, time_select)
     time <- timeline[time_select]
 
-    printv(paste("This is a", caldata, "calendar"), verbose)
     printv(paste(length(time), "records selected from", time[1], "to", time[length(time)]), verbose)
 
     printv(paste("Months that have been loaded are... "),verbose)
     printv(unique(format(time, "%Y-%m")),verbose)
-  }
+    printv(print.break(),verbose)
+  } 
 
   # Level selection  (Jan 2019)
   # if a selection on levels (tlev is defined and present) select
@@ -652,8 +684,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
   }
 
   # showing array properties
-  printv(paste(dim(field)),verbose)
-  printv(paste("From", time[1], "to", time[length(time)]),verbose)
+  printv(paste("Final array dimension:", paste(dim(field), collapse=" ")),verbose)
 
   # returning file list
   return(mget(c("field", naxis)))
