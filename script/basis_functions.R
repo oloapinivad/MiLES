@@ -692,7 +692,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
 
 # ncdf.opener is a simplified wrapper for ncdf.opener.universal which returns only the field, ignoring the list and no verbosity
 ncdf.opener <- function(namefile, namevar = NULL, namelon = NULL, namelat = NULL, namelev = NULL, 
-                        tmonths = 1:12, tyears = NULL, tlev = NULL,
+                        tmonths = NULL, tyears = NULL, tlev = NULL,
                         rotate = "full", interp2grid = F, grid = "r144x73", remap_method = "remapcon2",
                         exportlonlat = TRUE, verbose = FALSE) {
   field <- ncdf.opener.universal(namefile, namevar, namelon, namelat, namelev, tmonths, tyears, tlev,
@@ -798,6 +798,7 @@ filled.contour3 <-
              levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors,
              col = color.palette(length(levels) - 1), extend = FALSE, plot.title, plot.axes,
              key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1,
+             image.scale = FALSE,
              axes = TRUE, frame.plot = axes, mar, ...) {
     # modification by Ian Taylor of the filled.contour function
     # to remove the key and facilitate overplotting with contour()
@@ -845,6 +846,9 @@ filled.contour3 <-
     .filled.contour(as.double(x), as.double(y), z, as.double(levels),
       col = col
     )
+    if (image.scale) {
+      image.scale3(z, levels=as.double(levels), colorbar.label="", color.palette=color.palette)
+    }
     if (missing(plot.axes)) {
       if (axes) {
         title(main = "", xlab = "", ylab = "")
@@ -1284,8 +1288,8 @@ longitude.filter <- function(ics, ipsilon, field) {
 #------------EOFs and regims functions-------------------#
 ##########################################################
 
-eofs <- function(lon, lat, field, neof = 4, xlim = NULL, ylim = NULL, 
-                 method = "SVD", do_standardize = F, do_regression = F, verbose = T) {
+eofs <- function(lon, lat, field, neof = 4, xlim = NULL, ylim = NULL, weight = T,
+                 method = "SVD", do_standardize = F, do_regression = F, verbose = T, true_coeff = F) {
   # R tool for computing EOFs based on Singular Value Decomposition ("SVD", default)
   # or with the eigenvectors of the covariance matrix ("covariance", slower)
   # If requested, computes linear regressions and standardizes the PCs
@@ -1294,9 +1298,13 @@ eofs <- function(lon, lat, field, neof = 4, xlim = NULL, ylim = NULL,
   # Requires "personal" functions area.weight, whicher and standardize
 
   # area weighting, based on the root of cosine
-  printv("Area Weighting...", verbose)
-  ww <- area.weight(lon, lat, root = T)
-  wwfield <- sweep(field, c(1, 2), ww, "*")
+  if (weight) {
+    printv("Area Weighting...", verbose)
+    ww <- area.weight(lon, lat, root = T)
+    wwfield <- sweep(field, c(1, 2), ww, "*")
+  } else {
+    wwfield <- field
+  }
 
   # selection of the xbox and ybox if defined
   if (!is.null(xlim)) {
@@ -1327,11 +1335,15 @@ eofs <- function(lon, lat, field, neof = 4, xlim = NULL, ylim = NULL,
     # extracting EOFs (loading pattern), expansions coefficient and variance explained
     pattern <- array(SVD$u, dim = c(dim(box)[1], dim(box)[2], neof))
     coefficient <- SVD$v
+    true_variance <- SVD$d[1:neof]^2  
     variance <- (SVD$d[1:neof])^2 / sum((SVD$d)^2)
     if (do_standardize) {
       coefficient <- apply(coefficient, c(2), standardize)
     } else {
       coefficient <- sweep(coefficient, c(2), sqrt(variance), "*")
+      #if (true_coeff) {
+      #  coefficient <- sweep(coefficient, c(2), SVD$d[1:neof], "*")
+      #}
     }
   }
 
@@ -1364,7 +1376,7 @@ eofs <- function(lon, lat, field, neof = 4, xlim = NULL, ylim = NULL,
   # preparing output
   printv("Finalize...", verbose)
   pattern <- list(x = slon, y = slat, z = pattern)
-  out <- list(pattern = pattern, coeff = coefficient, variance = variance, regression = regression)
+  out <- list(pattern = pattern, coeff = coefficient, variance = variance, regression = regression, true_variance = true_variance)
   return(out)
 }
 
