@@ -1,0 +1,10 @@
+#program folder where MiLES is placed
+PROGDIR:        ${HOME}/MiLES
+
+#data folder where place output (Z500 files, NetCDF files and figures)
+OUTPUTDIR:      ${SCRATCH}/miles_yaml
+
+#NetCDF output dir
+FILESDIR:       ${OUTPUTDIR}/files
+FIGDIR:         ${OUTPUTDIR}/figures
+

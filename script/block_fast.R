@@ -24,7 +24,7 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
       print("Running with doforce=true... re-run!")
     } else {
       print("Skipping... activate doforce=true if you want to re-run it")
-      q()
+      return() #q()
     }
   }
 

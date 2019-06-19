@@ -239,7 +239,7 @@ info.builder <- function(dataset, expid, ens, year1, year2, season) {
   descriptors <- c(dataset, expid, ens, paste0(year1, "-", year2), season)
   info <- NULL
   for (dcode in descriptors) {
-    if (!is.na(dcode)) {
+    if (!is.null(dcode)) {
       info <- paste(info, dcode)
     }
   }
@@ -252,14 +252,14 @@ file.builder <- function(DATADIR, dir_name, file_name, project, dataset, expid, 
   # add directory name descriptor
   DATADIR <- file.path(DATADIR, dir_name)
 
-  if (!is.na(project)) {
+  if (!is.null(project)) {
     DATADIR <- file.path(DATADIR, project)
   }
 
   # loop on descriptors that are concatenated to create dir and file name
   descriptors <- c(dataset, expid, ens, paste0(year1, "_", year2), season)
   for (dcode in descriptors) {
-    if (!is.na(dcode)) {
+    if (!is.null(dcode)) {
       DATADIR <- file.path(DATADIR, dcode)
       file_name <- paste0(file_name, "_", dcode)
     }
@@ -281,14 +281,14 @@ fig.builder <- function(FIGDIR, dir_name, file_name, project, dataset, expid, en
   # add directory name descriptor
   FIGDIR <- file.path(FIGDIR, dir_name)
 
-  if (!is.na(project)) {
+  if (!is.null(project)) {
     FIGDIR <- file.path(FIGDIR, project)
   }
 
   # loop on descriptors that are concatenated to create dir and file name
   descriptors <- c(dataset, expid, ens, paste0(year1, "_", year2), season)
   for (dcode in descriptors) {
-    if (!is.na(dcode)) {
+    if (!is.null(dcode)) {
       FIGDIR <- file.path(FIGDIR, dcode)
       file_name <- paste0(file_name, "_", dcode)
     }
