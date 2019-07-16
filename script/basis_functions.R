@@ -9,6 +9,7 @@
 library("maps")
 library("ncdf4")
 library("PCICt")
+library("abind")
 
 # check if fast linear fit is operative (after R 3.1): 3x faster than lm.fit, 36x faster than lm
 if (exists(".lm.fit")) {
@@ -194,9 +195,12 @@ rotation <- function(line, rotate, longitude.case = FALSE) {
     if (rotate == "full") {
       # 180 degrees rotation of longitude
       move1 <- 1 / 2 * ll
-    } else if (rotate == "half") {
+    } else if (rotate == "+half") {
       # 90 degree rotation (useful for TM90)
       move1 <- 1 / 4 * ll
+    } else if (rotate == "-half") {
+      # 270 degree rotation (useful for TM90)
+      move1 <- 3 / 4 * ll
     } else if (rotate == "no") {
       return(line)
     }
@@ -216,8 +220,10 @@ rotation <- function(line, rotate, longitude.case = FALSE) {
 
   # special case for flipping longitudes
   if (longitude.case) {
-    #newline <- c(tail(line, move1)-360, head(x, move2))
     newline <- c(line[(move2 + 2):ll]-360, line[1:(move2 + 1)])
+    if (all(newline< 0)) {
+          newline <- newline + 360 
+    }
 
   } else {
     # create new elements order
@@ -448,7 +454,7 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
     timeline <- time
     kind <- "unsupported"
   }
-  print(paste("Calendar:", kind, "time axis", freq))
+  printv(paste("Calendar:", kind, "time axis", freq), verbose)
 
 
   return(list(timeline=timeline,calendar=kind))
@@ -517,7 +523,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
       stop("Requested a non-existeng variable. Stopping!")
     }
   }
-  print(paste("Loading", namevar, "..."))
+  printv(paste("Loading", namevar, "..."), verbose)
 
   # load axis: updated version, looking for dimension directly stored inside the variable
   naxis <- unlist(lapply(a$var[[namevar]]$dim, function(x) x["name"]))
@@ -566,15 +572,19 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
     time <- timeline <- timeinfo$timeline
 
     # optional information on dataset properties: only informative
-    delta_time <- min(diff(timeline))
-    if (delta_time == 1) {
-      printv("Daily data found!", verbose)
-    } else if (delta_time >= 28 & delta_time <=31) {
-      printv("Monthly data found!", verbose)
-    } else if (delta_time > 360) {
-      printv("Yearly data found!", verbose)
+    if (length(timeline) == 1) {
+      printv("Single-instant value found!", verbose)
     } else {
-      printv(paste("Time difference of", delta_time,"days: irregular time axis?"),verbose)
+      delta_time <- min(diff(timeline))
+      if (delta_time == 1) {
+        printv("Daily data found!", verbose)
+      } else if (delta_time >= 28 & delta_time <=31) {
+        printv("Monthly data found!", verbose)
+      } else if (delta_time > 360) {
+        printv("Yearly data found!", verbose)
+      } else {
+        printv(paste("Time difference of", delta_time,"days: irregular time axis?"),verbose)
+      }
     }
 
     if (timeinfo$calendar == "unsupported") {
@@ -1043,6 +1053,15 @@ field.details <- function(field) {
     lev_diff <- NULL
     legend_unit <- "Blocked Days (%)"
     title_name <- "Instantaneous Blocking (Tibaldi & Molteni, 1990):"
+  }
+  
+  if (field == "D98") {
+    color_field <- c("navy", "darkorange")
+    color_diff <- NULL
+    lev_field <- c(0, 30)
+    lev_diff <- NULL
+    legend_unit <- "Blocked Days (%)"
+    title_name <- "Instantaneous Blocking (D'Andrea et al. 1998):"
   }
 
   if (field == "InstBlock") {

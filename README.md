@@ -176,6 +176,11 @@ It is recommended in such cases to split the analysis in different subsets.
 
 *next version - May 2019
 - Expanding possibilities for ncdf.opener.universal()
+- Revisiting blocking tracking in order to apply it on all the indices
+- Adding D'Andrea et al. 1998 1D index
+- Removing 10-day blocking events
+- Vectorise the whole block.miles.fast() function
+- Introduce the dependency to abind package
 
 *v0.7 - Feb 2019*
 - New wrapper structure using namelists

@@ -92,7 +92,7 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 
 	# new check: are there any missing values in the file?
 	# use the CDO info output, slow
-	missing=$(cdo info $TEMPDIR/smallfile.nc | awk -v x=1 '$7 >= x' | awk '{print $7}' | tail -n +2)
+	missing=$(cdo info $TEMPDIR/smallfile.nc | awk -v x=1 '$7 >= x' | awk '{print $7}' | tail -n +3)
 	echo $missing
 
 	if [[ ! -z $missing ]] ; then

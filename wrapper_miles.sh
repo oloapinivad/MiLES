@@ -200,8 +200,8 @@ for dataset in $datasets ; do
 		fi
 		# blocking
 		if has_config block ; then
-			[[ $varname == "zg" ]] && blockscript="block_fast.R"
-			[[ $varname == "ua" ]] && blockscript="u500_block.R"
+			[[ $varname == "zg" ]] && blockscript="block_multiple_fast.R"
+			[[ $varname == "ua" ]] && blockscript="u500_block_multiple.R"
 			time $Rscript "$PROGDIR/script/$blockscript" 	"$project" "$dataset" "$expid" "$ens" $year1 $year2 $season \
 									$fullfilename $FILESDIR $PROGDIR $doforceanl
 		fi
@@ -255,8 +255,8 @@ done
 fi
 
 # clean empty folders
-echo "Checking if there are empty folders..."
-find $OUTPUTDIR -type d -empty -delete -print
+#echo "Checking if there are empty folders..."
+#find $OUTPUTDIR -type d -empty -delete -print
 
 echo    "###########################################################"
 echo -e "${BLUE} MiLES is over, go and enjoy your life outside! ${NC}"
