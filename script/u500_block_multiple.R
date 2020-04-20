@@ -231,7 +231,7 @@ miles.u500block.multiple <- function(project, dataset, expid, ens, year1, year2,
     block <- blocking.persistence(large, minduration = 5, time.array = etime)
 
     # 10-day persistence for extreme long block
-    #longblock <- blocking.persistence(large, minduration = 10, time.array = etime)
+    longblock <- blocking.persistence(large, minduration = 10, time.array = etime)
 
     tf <- proc.time() - t1
     print(tf)
@@ -245,7 +245,7 @@ miles.u500block.multiple <- function(project, dataset, expid, ens, year1, year2,
     print("saving NetCDF climatologies...")
 
     # which fieds to plot/save
-    savelist <- c("TM90", "D98", "InstBlock", "ExtraBlock", "U500", "BlockEvents", "DurationEvents", "NumberEvents")
+    savelist <- c("TM90", "D98", "InstBlock", "ExtraBlock", "U500", "BlockEvents", "DurationEvents", "NumberEvents", "LongBlockEvents")
     full_savelist <- c("TM90", "D98", "InstBlock", "ExtraBlock", "U500", "BlockEvents")
 
     # dimension definition (using default 1850-01-01 reftime)
@@ -297,6 +297,11 @@ miles.u500block.multiple <- function(project, dataset, expid, ens, year1, year2,
         unit <- "%"
         field <- block$percentage
         full_field <- block$track
+      } else if (var == "LongBlockEvents") {
+        longvar <- "10-day Blocking Events frequency"
+        unit <- "%"
+        field <- longblock$percentage
+        full_field <- longblock$track
       } else if (var == "DurationEvents") {
         longvar <- "Blocking Events duration"
         unit <- "days"

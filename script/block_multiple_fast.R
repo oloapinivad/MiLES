@@ -279,7 +279,7 @@ miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, sea
     block <- blocking.persistence(large, minduration = 5, time.array = etime)
 
     # 10-day persistence for extreme long block - deprecated since it worthless
-    # longblock <- blocking.persistence(large, minduration = 10, time.array = etime)
+    longblock <- blocking.persistence(large, minduration = 10, time.array = etime)
 
     t2 <- proc.time() - t1
     print(t2)
@@ -293,7 +293,7 @@ miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, sea
     print("saving NetCDF climatologies...")
 
     # which fieds to plot/save
-    savelist <- c("TM90", "D98", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "DurationEvents", "NumberEvents")
+    savelist <- c("TM90", "D98", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents", "DurationEvents", "NumberEvents", "LongBlockEvents")
     full_savelist <- c("TM90", "D98", "InstBlock", "AbsBlock", "ExtraBlock", "Z500", "MGI", "BI", "CN", "ACN", "BlockEvents")
 
     # dimension definition (using default 1850-01-01 reftime)

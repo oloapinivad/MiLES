@@ -26,6 +26,7 @@ while getopts "h:p:d:e:r:v:l:o:c:f:" OPT; do
     esac
 done
 shift $((OPTIND-1))
+echo $levelout
 
 resolution=r144x73
 #resolution=r288x145
@@ -77,16 +78,16 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 	        echo "Assuming is $identifier ...it may be wrong!!!"
 		level_select="-sellevidx,1"
 	else
-		if [[ "$varunit" == "millibar" ]] || [[ "$varunit" == "hPa" ]] ; then level=$levelout ; fi
-		if [[ "$varunit" == "Pa" ]] ; then level=$((levelout*100)) ; fi
-		echo "Level is $level $varunit" 
-		level_select="-sellevel,$level"
+		if [[ "$varunit" == "millibar" ]] || [[ "$varunit" == "hPa" ]] ; then levelnew=$levelout ; fi
+		if [[ "$varunit" == "Pa" ]] ; then levelnew=$((levelout*100)) ; fi
+		echo "Level is $levelnew $varunit" 
+		level_select="-sellevel,$levelnew"
 	fi
 
 	# main operations: sellevel and daymean + setlevel, setname, interpolation resolution and NH selection
 	# CDO flag for extrapolation is on to avoid missing values for low res grid
 	export REMAP_EXTRAPOLATE=on
-	$cdonc sellonlatbox,0,360,0,90 -remapbil,$resolution -setlevel,$((levelout*100))  \
+	$cdonc sellonlatbox,0,360,0,90 -remapbil,$resolution -setlevel,${levelout}  \
 		-setname,$varname -setunit,Pa -daymean ${level_select} \
 		$TEMPDIR/fullfile.nc $TEMPDIR/smallfile.nc
 

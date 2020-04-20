@@ -438,6 +438,9 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
     } else if (grepl("hour", substr(units, 1, 4), fixed = TRUE)) {
       freq <- "(hours)"
       timeline <- origin.pcict + floor(time) * 3600
+    } else if (grepl("month", substr(units, 1, 5), fixed = TRUE)) {
+      freq <- "(months)"
+      timeline <- origin.pcict + floor(time) * 86400 * 30.43
     } else if (grepl("year", substr(units, 1, 4), fixed = TRUE)) {
       freq <- "(years)"
       timeline <- origin.pcict + floor(time) * 86400 * 365
@@ -470,12 +473,15 @@ create.timeline <- function(time, units, caldata = "standard", verbose = F) {
 # if required (flag "interp2grid") additional interpolation with CDO can be used. "grid" can be used to specify the target grid name
 # time selection based on package PCICt can be specifed with both "tmonths" and "tyears" flags
 # level selection can be done with "tlev"
+# exportlonlat: true to export lon lat to global environment
+# force: ignore the data boundaries
+# verbose: expands information
 # it returns a list including its own dimensions
-# last update in May-19
+# last update in Oct-19
 ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, namelat = NULL, namelev = NULL, 
                                   tmonths = NULL, tyears = NULL, tlev = NULL,
                                   rotate = "full", interp2grid = F, grid = "r144x73", remap_method = "remapbil",
-                                  exportlonlat = FALSE, verbose = FALSE) {
+                                  exportlonlat = FALSE, force = FALSE, verbose = FALSE) {
 
   # load package
   require(ncdf4)
@@ -556,19 +562,26 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
   x <- create.dimension(namelon, xlist, naxis) 
   y <- create.dimension(namelat, ylist, naxis)
   z <- create.dimension(namelev, zlist, naxis)
+  
+  # define a time varible, time or time_counter
+  if (exists("time", mode = "numeric")) {
+    timevariable <- "time"
+  } else if (exists("time_counter", mode = "numeric")) {
+    timevariable <- "time_counter"
+  }
 
   # if a time dimension exists, activate the PCICt package
-  if (exists("time", mode = "numeric")) {
+  if (exists("timevariable")) {
     printv(print.break(),verbose)
     printv("Time axis found, trying to recognize it...", verbose)
     require(PCICt)
 
     # extract units and calendary type to deal with PCICt package
-    units <- ncatt_get(a, "time", "units")$value
-    caldata <- ncatt_get(a, "time", "calendar")$value
+    units <- ncatt_get(a, timevariable, "units")$value
+    caldata <- ncatt_get(a, timevariable, "calendar")$value
 
     # create a PCICt objecti with create.timeline()
-    timeinfo <- create.timeline(time, units, caldata, verbose = verbose)
+    timeinfo <- create.timeline(get(timevariable), units, caldata, verbose = verbose)
     time <- timeline <- timeinfo$timeline
 
     # optional information on dataset properties: only informative
@@ -675,8 +688,11 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
   }
 
   if (!is.na(z[1])) {
-    assign(naxis[naxis %in% c(zlist, namelon)], z)
+    assign(naxis[naxis %in% c(zlist, namelev)], z)
   }
+
+  # extract units 
+  var_units <- ncatt_get(a, namevar, "units")$value
 
   # exporting variables to the main program (weird but may be useful!)
   if (exportlonlat) {
@@ -697,7 +713,7 @@ ncdf.opener.universal <- function(namefile, namevar = NULL, namelon = NULL, name
   printv(paste("Final array dimension:", paste(dim(field), collapse=" ")),verbose)
 
   # returning file list
-  return(mget(c("field", naxis)))
+  return(mget(c("field", naxis, "var_units")))
 }
 
 # ncdf.opener is a simplified wrapper for ncdf.opener.universal which returns only the field, ignoring the list and no verbosity
@@ -1339,7 +1355,7 @@ eofs <- function(lon, lat, field, neof = 4, xlim = NULL, ylim = NULL, weight = T
   }
 
   # box
-  box <- wwfield[lonselect, latselect, ]
+  box <- wwfield[lonselect, latselect, , drop=F]
   slon <- lon[lonselect]
   slat <- lat[latselect]
 
@@ -1697,4 +1713,51 @@ daily.anom.run.mean5 <- function(ics, ipsilon, field, etime) {
   
   return(anom)
 } 
+
+
+##########################################################
+#-------------------Filtering functions------------------#
+##########################################################
+
+
+fourier.filter <- function(timeseries,period,type="nofilter") {
+  #Basic timeseries filtering based on ffts
+  #It works on a given time period which is assumed to work on the 
+  #time window of your timeseris (i.e. if you have daily data, "period"
+  #should provide the period you want cut/keep)
+  #type can be "bandpass", "highpass" and "lowpass"
+
+  wavenumber=rev(length(timeseries)/period)
+
+  fourier<-fft(timeseries)
+  magnitude=Mod(fourier)
+  phase=Arg(fourier)
+
+  #filter_magnitude=magnitude[1:(length(magnitude)/2+1)]
+  filter_magnitude=magnitude[1:floor((length(magnitude)/2+1))]
+  #print(length(filter_magnitude))
+  zeroaxis=(0:(length(filter_magnitude)-1))
+
+  if (type=="nofilter") { print("No filtering") }
+  if (type=="bandpass") { filter_magnitude[zeroaxis<wavenumber[1] | zeroaxis>wavenumber[2]]=0 }
+  if (type=="lowpass")  { filter_magnitude[zeroaxis>wavenumber[1]]=0 }
+  if (type=="highpass") { filter_magnitude[zeroaxis<wavenumber[1]]=0 }
+
+  #new_magnitude=c(filter_magnitude,rev(filter_magnitude[2:(length(filter_magnitude)-1)]))
+  if ((length(timeseries) %% 2) == 1) {
+    new_magnitude=c(filter_magnitude,rev(filter_magnitude[2:(length(filter_magnitude))]))
+  } else {
+    new_magnitude=c(filter_magnitude,rev(filter_magnitude[2:(length(filter_magnitude)-1)]))
+  }
+
+  filter_phase=phase
+  filter_phase[which(new_magnitude==0)]=0
+
+  filter_fourier=complex(length.out=length(new_magnitude),modulus=new_magnitude,argument=filter_phase)
+  filter_y=fft(filter_fourier,inverse=TRUE)
+  filter_y=Re(filter_y/length(filter_y))
+
+
+  return(filter_y)
+}
 

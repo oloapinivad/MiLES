@@ -122,11 +122,13 @@ miles.block.figures <- function(project, dataset, expid, ens, year1, year2,
 
       # main experiment plot
       im <- plot.prepare(ics, ipsilon, field_exp, proj = map_projection, lat_lim = lat_lim)
-      filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_exp), levels = fp$lev_field, color.palette = fp$color_field, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
+      tcex <- ifelse(nchar(info_exp)>30, 2.5, 1.5)
+      filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_exp), levels = fp$lev_field, color.palette = fp$color_field, xlim = im$xlim, ylim = im$ylim, axes = im$axes, cex.main=tcex)
       mtext(fp$title_name, side = 3, line = .5, outer = TRUE, cex = 2, font = 2)
       proj.addland(ics, ipsilon, proj = map_projection)
 
       # reference field plot
+      tcex <- ifelse(nchar(info_ref)>30, 2.5, 1.5)
       im <- plot.prepare(ics, ipsilon, field_ref, proj = map_projection, lat_lim = lat_lim)
       filled.contour3(im$x, im$y, im$z, xlab = im$xlab, ylab = im$ylab, main = paste(info_ref), levels = fp$lev_field, color.palette = fp$color_field, xlim = im$xlim, ylim = im$ylim, axes = im$axes)
       proj.addland(ics, ipsilon, proj = map_projection)

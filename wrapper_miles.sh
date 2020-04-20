@@ -117,6 +117,8 @@ expid_ref=${expid_ref:-}
 ens_ref=${ens_ref:-}
 project_ref=${project_ref:-}
 
+# create a unique identifieri for each experiment
+info_exp=${project_exp}!${dataset_exp}!${expid_exp}!${ens_exp}!${year1_exp}!${year2_exp}
 
 # if we are using standard climatology
 if ${std_clim} ; then
@@ -125,11 +127,12 @@ if ${std_clim} ; then
 	year1_ref=1979
 	year2_ref=2017
 	REFDIR=$PROGDIR/clim
-	datasets=$dataset_exp
+	infos=${info_exp}
 else
 
         REFDIR=$FILESDIR
-        datasets=$(echo ${dataset_exp} ${dataset_ref})
+	info_ref=${project_ref}!${dataset_ref}!${expid_ref}!${ens_ref}!${year1_ref}!${year2_ref}
+        infos=$(echo ${info_exp} ${info_ref})
 fi
 
 
@@ -138,21 +141,29 @@ fi
 ################################################
 
 # loop to produce data: on experiment and - if needed - reference
-for dataset in $datasets ; do
+for info in $infos ; do
+	echo $info
 
-	# select for experiment
-	if [[ $dataset == $dataset_exp ]] ; then
-		year1=${year1_exp}; year2=${year2_exp}; expid=${expid_exp}; ens=${ens_exp}; project=${project_exp}
-	fi
+	project=$(echo $info | cut -f1 -d"!")
+	dataset=$(echo $info | cut -f2 -d"!")
+	expid=$(echo $info | cut -f3 -d"!")
+	ens=$(echo $info | cut -f4 -d"!")
+	year1=$(echo $info | cut -f5 -d"!")
+	year2=$(echo $info | cut -f6 -d"!")
+
+	## select for experiment
+	#if [[ $dataset == $dataset_exp ]] ; then
+	#	year1=${year1_exp}; year2=${year2_exp}; expid=${expid_exp}; ens=${ens_exp}; project=${project_exp}
+	#fi
 
 	# select for reference
-	if [[ $dataset == $dataset_ref ]] ; then
-		if ${std_clim} ; then
- 			echo "skip!"
-		else
-	        	year1=${year1_ref}; year2=${year2_ref}; expid=${expid_ref}; ens=${ens_ref}; project=${project_ref}
-		fi
-	fi
+	#if [[ $dataset == $dataset_ref ]] ; then
+	#	if ${std_clim} ; then
+ 	#		echo "skip!"
+	#	else
+	#        	year1=${year1_ref}; year2=${year2_ref}; expid=${expid_ref}; ens=${ens_ref}; project=${project_ref}
+	#	fi
+	#fi
 
 	echo "year1=${year1}; year2=${year2}; expid=${expid}; ens=${ens}; project=${project}"
 	

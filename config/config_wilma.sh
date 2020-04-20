@@ -15,12 +15,15 @@ if [[ $varname == "zg" ]] ; then findvar=Z500 ; fi
 if [[ $varname == "ua" ]] ; then findvar=U500 ; fi
 
 if [[ ${project} == "CMIP5" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
-if [[ ${project} == "CMIP3" ]] ; then INDIR=$ARCHIVE/work/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi 
+if [[ ${project} == "CMIP3" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi 
 if [[ ${project} == "CMIP6" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
+if [[ ${project} == "REFORGE" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
+if [[ "${project}" == "ECMWF" ]] ;  then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
 if [[ "${dataset}" == "NCEP" ]] && [[ $varname == "zg" ]]  ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
 if [[ "${dataset}" == "NCEP" ]] && [[ $varname == "ua" ]]  ;  then INDIR=$WORK/data/${dataset}/day/uwnd ; fi
 if [[ "${dataset}" == "ERA40" ]] || [[ "${dataset}" == "ERAI"  ]] || [[ "${dataset}" == "JRA55"  ]] || [[ "${dataset}" == "ERAEXT"  ]]  ; then INDIR=$WORK/data/${dataset}/day/${findvar} ; fi
-if [[ "${dataset}" == "ERAI"  ]] && [[ $varname == "ua" ]] ; then INDIR=/work/datasets/obs/ERAINT/v0/data/${findvar}/6hrs ; fi
+if [[ "${dataset}" == "ERAI"  ]] && [[ $varname == "ua" ]] ; then INDIR=/work/datasets/obs/${dataset}/v0/data/${findvar}/6hrs ; fi
+if [[ "${dataset}" == "ERA5"  ]] && [[ $varname == "zg" ]] ; then INDIR=/work/datasets/obs/${dataset}/zg500/day ; fi
 if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/${findvar} ; fi
 if [[ "${dataset}" == "CMCC-CM2" ]] ;  then INDIR=$SCRATCH/cmcc ; fi
 if [[ "${project}" == "SPHINX" ]] ;  then INDIR=$WORK/data/${project}/${ens}/day/${findvar} ; fi
