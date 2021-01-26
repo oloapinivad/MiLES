@@ -17,7 +17,8 @@ if [[ $varname == "ua" ]] ; then findvar=U500 ; fi
 if [[ ${project} == "CMIP5" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
 if [[ ${project} == "CMIP3" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi 
 if [[ ${project} == "CMIP6" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
-if [[ ${project} == "REFORGE" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
+if [[ ${project} == "REFORGE" ]] ; then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/zg ; fi
+if [[ ${project} == "IPSL" ]] ; then INDIR=$SCRATCH/${project}/${dataset}/${expid}/${ens}/day/zg ; fi
 if [[ "${project}" == "ECMWF" ]] ;  then INDIR=$WORK/data/${project}/${dataset}/${expid}/${ens}/day/${findvar} ; fi
 if [[ "${dataset}" == "NCEP" ]] && [[ $varname == "zg" ]]  ;  then INDIR=$WORK/data/${dataset}/day/hgt ; fi
 if [[ "${dataset}" == "NCEP" ]] && [[ $varname == "ua" ]]  ;  then INDIR=$WORK/data/${dataset}/day/uwnd ; fi
@@ -45,7 +46,8 @@ export OUTPUTDIR=$WORK/miles
 
 #CDO
 #if you CDO is not equipped of NetCDF4 compression change "cdo4" command here
-cdo=/usr/bin/cdo
+#cdo=/usr/bin/cdo
+cdo=cdo197
 cdonc="$cdo -f nc"
 cdo4="$cdo -f nc4 -z zip"
 

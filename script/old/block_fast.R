@@ -2,7 +2,7 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (Oct 2014)-------------------#
 ######################################################
-miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce) {
+miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce, biascorrect, biasfile) {
 
   # t0
   t0 <- proc.time()
@@ -11,9 +11,15 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   years <- year1:year2
   timeseason <- season2timeseason(season)
 
+  # name for bias correction
+  if (biascorrect) {
+    block_name <- "BC_Block"
+  } else {
+    block_name <- "Block"
+  }
   # define folders using file.builder function (takes care of ensembles)
-  savefile1 <- file.builder(FILESDIR, "Block", "BlockClim", project, dataset, expid, ens, year1, year2, season)
-  savefile2 <- file.builder(FILESDIR, "Block", "BlockFull", project, dataset, expid, ens, year1, year2, season)
+  savefile1 <- file.builder(FILESDIR, block_name, "BlockClim", project, dataset, expid, ens, year1, year2, season)
+  savefile2 <- file.builder(FILESDIR, block_name, "BlockFull", project, dataset, expid, ens, year1, year2, season)
 
   # check if data is already there to avoid re-run
   if (file.exists(savefile1) & file.exists(savefile2)) {
@@ -46,6 +52,13 @@ miles.block.fast <- function(project, dataset, expid, ens, year1, year2, season,
   # time array to simplify time filtering
   etime <- power.date.new(timeaxis, verbose = T)
   totdays <- length(timeaxis)
+
+  # option for bias correction
+  if (biascorrect) {
+    biaslist <- ncdf.opener.universal(biasfile, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+    Z500 <- daily.replace.mean(ics, ipsilon, Z500, biaslist$field, etime)
+  }
+
 
   # grid resolution
   yreso <- ipsilon[2] - ipsilon[1]
@@ -372,7 +385,8 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "z500filename", "FILESDIR", "PROGDIR", "doforce")
+name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "z500filename",
+               "FILESDIR", "PROGDIR", "doforce", "biascorrect", "biasfile")
 
 # if there arguments, check them required args and assign
 if (length(args) != 0) {
@@ -395,6 +409,6 @@ if (length(args) != 0) {
     }
 
     source(file.path(PROGDIR, "script/basis_functions.R"))
-    miles.block.fast(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce)
+    miles.block.fast(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce, biascorrect, biasfile)
   }
 }

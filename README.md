@@ -1,9 +1,9 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1237837.svg)](https://doi.org/10.5281/zenodo.1237837)
 
-# MiLES v0.7
+# MiLES v0.8
 ## Mid-Latitude Evaluation System
 
-Oct 2014  - Feb 2019
+Oct 2014  - Jan 2021
 
 by P. Davini (CNR-ISAC, p.davini@isac.cnr.it)
 
@@ -174,9 +174,11 @@ It is recommended in such cases to split the analysis in different subsets.
 
 ## HISTORY
 
-*next version - May 2019
+*next version - no target*
+- support for 1.25x1.25 grid (r288x145)
 - Expanding possibilities for ncdf.opener.universal()
-- Revisiting blocking tracking in order to apply it on all the indices
+- Revisiting blocking tracking in order to apply it on all the indices (three files are now produced)
+- Introduce the "bias corrected" blocking with bcblock option
 - Adding D'Andrea et al. 1998 1D index
 - Removing 10-day blocking events
 - Vectorise the whole block.miles.fast() function

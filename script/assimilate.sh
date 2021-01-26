@@ -51,6 +51,7 @@ if [[ ! -f $outputfilename ]] || [[ $doforcedata == "true" ]] ; then
 
 	# step 1: do it for NetCDF
 	if [ -z ${expected_input_name} ] ; then 
+		echo $INDIR/*.nc
 		$cdonc cat $INDIR/*.nc $TEMPDIR/fullfile.nc
 		# if NetCDF do not exists, check for grib files
 		if [ $? -ne 0 ] ; then

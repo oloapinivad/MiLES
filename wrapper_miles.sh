@@ -187,6 +187,17 @@ for info in $infos ; do
 		fi
 	done
 	fullfilename=$ZDIR/${zfile}_fullfile.nc
+
+	if has_config bcblock ; then
+		biasdataset=ERA5
+		biasfile=$OUTPUTDIR/data/${identifier}/OBS/$biasdataset/zg500_${biasdataset}_fullfile.nc
+		echo $biasfile
+		if [ ! -f $biasfile ] ; then
+		       return 1	
+		fi
+	fi
+
+
 	
 	echo "Full filename is: $fullfilename"
 
@@ -197,7 +208,6 @@ for info in $infos ; do
 	if [ "$?" == 1  ] ; then
 		return 1
 	fi
-	#time . $PROGDIR/script/z500_prepare.sh $dataset $expid $ens $year1 $year2 $fullfilename $machine $doforcedata
 
 	for season in $seasons ; do
 		echo -e "${GREEN}Working on $season season${NC}"
@@ -214,8 +224,15 @@ for info in $infos ; do
 			[[ $varname == "zg" ]] && blockscript="block_multiple_fast.R"
 			[[ $varname == "ua" ]] && blockscript="u500_block_multiple.R"
 			time $Rscript "$PROGDIR/script/$blockscript" 	"$project" "$dataset" "$expid" "$ens" $year1 $year2 $season \
-									$fullfilename $FILESDIR $PROGDIR $doforceanl
+									$fullfilename $FILESDIR $PROGDIR $doforceanl "false" ""
 		fi
+		# blocking
+                if has_config bcblock ; then
+                        [[ $varname == "zg" ]] && blockscript="block_multiple_fast.R"
+                        [[ $varname == "ua" ]] && blockscript="u500_block_multiple.R"
+                        time $Rscript "$PROGDIR/script/$blockscript"    "$project" "$dataset" "$expid" "$ens" $year1 $year2 $season \
+                                                                        $fullfilename $FILESDIR $PROGDIR $doforceanl "true" $biasfile
+                fi
 
 		# regimes
 		if has_config regimes && [[ $season == DJF ]] ; then

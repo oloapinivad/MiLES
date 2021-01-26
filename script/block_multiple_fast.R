@@ -2,7 +2,8 @@
 #-----Blocking routines computation for MiLES--------#
 #-------------P. Davini (2014-2019)------------------#
 ######################################################
-miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce) {
+miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, season, z500filename, 
+                                 FILESDIR, doforce, biasccorrect, biasfile) {
 
   # this will track 3 different blocking indices producing 3 different files
   blocking_indices <- c("D12", "ExtraD12", "S04")
@@ -18,9 +19,16 @@ miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, sea
   for (tracking_index in blocking_indices) {
     t0 <- proc.time()
 
+    # name for bias correction
+    if (biascorrect) {
+      block_name <- "BC_Block"
+    } else {
+      block_name <- "Block"
+    }
+
     # define folders using file.builder function (takes care of ensembles)
-    savefile1 <- file.builder(FILESDIR, "Block", paste0(tracking_index, "_Clim"), project, dataset, expid, ens, year1, year2, season)
-    savefile2 <- file.builder(FILESDIR, "Block", paste0(tracking_index, "_Full"), project, dataset, expid, ens, year1, year2, season)
+    savefile1 <- file.builder(FILESDIR, block_name, paste0(tracking_index, "_Clim"), project, dataset, expid, ens, year1, year2, season)
+    savefile2 <- file.builder(FILESDIR, block_name, paste0(tracking_index, "_Full"), project, dataset, expid, ens, year1, year2, season)
 
     # check if data is already there to avoid re-run
     if (file.exists(savefile1) & file.exists(savefile2)) {
@@ -53,6 +61,23 @@ miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, sea
     # time array to simplify time filtering
     etime <- power.date.new(timeaxis, verbose = T)
     totdays <- length(timeaxis)
+
+    # option for bias correction
+    if (biascorrect) {
+      print("--------")
+      print("Remove seasonal cycle and correcting it with observations...")
+      # load a dataset to define the seasonal cycle
+      biaslist <- ncdf.opener.universal(biasfile, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+      biasetime <- power.date.new(biaslist$time, verbose = T)
+
+      # clean records which are not included, so that they have the same length
+      # this assumes that the observation has the same time span of the model data
+      biaslist$field <- biaslist$field[,,biasetime$data %in% etime$data]
+      biaslist$time <- biaslist$time[biasetime$data %in% etime$data]
+      print("--------")
+      print(str(biaslist))
+      Z500 <- daily.replace.mean(lon, lat, Z500, biaslist$field, etime)
+    }
 
     # grid resolution
     yreso <- lat[2] - lat[1]
@@ -422,7 +447,8 @@ cat("\n\n\n")
 args <- commandArgs(TRUE)
 
 # number of required arguments from command line
-name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "z500filename", "FILESDIR", "PROGDIR", "doforce")
+name_args <- c("project", "dataset", "expid", "ens", "year1", "year2", "season", "z500filename", 
+               "FILESDIR", "PROGDIR", "doforce", "biascorrect", "biasfile")
 
 # if there arguments, check them required args and assign
 if (length(args) != 0) {
@@ -444,6 +470,6 @@ if (length(args) != 0) {
     }
 
     source(file.path(PROGDIR, "script/basis_functions.R"))
-    miles.block.multiple(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce)
+    miles.block.multiple(project, dataset, expid, ens, year1, year2, season, z500filename, FILESDIR, doforce, biascorrect, biasfile)
   }
 }
