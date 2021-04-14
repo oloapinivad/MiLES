@@ -56,7 +56,7 @@ rotation <- function(line, rotate, longitude.case = FALSE) {
 
   # default options
   if (is.character(rotate)) {
-    if (rotate == "full") {
+    if (rotate == "full" | rotate == "reverse") {
       # 180 degrees rotation of longitude
       move1 <- 1 / 2 * ll
     } else if (rotate == "+half") {
@@ -85,7 +85,7 @@ rotation <- function(line, rotate, longitude.case = FALSE) {
   # special case for flipping longitudes
   if (longitude.case) {
     newline <- c(line[(move2 + 2):ll] - 360, line[1:(move2 + 1)])
-    if (all(newline < 0)) {
+    if (all(newline <= 0.5)) {
       newline <- newline + 360
     }
   } else {

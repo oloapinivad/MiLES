@@ -66,6 +66,9 @@ power.date.new <- function(datas, verbose = FALSE) {
   } else if (min_interval >= 28 & min_interval <= 31) {
     print("monthly data!")
     breakdays <- 31
+  } else if (min_interval >= 365) {
+    print("Yearly data!") 
+    breakdays <- 360
   } else {
     stop("Unknonw time interval, breaking!")
   }

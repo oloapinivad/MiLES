@@ -44,7 +44,7 @@ miles.block.multiple <- function(project, dataset, expid, ens, year1, year2, sea
     }
 
     # new file opening
-    fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F)
+    fieldlist <- ncdf.opener.universal(z500filename, namevar = "zg", tmonths = timeseason, tyears = years, rotate = "full", exportlonlat = F, verbose =F)
     print(str(fieldlist))
 
     # assign variables

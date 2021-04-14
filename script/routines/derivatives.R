@@ -81,14 +81,19 @@ der.2nd.spherical <- function(lon, lat, field, along = "lat", wind = FALSE) {
 }
 
 
-# define the divergence of a vector field
-divergence <- function(field) {
-
+# define the divergence of a 2D vector field
+divergence <- function(lon, lat, field_x, field_y) {
+ div <- der.2nd.spherical(rad(lon),rad(lat),field_x,along="lon", wind = T) +
+   der.2nd.spherical(rad(lon),rad(lat),field_y,along="lat", wind = T) 
+ return(div)
 }
 
-# define the gradient of a scalar field
-gradient <- function(field) {
-
+# define the 2D gradient of a scalar field
+gradient <- function(lon, lat, field) {
+  x <- der.2nd.spherical(rad(lon),rad(lat),field,along="lon")
+  y <- der.2nd.spherical(rad(lon),rad(lat),field,along="lat")
+  grd <- list(x = x, y = y)
+  return(grd)
 }
 
 

@@ -28,6 +28,7 @@ if [[ "${dataset}" == "ERA5"  ]] && [[ $varname == "zg" ]] ; then INDIR=/work/da
 if [[ "${dataset}" == "20CRv2c" ]] ;  then INDIR=$WORK/data/${dataset}/${ens}/day/${findvar} ; fi
 if [[ "${dataset}" == "CMCC-CM2" ]] ;  then INDIR=$SCRATCH/cmcc ; fi
 if [[ "${project}" == "SPHINX" ]] ;  then INDIR=$WORK/data/${project}/${ens}/day/${findvar} ; fi
+if [[ "${project}" == "Hosing" ]] ;  then INDIR=$SCRATCH/${project}/${expid} ; fi
 
 # to look for some specific file structure
 # if commented the program will look for all the netcdf or grib files in the folder

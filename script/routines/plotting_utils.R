@@ -14,6 +14,7 @@ palette.rdbl <- colorRampPalette(rev(brewer.pal(11, "RdBu")))
 palette.bupu <- colorRampPalette((brewer.pal(9, "BuPu")))
 palette.puor <- colorRampPalette(rev(brewer.pal(11, "PuOr")))
 palette.spct <- colorRampPalette(rev(brewer.pal(9, "Spectral")))
+palette.brbg <- colorRampPalette(rev(brewer.pal(9, "BrBG")))
 
 # imagescale3 color bar details
 imgscl_colorbar <- 1.4

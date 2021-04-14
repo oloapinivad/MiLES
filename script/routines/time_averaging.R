@@ -187,3 +187,19 @@ daily.anom.run.mean5 <- function(ics, ipsilon, field, etime) {
 
   return(anom)
 }
+
+
+# detrend function
+detrend <- function(time, field) {
+  lfit <- lm(field ~ time)
+  out <- field - (fitted(lfit) - mean(fitted(lfit)))
+  return(out)
+}
+
+# detrend simple
+detrend_simple <- function(field) {
+  time <- 1:length(field)
+  lfit <- lm(field ~ time)
+  out <- field - (fitted(lfit) - mean(fitted(lfit)))
+  return(out)
+}

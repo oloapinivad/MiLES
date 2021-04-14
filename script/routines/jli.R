@@ -1,3 +1,31 @@
+# JLI codes
+jli_preprocess <- function(field, filtertype = "lanczos", filter = 10, nw = 31) {
+
+  if (filtertype == "fourier") {
+    newfield <- aperm(apply(field, 1:2,
+                         function(x) { fourier.filter(x, period = filter, type = "lowpass") } ),
+                    c(2,3,1))
+  } else if (filtertype == "lanczos") {
+    weights <- lanczos_weights(nw = nw, fc = 1/filter, type = "lowpass")
+    newfield <- aperm(apply(field, 1:2,
+                         function(x) { stats::filter(x, weights) } ),
+                    c(2,3,1))
+    rr <- nw%/%2
+    newfield[,,1:rr] <- field[,,1:rr]
+    newfield[,,(length(newfield[1,1,])-rr):length(newfield[1,1,])] <-
+      field[,,(length(newfield[1,1,])-rr):length(newfield[1,1,])]
+  } else if (filtertype == "no") {
+    newfield <- field
+  }
+
+  return(newfield)
+}
+
+
+
+
+
+
 jli <- function(lon, lat, field, jetstyle = "atlantic", bw = 0.5,
                 npoints = 128, lon_sel = NULL, lat_sel = NULL) {
 
@@ -41,6 +69,7 @@ jli <- function(lon, lat, field, jetstyle = "atlantic", bw = 0.5,
     density(x, n = npoints, bw = band, from = lat_bounds[1], to = lat_bounds[2])$y
   }))
   density_1d <- density(jli_lat, n = npoints, bw = band, from = lat_bounds[1], to = lat_bounds[2])
+  speed_density_1d <- density(jli_speed, n = npoints, bw = 1, from = 0, to = 30)
 
 
 
@@ -48,8 +77,13 @@ jli <- function(lon, lat, field, jetstyle = "atlantic", bw = 0.5,
     lon = lon[ilon_bounds], lat = short_lat, jli_lat = jli_lat,
     jli_speed = jli_speed, jli_lat_2d = jli2d_lat, jli_speed_2d = jli2d_speed,
     density_1d = density_1d, density_2d = density_2d, density_lat = density_1d$x,
+    speed_density_1d = speed_density_1d,
     npoints = npoints
   )
 
   return(out)
 }
+
+
+
+
